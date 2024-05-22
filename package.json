@@ -1,0 +1,35 @@
+{
+  "name": "@thewebformula/lithe",
+  "version": "0.1.0",
+  "description": "A lithe framework for the web",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "start": "node --watch-path=./src --watch-path=./docs build.js",
+    "build": "NODE_ENV=production node build.js",
+    "serve": "NODE_ENV=production node src/build2/index.js"
+  },
+  "keywords": [
+    "lithe",
+    "javascript",
+    "web",
+    "framework"
+  ],
+  "author": "Ben Rubin (B-3PO)",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TheWebFormula/lithe.git"
+  },
+  "bugs": {
+    "url": "https://github.com/TheWebFormula/lithe/issues"
+  },
+  "homepage": "https://github.com/TheWebFormula/lithe#readme",
+  "dependencies": {
+    "esbuild": "^0.21.3",
+    "linkedom": "^0.18.0"
+  },
+  "devDependencies": {
+    "@thewebformula/lithe": "file:./"
+  }
+}
