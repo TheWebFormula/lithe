@@ -82,7 +82,7 @@ export default async function build(config = {
     bundle: true,
     outdir: config.outdir,
     metafile: true,
-    // entryNames: '[name]-[hash]',
+    entryNames: '[name]-[hash]',
     format: 'esm',
     loader: { '.html': 'text' },
     plugins: [pluginCss, injectCode(config)],
@@ -96,7 +96,7 @@ export default async function build(config = {
     bundle: true,
     outdir: config.outdir,
     metafile: true,
-    // entryNames: '[name]-[hash]',
+    entryNames: '[name]-[hash]',
     minify: config.minify,
     loader: { '.css': 'css' }
   });
