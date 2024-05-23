@@ -282,7 +282,9 @@ function injectCode(config) {
       build.onLoad({ filter: /app\.js/ }, async args => {
         let contents = await readFile(args.path, 'utf-8');
         if (contents.match(routesImportRegex) === null) {
-          contents = `import { routes, enableSPA } from \'@thewebformula/lithe\';${config.spa ? '\nenableSPA()' : ''}\n${config.routes.routesCode}\n${contents}`;
+          // TODO
+          // contents = `import { routes, enableSPA } from \'@thewebformula/lithe\';${config.spa ? '\nenableSPA()' : ''}\n${config.routes.routesCode}\n${contents}`;
+          contents = `import { routes, enableSPA } from \'@thewebformula/lithe\';\nenableSPA();\n${config.routes.routesCode}\n${contents}`;
         }
         return { contents };
       });

@@ -3,7 +3,7 @@ import { createReadStream } from 'node:fs';
 import { access } from 'node:fs/promises';
 import path from 'node:path';
 
-export default function runServer({ routes }, port = 3000) {
+export default function runServer(app, port = 3000) {
   createServer(async (req, res) => {
 
     if (req.url === '/livereload') {
@@ -15,8 +15,8 @@ export default function runServer({ routes }, port = 3000) {
         res.write("retry: 500\n");
     }
 
-    let file = await handleRoute(req.url, routes);
-    if (!file) file = await handleFiles(req.url);
+    let file = await handleRoute(req.url, app);
+    if (!file) file = await handleFiles(req.url, app);
     if (file) {
       const stream = createReadStream(file.filePath);
       stream.on('error', err => {
@@ -30,51 +30,47 @@ export default function runServer({ routes }, port = 3000) {
         stream.on('end', () => resolve(true));
         stream.pipe(res);
       });
-    }
+    } 
   }).listen(port);
 }
 
 
-async function handleRoute(url, routes, gzip = false) {
+async function handleRoute(url, app) {
   if (getExtension(url)) return;
-  let match = routes.find(v => url.match(v.regex) !== null);
+
+  let match = app.routes.find(v => url.match(v.regex) !== null);
   if (!match) {
     // assume 404 and load not found
-    match = routes.find(v => v.notFound);
+    match = app.routes.find(v => v.notFound);
     if (!match) return false;
   }
 
   const headers = { 'Content-Type': 'text/html' };
-  if (gzip) headers['Content-encoding'] = 'gzip';
+  if (app.gzip) headers['Content-encoding'] = 'gzip';
 
   return {
-    filePath: path.resolve('.', 'dist/index.html'),
+    filePath: path.resolve('.', match.filePath),
     headers
   };
 }
 
 
-async function handleFiles(url) {
+async function handleFiles(url, app) {
   if (!getExtension(url)) return;
-  // const match = app.files.find(v => v.filePath.endsWith(url.replace(/\%20/g, ' ')));
+  const match = app.files.find(v => v.filePath.endsWith(url.replace(/\%20/g, ' ')));
   const headers = {
     'Content-Type': getMimeType(url),
-    'Cache-Control': 'no-cache'
+    'Cache-Control': 'max-age=604800'
   };
-  // if (gzip) headers['Content-encoding'] = 'gzip';
-
-  let filePath = path.join('dist/', url);
-  if (!(await access(filePath).then(() => true).catch(() => false))) return false;
-
-  // let filePath;
-  // if (match) {
-  //   filePath = path.resolve('.', match.filePath);
-  //   const gzip = match.copiedFile ? match.gzip : app.gzip;
-  //   if (gzip) headers['Content-encoding'] = 'gzip';
-  // } else {
-  //   filePath = path.join(app.outdir, url);
-  //   if (!(await access(filePath).then(() => true).catch(() => false))) return false;
-  // }
+  let filePath;
+  if (match) {
+    filePath = path.resolve('.', match.filePath);
+    const gzip = match.copiedFile ? match.gzip : app.gzip;
+    if (gzip) headers['Content-encoding'] = 'gzip';
+  } else {
+    filePath = path.join(app.outdir, url);
+    if (!(await access(filePath).then(() => true).catch(() => false))) return false;
+  }
 
   return {
     filePath,
