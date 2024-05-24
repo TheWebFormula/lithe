@@ -100,6 +100,10 @@ wfc-card > .card-content > .headline + .subheader {
   margin-top: 2px;
 }
 
+wfc-card + wfc-card {
+  margin-top: 36px;
+}
+
 #page-content > section > wfc-card,
 #page-content > section > .page-content-container > wfc-card,
 #page-content > section > wfc-card,

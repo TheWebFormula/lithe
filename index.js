@@ -3,6 +3,7 @@ import { html, setSecurityLevel } from './src/client/html.js'
 import Component from './src/client/Component.js';
 import { routes, enableSPA } from './src/client/router.js';
 import { i18n } from './src/client/i18n.js';
+import { fetcher, createFetcher } from './src/client/fetcher.js';
 
 export {
   routes,
@@ -14,6 +15,8 @@ export {
   effect,
   setSecurityLevel,
   i18n,
+  fetcher,
+  createFetcher
 }
 
 window.html = html;
