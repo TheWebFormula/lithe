@@ -1,0 +1,45 @@
+{ "formatters": {
+    "itemPlural": {
+      "type": "cardinal",
+      "zero": "elementos",
+      "one": "artículo",
+      "two": "elementos",
+      "few": "elementos",
+      "many": "elementos",
+      "other": "elementos" },
+    "placeOrdinal": {
+      "type": "ordinal",
+      "one": "er",
+      "two": "do",
+      "few": "er",
+      "other": "to" },
+    "minutesCardinal": {
+      "type": "cardinal",
+      "one": "minuto",
+      "other": "minutos" },
+    "dateFormat": {
+      "type": "date",
+      "options": {
+        "dateStyle": "short",
+        "timeStyle": "short" } },
+    "currencyFormat": {
+      "type": "number",
+      "options": {
+        "style": "currency",
+        "currency": "MXN" } },
+    "relativeTimeFormat": {
+      "type": "relativeTime",
+      "unit": "day",
+      "options": {
+        "style": "short" } } },
+  
+  "messages": {
+    "About": "Acerca de",
+    "Label days": "Días de etiqueta",
+    "key_string": "Esta es una cadena clave",
+    "item_count": "$1 $itemPlural($1)",
+    "place_ordinal": "$1 $placeOrdinal($1)",
+    "time_from_now": "$1 $minutesCardinal($1) desde ahora",
+    "date_key": "$dateFormat($1)",
+    "currency_key": "$currencyFormat($1)",
+    "relativeTime_key": "$relativeTimeFormat($1)" } }

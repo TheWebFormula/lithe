@@ -33,6 +33,7 @@
     "linkedom": "^0.18.0"
   },
   "devDependencies": {
-    "@thewebformula/lithe": "file:./"
+    "@thewebformula/lithe": "file:./",
+    "@webformula/material": "file:../../webformula/material"
   }
 }

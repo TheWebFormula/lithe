@@ -73,7 +73,6 @@ export default async function build(config = {
   const appCSSPath = path.join(config.basedir, '/app.css');
   const hasAppCSS = await access(appCSSPath).then(e => true).catch(e => false);
   config.routes = await routeParser(config);
-
   const entryPoints = [config.appJsPath];
   // add entry points for each page
   if (config.chunks) entryPoints.concat(config.routes.routesConfig.map(v => v.filePath));
@@ -119,7 +118,8 @@ export default async function build(config = {
       regex: v.regex,
       filePath: v.indexHTMLFileName,
       fileName: v.indexHTMLFileName.split('/').pop(),
-      notFound: v.notFound
+      notFound: v.notFound,
+      hash: v.hash
     })),
     files: outputs
       .map(v => ({
@@ -175,10 +175,10 @@ async function buildIndexHTML(appJSOutput, appCSSOutput, routeConfigs, config) {
   await import(path.resolve('.', appJSOutput.output));
 
   // render template and build index html file for each page
-  const data = await Promise.all(routeConfigs.map(async (route, i) => {
+  const data = await Promise.all(routeConfigs.map(async route => {
     // load page to build template
     const routeModule = await window.litheRoutes.find(v => v.path === route.routePath).component;
-    customElements.define(`page-${i + 1}`, routeModule.default);
+    customElements.define(`page-${route.hash}`, routeModule.default);
     routeModule.default._isPage = true;
     routeModule.default._isBuild = true;
     const instance = new routeModule.default();
@@ -199,10 +199,12 @@ async function buildIndexHTML(appJSOutput, appCSSOutput, routeConfigs, config) {
 
     const head = document.querySelector('head');
     head.insertAdjacentHTML('afterbegin', `${pageScriptPreload}${pageImportChunks}`);
+    const content = `<!doctype html>\n${document.documentElement.outerHTML}`;
+    document.querySelector('#page-content').innerHTML = '';
 
     return {
       fileName: route.indexHTMLFileName,
-      content: `<!doctype html>\n${document.documentElement.outerHTML}`
+      content
     };
   }));
 

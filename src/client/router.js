@@ -1,6 +1,5 @@
 const app = {
   paths: [],
-  pageCounter: 0,
   componentModuleQueue: [],
   preventNavigation: false
 };
@@ -23,7 +22,8 @@ const app = {
 export function routes(config = [{
   component,
   path,
-  notFound
+  notFound,
+  hash
 }]) {
   const invalid = config.find(r => !r.component || !r.path);
   if (invalid) throw Error('Routes missing properties: { path, component }');
@@ -110,7 +110,6 @@ export function enableSPA() {
  */
 async function route(locationObject, back = false, initial = false) {
   if (!initial && app.preventNavigation) return;
-
   let match = app.paths.find(v => locationObject.pathname.match(v.regex) !== null);
   if (!match) match = app.paths.find(v => v.notFound);
   if (!match) console.warn(`No page found for path: ${locationObject.pathname}`);
@@ -121,12 +120,12 @@ async function route(locationObject, back = false, initial = false) {
     if (typeof match.component !== 'function') match.component = match.component.default;
     match.component._isPage = true;
     match.component._pagePathRegex = match.regex;
-    customElements.define(`page-${++app.pageCounter}`, match.component);
+    customElements.define(`page-${match.hash}`, match.component);
     match.component._defined = true;
   }
 
   if (initial) {
-    const cur = document.querySelector(`page-${app.pageCounter}`);
+    const cur = document.querySelector(`page-${match.hash}`);
     window.page = cur;
     cur.render();
   } else {

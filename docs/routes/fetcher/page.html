@@ -1,0 +1,78 @@
+<h3 class="page-title">Fetcher</h3>
+<div class="page-subheader wfc-font-title-medium">Extension on fetch that includes interceptors</div>
+
+
+<section class="page-content-section">
+  <div class="page-content-container">
+    <wfc-card id="pagejs">
+      <div slot="headline">Fetcher</div>
+    
+      <pre>
+        <code class="language-javascript">
+  ${`import { fetcher, createFetcher } from '@thewebformula/lithe';
+
+  /** Main fetcher */
+  
+  // interceptors
+  fetcher('/get', { interceptors: {
+    // called on 401
+    auth(config) {
+      config.headers.Authorization = 'Bearer token';
+      return config;
+    },
+    before(config) {
+      // modify config
+      return config;
+    }
+  });
+
+  /** Example: JWT refresh access token on 401 */
+  fetcher('/get', { interceptors: {
+    async auth(config) {
+      const refreshResponse = await fetcher('/refreshToken', {
+        headers: { Authorization: 'Bearer refresh_token' }
+      });
+      config.headers.Authorization = await refreshResponse.text();
+      return config;
+    }
+  });
+
+
+  /** Fetcher instance */
+  
+  // global config for all instance requests
+  const fetcherInstance = createFetcher({
+    baseUrl: '',
+    headers: {
+      Authorization: 'Bearer token'
+    },
+    interceptors: {
+      auth(config) {
+        config.headers.Authorization = 'Bearer token';
+        return config;
+      },
+      before(config) {
+        // modify config
+        return config;
+      }
+    }
+  });
+  
+  fetcherInstance('/get');
+  
+  // request specific interceptors using an instance
+  fetcherInstance('/get', {}, interceptors: {
+    auth(config) {
+      config.headers.Authorization = 'Bearer token';
+      return config;
+    },
+    before(config) {
+      config.headers.Authorization = 'Bearer token';
+      return config;
+    }
+  });`}
+        </code>
+      </pre>
+    </wfc-card>
+  </div>
+</section>

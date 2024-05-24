@@ -13,6 +13,7 @@ export default function runServer(app, port = 3000) {
           'Cache-Control': 'no-cache'
         });
         res.write("retry: 500\n");
+        return;
     }
 
     let file = await handleRoute(req.url, app);

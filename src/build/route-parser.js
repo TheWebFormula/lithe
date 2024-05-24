@@ -37,7 +37,8 @@ export default async function getRoutes(config) {
       indexHTMLFileName,
       regex: buildPathRegex(routePath),
       routeModuleName: `routeModule_${relativePath.replace(routeToNameRegex, '')}`,
-      notFound: relativePath === '/404'
+      notFound: relativePath === '/404',
+      hash: generateHash(routePath)
     };
   });
 
@@ -48,6 +49,12 @@ export default async function getRoutes(config) {
   };
 }
 
+function generateHash(str) {
+  return str.split('').reduce((a, b) => {
+    a = ((a << 5) - a) + b.charCodeAt(0);
+    return a & a;
+  }, 0);
+}
 
 // find all paths to index.js. This is the page class file
 // TODO node glob
@@ -91,12 +98,14 @@ routes([
   ${routes.map(route => `{
     path: '${route.routePath}',
     regex: ${route.regex},
+    hash: ${route.hash},
     component: ${route.routeModuleName}${!route.notFound ? '' : `,
     notFound: true`}
   }`)}
 ]);${!config.isDev ? '' : `\n\nwindow.litheRoutes = [${routes.map(route => `{
   path: '${route.routePath}',
   regex: ${route.regex},
+  hash: ${route.hash},
   component: ${route.routeModuleName}${!route.notFound ? '' : `,
   notFound: true`}
 }`)}];`}`;

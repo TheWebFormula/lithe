@@ -1,0 +1,186 @@
+<h3 class="page-title">Signals and binding</h3>
+<div class="page-subheader wfc-font-title-medium">Bind variables to templates using signals</div>
+
+
+<section class="page-content-section">
+  <nav class="links-nav" aria-label="page-content">
+    <div class="wfc-font-headline-small page-secondary-header">Links</div>
+    <ul class="links">
+      <li><a href="#signal">Signal</a></li>
+      <li><a href="#compute">Compute</a></li>
+      <li><a href="#effect">Effect</a></li>
+    </ul>
+  </nav>
+
+  <div class="page-content-container">
+    <wfc-card id="signal">
+      <div slot="headline">Signal</div>
+      <div slot="supporting-text">A signal is a wrapper around a value that can notify interested consumers when that value changes</div>
+
+      <wfc-textfield a class="wfc-raise-label" style="margin-top: 24px;" label="Type something" value="${page.basicBind}"
+        oninput="page.basicBind.value = this.value">
+      </wfc-textfield>
+      
+      <div a style="margin-bottom: 12px; margin-left: 16px;">Value: ${page.basicBind}</div>
+      
+      <wfc-button onclick="page.updateValue()">Set value to Updated</wfc-button>
+      
+      <pre>
+        <code class="language-html">
+  ${`<!-- Signals automatically update the HTML -->
+
+  <wfc-textfield
+    label="Type something"
+    value="\${page.basicBind}"
+    oninput="page.basicBind.value = this.value"
+  ></wfc-textfield>
+
+  <div>Value: \${page.basicBind}</div>
+  <wfc-button onclick="page.updateValue()">Set value to Updated</wfc-button>`}
+        </code>
+      </pre>
+      <pre>
+        <code class="language-javascript">
+  ${`import { Component, Signal } from '@thewebformula/lithe';
+  import htmlTemplate from './page.html';
+
+  export default class extends Component {
+    static pageTitle = 'Signal';
+    static htmlTemplate = htmlTemplate;
+    
+    basicBind = new Signal('');
+    
+    constructor() {
+      super();
+    }
+
+    updateValue() {
+      // HTML will automatically update
+      this.basicBind.value = 'Updated';
+    }
+  }`}
+        </code>
+      </pre>
+
+      <pre>
+        <code class="language-javascript">
+  ${`
+  // quick example of using Signal, Compute, and effect
+    
+  import { Component, Signal, Compute, effect } from '@thewebformula/lithe';
+  import htmlTemplate from './page.html';
+
+  export default class extends Component {
+    static pageTitle = 'Signal Compute effect';
+    static htmlTemplate = htmlTemplate;
+    
+    one = new Signal(1);
+    // Compute will run when first created
+    two = new Compute(() => {
+      return this.one.value * 2;
+    });
+    
+    constructor() {
+      super();
+
+      // runs when any signals or computes contained inside change
+      // effect will run when first created
+      const dispose = effect(() => {
+        if (this.two > 10) {
+          // do some work
+        }
+      });
+
+      // dispose effect
+      dispose();
+    }
+  }`}
+        </code>
+      </pre>
+    </wfc-card>
+
+
+    <wfc-card id="compute">
+      <div slot="headline">Compute</div>
+      <div slot="supporting-text">Compute provides a way to interact with multiple signals to provide a single value</div>
+    
+      <wfc-textfield b class="wfc-raise-label" type="number" style="margin-top: 24px;" label="Type something" value="${page.number}"
+        oninput="page.number.value = this.value">
+      </wfc-textfield>
+    
+      <div b style="margin-bottom: 12px; margin-left: 16px;">Value: ${page.numberTimesTwo}</div>
+
+      <pre>
+        <code class="language-html">
+  ${`<!-- Computes automatically update the HTML -->
+  
+  <wfc-textfield
+    type="number"
+    label="Type something"
+    value="\${page.number}"
+    oninput="page.number.value = this.value">
+  </wfc-textfield>
+
+  <div>Value: \${page.numberTimesTwo}</div>`}
+        </code>
+      </pre>
+      <pre>
+        <code class="language-javascript">
+  ${`import { Component, Signal, Compute } from '@thewebformula/lithe';
+  import html from './page.html';
+
+  export default class extends Component {
+    static pageTitle = 'Compute';
+    static htmlTemplate = html;
+    
+    number = new Signal(1);
+    // Compute will run when first created
+    numberTimesTwo = new Compute(() => {
+      return this.number.value * 2;
+    });
+    
+    constructor() {
+      super();
+    }
+  }`}
+        </code>
+      </pre>
+    </wfc-card>
+
+
+    <wfc-card id="effect">
+      <div slot="headline">Effect</div>
+      <div slot="supporting-text">Effects allows you to run code based on any changes for signals or computes it contains. The difference between effect and compute is that effects do not return values.</div>
+    
+      <pre>
+        <code class="language-javascript">
+  ${`import { Component, Signal, effect } from '@thewebformula/lithe';
+  import html from './page.html';
+
+  export default class extends Component {
+    static pageTitle = 'Effect';
+    static htmlTemplate = html;
+    
+    one = new Signal(1);
+    two = new Signal(2);
+    
+    constructor() {
+      super();
+
+      // runs when any signals or computes contained inside change
+      // effect will run when first created
+      const dispose = effect(() => {
+        if (this.one.value < this.two.value) {
+          // do some work
+        }
+      });
+
+      // dispose effect
+      dispose();
+    }
+  }`}
+        </code>
+      </pre>
+    </wfc-card>
+  </div>
+</section>

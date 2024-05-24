@@ -1,0 +1,215 @@
+@import url(./colorTokens.css);
+@import url(./dracula.css);
+
+:root {
+  font-family: system-ui, Arial;
+}
+
+html {
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.page-title {
+  margin-bottom: 0;
+}
+
+.page-subheader {
+  margin-top: 8px;
+}
+
+.page-secondary-header {
+  margin-bottom: 18px;
+  margin-top: 28px;
+}
+
+.page-list {
+  list-style-type: none;
+  margin-left: -24px;
+  margin-top: -4px;
+  font-size: 18px;
+  line-height: 32px;
+  color: rgb(10, 100, 112);
+}
+
+.page-list strong {
+  font-weight: bold;
+  font-size: 20px;
+  margin-right: 2px;
+}
+
+section {
+  display: inline-flex;
+  flex-direction: column;
+}
+
+pre {
+  display: flex;
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+pre > code {
+  flex-grow: 1;
+}
+
+wfc-card pre,
+wfc-card pre {
+  margin: 0 -16px;
+  margin-bottom: -16px;
+}
+
+pre > code {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+
+
+wfc-card > pre:first-of-type > code,
+wfc-card > pre:first-of-type > code {
+  margin-top: 24px;
+}
+
+wfc-card > pre:last-of-type > code,
+wfc-card > pre:last-of-type > code {
+  border-radius: 0 0 var(--wfc-shape-medium) var(--wfc-shape-medium);
+}
+
+wfc-card .example {
+  margin-top: 18px;
+}
+
+page-content > section > wfc-card,
+page-content > section > .page-content-container > wfc-card {
+  margin-bottom: 36px;
+}
+
+wfc-card.header-card {
+  margin-top: 16px;
+  margin-bottom: 48px;
+  padding-bottom: 8px;
+  box-shadow: none;
+}
+
+wfc-card.header-card > .headline {
+  font-size: 32px;
+}
+
+wfc-card > .card-content > .headline + .subheader {
+  margin-top: 2px;
+}
+
+#page-content > section > wfc-card,
+#page-content > section > .page-content-container > wfc-card,
+#page-content > section > wfc-card,
+#page-content > section > .page-content-container > wfc-card {
+  margin-bottom: 36px;
+}
+
+
+.code-collapse-top code {
+  margin-top: 0;
+  padding-top: 0;
+}
+
+.code-collapse-top code::before {
+  content: '';
+  display: block;
+  height: 0;
+  width: 0;
+  margin-top: -20px;
+}
+
+.code-collapse-bottom code {
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.code-collapse-bottom code::before {
+  content: '';
+  display: block;
+  height: 0;
+  width: 0;
+  margin-bottom: -20px;
+}
+
+.code-collapse code {
+  margin-top: 0;
+  padding-top: 0;
+
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.code-collapse code::before {
+  content: '';
+  display: block;
+  height: 0;
+  width: 0;
+  margin-top: -20px;
+  margin-bottom: -20px;
+}
+
+
+.supporting-text + .example {
+  margin-top: 32px;
+}
+
+.github-link {
+  display: flex;
+  line-height: 40px;
+  align-items: center;
+}
+
+.route-list {
+  padding: 4px 0;
+}
+
+.route-list span {
+  background-color: rgba(0, 0, 0, 0.1);
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+
+.page-content-section {
+  display: flex;
+  flex-direction: row-reverse;
+  justify-content: center;
+}
+body.wfc-window-compact .page-content-section {
+  flex-direction: column;
+}
+
+.links-nav {
+  margin-left: 48px;
+  box-sizing: border-box;
+  min-width: 140px;
+}
+
+.links-nav .page-secondary-header {
+  padding-top: 16px;
+  position: sticky;
+  top: 0;
+}
+
+.links-nav .links {
+  position: sticky;
+  top: 48px;
+  list-style-type: none;
+  margin-top: -12px;
+  padding-left: 0px;
+}
+
+.links a {
+  white-space: nowrap;
+}
+
+.page-content-container {
+  flex: 1;
+}
+
+.page-content-container > wfc-card:first-of-type {
+  margin-top: 48px;
+}

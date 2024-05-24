@@ -1,0 +1,202 @@
+<h3 class="page-title">Templates</h3>
+
+<section class="page-content-section">
+  <nav class="links-nav" aria-label="page-content">
+    <div class="wfc-font-headline-small page-secondary-header">Links</div>
+    <ul class="links">
+      <li><a href="#expressions">Expressions and bindings</a></li>
+      <li><a href="#templates">Templates</a></li>
+    </ul>
+  </nav>
+
+  <div class="page-content-container">
+    
+    <wfc-card id="expressions">
+      <div slot="headline">Expressions and bindings</div>
+      <div slot="supporting-text">Templates are simply Javascript template literals. This means building template expressions is familiar and strait forward. There is a <strong>html</strong> tag function for rendering text as html.</div>
+
+
+      <wfc-divider></wfc-divider>
+      <div class="wfc-font-title-medium" style="margin-bottom: 20px">Template html</div>
+
+      <div>Some plain text in a div</div>
+      <div><strong>Plain text variable</strong> ${page.plainText}</div>
+
+      <div style="margin: 42px 0px;">
+        <div class="wfc-font-title-large" style="margin-bottom: 8px;">Signal variable</div>
+
+        <wfc-textfield value="${page.signalVar}" oninput="page.signalVar.value = this.value" label="Update value" style="margin-bottom: 12px;"></wfc-textfield>
+        <div><strong style="color: #444">Bound</strong> ${page.signalVar}</div>
+      </div>
+
+
+      <div style="margin: 42px 0px;">
+        <div class="wfc-font-title-large" style="margin-bottom: 8px;">Dynamically computing HTML</div>
+        <wfc-switch checked="${page.showFirst}" onchange="page.showFirst.value = this.checked">Switch HTML</wfc-switch>
+        ${html(() => (
+          page.showFirst.value ?
+            html`<div>First</div>` :
+            html`<div>Second</div>`
+        ))}
+      </div>
+
+      <div style="margin: 42px 0px;">
+        <div class="wfc-font-title-large" style="margin-bottom: 8px;">Looping with Signals</div>
+        <wfc-textfield id="valueinput" placeholder="...value"></wfc-textfield>
+        <wfc-button onclick="page.addValue(valueinput.value);" style="margin-top: 8px;">Add value</wfc-button>
+        ${html(() => page.loopVar.value.map(item => html`<div>Value: ${item.value}</div>`))}
+      </div>
+
+      <!--
+        HTML comments work on expressions
+        ${`commented out ${page.plainText}`}
+      -->
+      
+      <pre>
+        <code class="language-html" wfc-no-binding>
+  ${`<!-- page.html -->
+  <wfc-divider></wfc-divider>
+  <div class="wfc-font-title-medium">Template html</div>
+
+  <div>Some plain text in a div</div>
+  <div><strong>Plain text variable</strong> \${page.plainText}</div>
+
+  <div>
+    <div class="wfc-font-title-large">Signal variable</div>
+
+    <wfc-textfield value="\${page.signalVar}" oninput="page.signalVar.value = this.value" label="Update value"></wfc-textfield>
+    <div><strong style="color: #444">Bound</strong> \${page.signalVar}</div>
+  </div>
+
+
+  <div>
+    <div class="wfc-font-title-large">Dynamically computing HTML</div>
+    <wfc-switch checked="\${page.showFirst}" onchange="page.showFirst.value = this.checked">Switch HTML</wfc-switch>
+    \${html(() => (
+      page.showFirst.value ?
+        html\`<div>First</div>\` :
+        html\`<div>Second</div>\`
+    ))}
+  </div>
+
+  <div>
+    <div class="wfc-font-title-large">Looping with Signals</div>
+    <wfc-textfield id="valueinput" placeholder="...value"></wfc-textfield>
+    <wfc-button onclick="page.addValue(valueinput.value);">Add value</wfc-button>
+    \${html(() => page.loopVar.value.map(item => html\`<div>Value: \${item.value}</div>\`))}
+  </div>
+
+  <!--
+    HTML comments work on expressions
+    \${\`commented out \${page.plainText}\`}
+  -->`}
+        </code>
+      </pre>
+      <pre>
+        <code class="language-javascript" wfc-no-binding>
+  ${`// page.js
+  import { Component } from '@thewebformula/lithe';
+  import htmlTemplate from './page.html';
+
+  export default class extends Component {
+    static pageTitle = 'Template html file';
+
+    // Load HTML template file
+    static htmlTemplate = htmlTemplate;
+    
+
+    plainText = 'plainText value';
+    signalVar = new Signal('signalVar value');
+    loopVar = new Signal([
+      { value: 'One' },
+      { value: 'Two' },
+      { value: 'Three' }
+    ]);
+    showFirst = new Signal(true);
+
+    
+    constructor() {
+      super();
+    }
+
+    addValue(value) {
+      if (!value) return;
+      this.loopVar.value = [...this.loopVar.value, {value}];
+    }
+  }`}
+        </code>
+      </pre>
+    </wfc-card>
+
+
+    <wfc-card id="templates">
+      <div slot="headline">Templates</div>
+      <div slot="supporting-text">There are two methods for including templates in pages and components</div>
+      <ul slot="supporting-text">
+        <li>HTML file</li>
+        <li>Page function</li>
+      </ul>
+      
+
+
+      <div style="margin-top: 42px; margin-bottom: -8px;">
+        <div style="font-size: 24px;">HTML file</div>
+      </div>
+      <pre>
+        <code class="language-html" wfc-no-binding>
+  ${`<!-- page.html -->
+  <h3>Page</h3>
+  <div>Content</div>`}
+        </code>
+      </pre>
+      <pre>
+        <code class="language-javascript" wfc-no-binding>
+  ${`// page.js
+  import { Component } from '@thewebformula/lithe';
+  import htmlTemplate from './page.html';
+
+  export default class extends Component {
+    static pageTitle = 'Template html file';
+
+    // Load HTML template file
+    static htmlTemplate = htmlTemplate;
+    
+    constructor() {
+      super();
+    }
+  }`}
+        </code>
+      </pre>
+
+      <div style="margin-top: 42px; margin-bottom: 12px;">
+        <div style="font-size: 24px;">Page function</div>
+      </div>
+
+      <pre>
+        <code class="language-javascript" wfc-no-binding>
+  ${`// page.js page function
+  import { Component, html } from '@thewebformula/lithe';
+
+  export default class extends Component {
+    static pageTitle = 'Template function';
+
+    // Load HTML template file
+    static htmlTemplate = htmlTemplate;
+    
+    constructor() {
+      super();
+    }
+
+    // Template function
+    template() {
+      return html\`
+        <h3>Page</h3>
+        <div>Content</div>
+      \`;
+    }
+  }`}
+        </code>
+      </pre>
+    </wfc-card>
+  </div>
+</section>

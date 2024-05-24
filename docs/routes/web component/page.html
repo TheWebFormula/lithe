@@ -1,0 +1,227 @@
+<h3 class="page-title">Web component</h3>
+<div class="page-subheader wfc-font-title-medium">Webformula core provides a convenient way to build native web components</div>
+
+<custom-button></custom-button>
+
+<section class="page-content-section">
+  <nav class="links-nav" aria-label="page-content">
+    <div class="wfc-font-headline-small page-secondary-header">Links</div>
+    <ul class="links">
+      <li><a href="#pagejs">page.js</a></li>
+      <li><a href="#componentjs">component.js</a></li>
+      <li><a href="#nteracting">Interacting with components</a></li>
+    </ul>
+  </nav>
+
+  <div class="page-content-container">
+    <wfc-card id="pagejs">
+      <div slot="headline">Page file</div>
+      <div slot="supporting-text">page.js</div>
+      <div slot="supporting-text">Web component is imported in this file</div>
+
+      <pre>
+        <code class="language-javascript">
+  ${`import { Component, html } from '@thewebformula/lithe';
+  /* HTML imports will bundle with the build */
+  import htmlTemplate from './page.html';
+
+  // imported component
+  import './component.js';
+  
+  export default class extends Component {
+    // html page title
+    static pageTitle = 'Page';
+
+    // you can set the html from and import or use the template method (see below)
+    static htmlTemplate = htmlTemplate;
+    
+    constructor() {
+      super();
+    }
+
+    // this can be used in place of import the html file
+    template() {
+      return html\`${`
+        <div>Page Content</div>
+
+        <!-- custom component -->
+        <custom-button>Click</custom-button>
+      `}\`;
+    }
+  }`}
+        </code>
+      </pre>
+    </wfc-card>
+
+    <wfc-card id="componentjs">
+      <div slot="headline">Component file</div>
+      <div slot="supporting-text">component.js</div>
+      
+      <pre>
+        <code class="language-html">
+  ${`<!-- component.html -->
+  <button><slot></slot></button>`}
+        </code>
+      </pre>
+      
+      <pre>
+        <code class="language-javascript">
+  ${`import { Component } from '@thewebformula/lithe';
+  import htmlTemplate from './component.html';
+  
+  class CustomButton extends Component {
+    /**
+      * Pass in HTML string. Use for imported .HTML
+      * Supports template literals: <div>${this.var}</div>
+      * @type {String}
+      */
+    static htmlTemplate = htmlTemplate;
+
+
+    /**
+      * Hook up shadow root
+      * @type {Boolean}
+      */
+    static useShadowRoot = false;
+
+    
+    /**
+      * @type {Boolean}
+      */
+    static shadowRootDelegateFocus = false;
+
+
+    /**
+      * Pass in styles for shadow root.
+      * Can use imported stylesheets: import styles from '../styles.css' assert { type: 'css' };
+      * @type {CSSStyleSheet}
+      */
+    static shadowRootStyleSheets;
+
+
+    /**
+      * @typedef {String} AttributeType
+      * @value '' default handling
+      * @value 'string' Convert to a string. null = ''
+      * @value 'number' Convert to a number. isNaN = ''
+      * @value 'int' Convert to a int. isNaN = ''
+      * @value 'boolean' Convert to a boolean. null = false
+      * @value 'event' Allows code to be executed. Similar to onchange="console.log('test')"
+      */
+      /**
+      * Enhances observedAttributes, allowing you to specify types
+      * You can still use \`observedAttributes\` in stead of this.
+      * @type {Array.<[name:String, AttributeType]>}
+      */
+    static get observedAttributesExtended() { return []; }; // static observedAttributesExtended = [['required', 'boolean']];
+    
+
+    /**
+      * Use with observedAttributesExtended
+      * You can still use \`attributeChangedCallback\` in stead of this.
+      * @function
+      * @param {String} name - Attribute name
+      * @param {String} oldValue - Old attribute value
+      * @param {String} newValue - New attribute value
+      */
+    attributeChangedCallbackExtended(name, oldValue, newValue) { }
+
+
+    // need to bind events to access \`this\`
+    #onClick_bound = this.#onClick.bind(this);
+
+    
+    constructor() {
+      super();
+    }
+
+    /**
+     * Method that returns a html template string. This is an alternative to use static htmlTemplate
+     * @name template
+     * @function
+     * @return {String}
+     */
+    template() { return '<div></div>' }
+
+    connectedCallback() {}
+    disconnectedCallback() {}
+    beforeRender() {}
+
+    afterRender() {
+      this.#root.querySelector('button').addEventListener('click', this.#onClick_bound);
+    }
+    
+    disconnectedCallback() {
+      this.#root.querySelector('button').removeEventListener('click', this.#onClick_bound);
+    }
+
+    #onClick() {
+      console.log('Custom button component clicked!');
+    }
+  }
+  
+  // define web component
+  customElements.define('custom-button', CustomButton);`}
+        </code>
+      </pre>
+    </wfc-card>
+
+
+    <wfc-card id="nteracting">
+      <div slot="headline">Interacting with component elements</div>
+      
+      <pre>
+        <code class="language-html">
+  ${`<!-- index.html -->
+  <body>
+    <custom-webcomponent></custom-webcomponent>
+  </body>`}
+        </code>
+      </pre>
+
+      <pre>
+        <code class="language-html">
+  ${`<!-- component.html -->
+  <button onclick="this.closest('custom-webcomponent').clickIt()">Click it direct</button>
+  <button id="eventlistener-button">Click it event listener</button>`}
+        </code>
+      </pre>
+    
+      <pre>
+        <code class="language-javascript">
+  ${`import { Component } from '@thewebformula/lithe';
+  import html from './component.html'; // automatically bundles
+  
+  class CustomWebcomponent extends Component {
+    static htmlTemplate = html;
+
+    // need to bind events to access \`this\`
+    #onClick_bound = this.clickIt.bind(this);
+
+    varOne = 'var one';
+
+    
+    constructor() {
+      super();
+    }
+
+    afterRender() {
+      this.#root.querySelector('#eventlistener-button').addEventListener('click', this.#onClick_bound);
+    }
+    
+    disconnectedCallback() {
+      this.#root.querySelector('#eventlistener-button').removeEventListener('click', this.#onClick_bound);
+    }
+
+    clickIt() {
+      console.log('click it!');
+    }
+  }
+  
+  // define web component
+  customElements.define('custom-webcomponent', CustomWebcomponent);`}
+        </code>
+      </pre>
+    </wfc-card>
+  </div>
+</section>
