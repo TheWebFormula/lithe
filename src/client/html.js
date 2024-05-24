@@ -278,9 +278,9 @@ function sanitizeNode(node) {
 
   if (dangerousNodes.includes(node.nodeName)) {
     if (securityLevel === 0) {
-      if (window.wfcDev === true) console.warn(`Template sanitizer (WARNING): Potentially dangerous node NOT removed because of current level (${securityLevel}) "${node.nodeName}"`);
+      if (window.litheDev === true) console.warn(`Template sanitizer (WARNING): Potentially dangerous node NOT removed because of current level (${securityLevel}) "${node.nodeName}"`);
     } else {
-      if (window.wfcDev === true) console.warn(`Template sanitizer (INFO): A ${node.nodeName} tag was removed because of security level (${securityLevel})`);
+      if (window.litheDev === true) console.warn(`Template sanitizer (INFO): A ${node.nodeName} tag was removed because of security level (${securityLevel})`);
       node.remove();
       sanitized = true;
     }
@@ -298,7 +298,7 @@ function sanitizeAttribute(attr) {
   const nameSanitized = sanitizeAttributeName(attr.name, attr.value);
   const valueSanitized = sanitizeAttributeValue(attr.name, attr.value);
   if (nameSanitized || valueSanitized) {
-    if (window.wfcDev === true) console.warn(`Template sanitizer (INFO): Attribute removed "${attr.name}: ${attr.value}"`);
+    if (window.litheDev === true) console.warn(`Template sanitizer (INFO): Attribute removed "${attr.name}: ${attr.value}"`);
     attr.ownerElement.removeAttribute(attr.name);
     return true;
   }
@@ -313,9 +313,9 @@ function sanitizeAttributeName(name, value) {
   if (dangerousAttributesLevel1.includes(name)) shouldRemoveLevel1 = true;
 
   if (
-    window.wfcDev === true &&
+    window.litheDev === true &&
     (securityLevel === 1 && shouldRemoveLevel2 && !shouldRemoveLevel1)
-    || (window.wfcDev === true && securityLevel === 0 && (!shouldRemoveLevel2 || !shouldRemoveLevel1))
+    || (window.litheDev === true && securityLevel === 0 && (!shouldRemoveLevel2 || !shouldRemoveLevel1))
   ) {
     console.warn(`Template sanitizer (WARNING): Potentially dangerous attribute NOT removed because of current level (${securityLevel}) "${name}: ${value}"`);
   }
@@ -326,7 +326,7 @@ function sanitizeAttributeName(name, value) {
 function sanitizeAttributeValue(name, value) {
   value = value.replace(/\s+/g, '').toLowerCase();
   if (value.match(dangerousAttributeValueRegex) !== null) {
-    if (window.wfcDev === true && securityLevel === 0) {
+    if (window.litheDev === true && securityLevel === 0) {
       console.warn(`Template sanitizer (WARNING): Potentially dangerous attribute NOT removed because of current level (${securityLevel}) "${name}: ${value}"`);
     } else return true;
   }

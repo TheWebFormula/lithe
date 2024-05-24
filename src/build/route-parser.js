@@ -94,7 +94,7 @@ routes([
     component: ${route.routeModuleName}${!route.notFound ? '' : `,
     notFound: true`}
   }`)}
-]);${!config.isDev ? '' : `\n\nwindow.wfcRoutes = [${routes.map(route => `{
+]);${!config.isDev ? '' : `\n\nwindow.litheRoutes = [${routes.map(route => `{
   path: '${route.routePath}',
   regex: ${route.regex},
   component: ${route.routeModuleName}${!route.notFound ? '' : `,

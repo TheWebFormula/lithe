@@ -177,7 +177,7 @@ async function buildIndexHTML(appJSOutput, appCSSOutput, routeConfigs, config) {
   // render template and build index html file for each page
   const data = await Promise.all(routeConfigs.map(async (route, i) => {
     // load page to build template
-    const routeModule = await window.wfcRoutes.find(v => v.path === route.routePath).component;
+    const routeModule = await window.litheRoutes.find(v => v.path === route.routePath).component;
     customElements.define(`page-${i + 1}`, routeModule.default);
     routeModule.default._isPage = true;
     routeModule.default._isBuild = true;
@@ -316,15 +316,15 @@ const pluginCss = {
 
 const debugScript = (devWarnings) => `
 <script>
-  window.wfcDev = ${devWarnings === true ? 'true;' : 'false;'}
-  console.warn('Webformula Core: Debug mode');
+  window.litheDev = ${devWarnings === true ? 'true;' : 'false;'}
+  console.warn('Lithe: Debug mode');
 
   window.getPageTemplate = () => {
     console.log(window.page.getTemplate());
   }
 
   window.getRoutes = () => {
-    console.log(window.wfcRoutes);
+    console.log(window.litheRoutes);
   }
 </script>`;
 const liveReloadScript = `

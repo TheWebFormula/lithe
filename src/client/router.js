@@ -36,7 +36,7 @@ export function routes(config = [{
     }
   }
 
-  window.wfcRoutes = app.paths;
+  window.litheRoutes = app.paths;
   if (!window.__isBuilding && isCurrent) route(location, false, true);
 }
 
