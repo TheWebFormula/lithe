@@ -1,0 +1,435 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <link rel="modulepreload" href="/app-RNNTBIQD.js">
+  <link rel="preload" href="/app-76TNKOZY.css" as="style">
+
+  <meta charset="UTF-8">
+  <meta http-equiv="Cache-Control" content="no-store">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="@thewebformula/lithe. A lithe framework for the web">
+  <meta name="wfc-theme-color-scheme-preference-disable">
+  <title>Getting started</title>
+
+  <style>
+    html:not(.wfc-initiated) {
+      display: none;
+    }
+  </style>
+
+  <script defer type="module" src="/app-RNNTBIQD.js"></script>
+  <link href="/app-76TNKOZY.css" rel="stylesheet">
+  <script id="hljsscript" src="/highlight-11.8.0.js" async></script>
+
+  <script>
+    let isReconnecting = false;
+    const es = new EventSource('/livereload');
+    es.addEventListener('error', () => { isReconnecting = true; });
+    es.addEventListener('open', () => {
+      if (isReconnecting) {
+        isReconnecting = false;
+        location.reload();
+      }
+    })
+  </script>
+
+<script>
+  window.litheDev = false;
+  console.warn('Lithe: Debug mode');
+
+  window.getPageTemplate = () => {
+    console.log(window.page.getTemplate());
+  }
+
+  window.getRoutes = () => {
+    console.log(window.litheRoutes);
+  }
+</script></head>
+
+<body>
+  <wfc-navigation-drawer>
+    <div slot="header" class="headline">Webformula core</div>
+
+    <wfc-anchor href="/">Welcome</wfc-anchor>
+    <wfc-anchor href="/getting-started">Getting started</wfc-anchor>
+    <wfc-anchor href="/routing">Routing</wfc-anchor>
+    <wfc-anchor href="/build">Serve / Build</wfc-anchor>
+    <wfc-anchor href="/binding">Signals and binding</wfc-anchor>
+    <wfc-anchor href="/web-component">Web component</wfc-anchor>
+    <wfc-anchor href="/templates">Templates</wfc-anchor>
+    <wfc-anchor href="/fetcher">Fetcher</wfc-anchor>
+    <wfc-anchor href="/multi-language">Multiple languages</wfc-anchor>
+    <wfc-anchor href="https://github.com/TheWebFormula/lithe" target="_blank">
+      <wfc-icon slot="leading-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20">
+          <title>github-circle-black-transparent</title>
+          <path d="M10 0C4.477 0 0 4.477 0 10c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.87 1.52 2.34 1.07 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33.85 0 1.71.11 2.5.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V19c0 .27.16.59.67.5C17.14 18.16 20 14.42 20 10A10 10 0 0 0 10 0z" fill="#444444" fill-rule="evenodd" />
+        </svg>
+      </wfc-icon>
+      GitHub
+    </wfc-anchor>
+
+    <wfc-anchor href="https://github.com/TheWebFormula/lithe/tree/main/docs" target="_blank">
+      <wfc-icon slot="leading-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20">
+          <title>github-circle-black-transparent</title>
+          <path d="M10 0C4.477 0 0 4.477 0 10c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.87 1.52 2.34 1.07 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33.85 0 1.71.11 2.5.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V19c0 .27.16.59.67.5C17.14 18.16 20 14.42 20 10A10 10 0 0 0 10 0z" fill="#444444" fill-rule="evenodd" />
+        </svg>
+      </wfc-icon>
+      Example app
+    </wfc-anchor>
+  </wfc-navigation-drawer>
+
+  <div id="page-content"><page-2036554646><h3 class="page-title">Getting started</h3>
+<div class="page-subheader wfc-font-title-medium">Build a basic web application</div>
+
+<section class="page-content-section">
+  <nav class="links-nav" aria-label="page-content">
+    <div class="wfc-font-headline-small page-secondary-header">Links</div>
+    <ul class="links">
+      <li><a href="#install">Install</a></li>
+      <li><a href="#routing">Routing</a></li>
+      <li><a href="#indexhtml">index.html</a></li>
+      <li><a href="#appjs">app.js</a></li>
+      <li><a href="#appcss">app.css</a></li>
+      <li><a href="#pagejs">Page</a></li>
+      <li><a href="#build">build</a></li>
+      <li><a href="#middleware">Server middleware</a></li>
+    </ul>
+  </nav>
+
+  <div class="page-content-container">
+    <wfc-card id="install">
+      <div slot="headline">Install</div>
+
+      <pre>
+        <code class="language-bash">
+  npm install @thewebformula/lithe
+        </code>
+      </pre>
+    </wfc-card>
+
+
+    <wfc-card id="routing">
+      <div slot="headline">Routing</div>
+      <div slot="supporting-text">@thewebformula/lithe uses directory based routing. All routes go in a 'routes' folder.</div>
+
+      <pre>
+        <code class="language-yaml">
+  app/
+  └── routes/
+      ├── index/
+      │   └── index.js     # /
+      ├── 404/
+      │   └── index.js     # /404 (or any url that is not found)
+      ├── one/
+      │   └── index.js     # one/
+      ├── two[id?]/
+      │   └── index.js     # two/:id?
+      ├── three/
+      │   └── [id]/
+      │       └── index.js # three/:id
+      └── four/
+          └── [...all]/
+              └── index.js # four/* (four/a/b/)
+        </code>
+      </pre>
+
+      <div style="margin: 18px">
+        <div class="wfc-font-body-large route-list">app/routes/index/index.js → <span>/</span></div>
+        <div class="wfc-font-body-large route-list">app/routes/one/index.js → <span>one</span></div>
+        <div class="wfc-font-body-large route-list">app/routes/two[id?]/index.js → <span>two/:id?</span></div>
+        <div class="wfc-font-body-large route-list">app/routes/three/[id]/index.js → <span>three/:id</span></div>
+        <div class="wfc-font-body-large route-list">app/routes/four/[...rest]/index.js →
+          <span>four/*</span>
+        </div>
+
+        <div class="wfc-font-title-medium" style="margin-top: 24px; margin-bottom: 8px;">Directory route details</div>
+        <div class="wfc-font-body-large route-list"><span>routes/index/index.js</span> Root page (/)</div>
+        <div class="wfc-font-body-large route-list"><span>routes/404/index.js</span> Not found page. Auto redirect on non
+          matching routes</div>
+        <div class="wfc-font-body-large route-list"><span>index.js</span> Route component file</div>
+        <div class="wfc-font-body-large route-list"><span>[id]</span> Directory that represents a url parameter</div>
+        <div class="wfc-font-body-large route-list"><span>[id?]</span> Directory that represents an options url parameter
+        </div>
+        <div class="wfc-font-body-large route-list"><span>name[id?]</span> Inline url parameter to avoid sub folder</div>
+        <div class="wfc-font-body-large route-list"><span>[...rest]</span> Directory that represents catch-all route</div>
+        <div class="wfc-font-body-large route-list"><span>[...rest?]</span> Directory that represents optional catch-all
+          route</div>
+      </div>
+    </wfc-card>
+
+
+    <wfc-card id="indexhtml">
+      <div slot="headline">index.html</div>
+    
+      <pre>
+        <code class="language-html">
+  &lt;!doctype html&gt;
+    &lt;html lang="en"&gt;
+    
+    &lt;head&gt;
+      &lt;meta charset="UTF-8"&gt;
+      &lt;meta http-equiv="Cache-Control" content="no-store" /&gt;
+      &lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;
+    
+      &lt;title&gt;&lt;/title&gt;
+      
+      &lt;!-- app.js and app.css will automatically be updated to match bundle outputs --&gt;
+      &lt;link href="app.css" rel="stylesheet"&gt;
+      &lt;script src="app.js" type="module"&gt;&lt;/script&gt;
+    &lt;/head&gt;
+    
+    &lt;body&gt;
+      &lt;!-- page template render into this element --&gt;
+      &lt;page-content&gt;&lt;/page-content&gt;
+
+      &lt;!-- Alternative using id attribute --&gt;
+      &lt;div id="page-content"&gt;&lt;/div&gt;
+    &lt;/body&gt;
+  &lt;/html&gt;
+        </code>
+      </pre>
+    </wfc-card>
+
+
+    <wfc-card id="appjs">
+      <div slot="headline">Main application file</div>
+      <div slot="supporting-text">app.js</div>
+      <div slot="supporting-text">Required: Automatically uses app.js as entry file for bundling</div>
+
+      <pre>
+        <code class="language-javascript">
+  /* Main app file
+  * you can import any code in here
+  */
+  
+  import someModule from './someModule.js';
+  
+  // routes are automatically loaded
+        </code>
+      </pre>
+
+      <div style="margin-top: 42px; margin-bottom: 12px;">
+        <div style="font-size: 16px;">Prevent navigation allows you to lock down the app for uses like authentication</div>
+      </div>
+      <pre>
+        <code class="language-javascript">
+  import { preventNavigation } from '@thewebformula/lithe';
+  
+  // if not authenticated redirect to login and prevent navigation
+  if (!document.cookie.includes('authenticated=true')) {
+    if (location.pathname !== '/login') location.href = '/login';
+    preventNavigation(true);
+  }
+        </code>
+      </pre>
+    </wfc-card>
+
+    <wfc-card id="appcss">
+      <div slot="headline">Main application Styles</div>
+      <div slot="supporting-text">app.css</div>
+      <div slot="supporting-text">Optional: Will bundle and minify into a single file</div>
+
+      <pre>
+        <code class="language-javascript">
+  @import url('./other.css');
+
+  body {
+    background-color: white;
+  }
+        </code>
+      </pre>
+    </wfc-card>
+
+
+    <wfc-card id="pagejs">
+      <div slot="headline">Page</div>
+      <div slot="supporting-text">page.js and page.html</div>
+
+      <pre>
+        <code class="language-javascript" wfc-no-binding="">
+  import { Component, Signal, html } from '@thewebformula/lithe';
+  import htmlTemplate from './page.html'; // automatically bundles
+  
+  export default class extends Component {
+    // html page title
+    static pageTitle = 'Page';
+
+    /**
+     * Pass in HTML string. Use for imported .HTML
+     * Supports template literals: &lt;div&gt;${this.var}&lt;/div&gt;
+     * @type {String}
+     */
+    static htmlTemplate = htmlTemplate;
+
+    someVar = new Signal('Some var');
+    clickIt_bound = this.clickIt.bind(this);
+    
+    
+    constructor() {
+      super();
+    }
+    
+    connectedCallback() {
+      console.log(this.urlParameters); // { id: 'value' }
+      console.log(this.searchParameters); // { id: 'value' }
+    }
+    
+    disconnectedCallback() { }
+    
+    // not called on initial render
+    beforeRender() { }
+    
+    afterEnder() {
+      this.querySelector('#event-listener-button').addEventListener('click', this.clickIt_bound);
+    }
+    
+    clickIt() {
+      console.log('clicked it!');
+    }
+    
+    changeValue() {
+      this.someVar.value = 'Value updated';
+    }
+    
+    /**
+    * Alternative method for html templates, instead of importing html file
+    */
+    template() {
+      return html`
+        &lt;div&gt;Page Content&lt;/div&gt;
+        &lt;div&gt;${this.someVar}&lt;/div&gt;
+
+        ${
+          // nested html
+          this.show ? html`&lt;div&gt;Showing&lt;/div&gt;` : ''
+        }
+
+        &lt;!--
+          You can comment out expressions
+          text
+        --&gt;
+        
+        &lt;!-- "page" will reference the current page class --&gt;
+        &lt;button onclick="page.clickIt()"&gt;Click Method&lt;/button&gt;
+        &lt;button id="event-listener-button"&gt;Event listener&lt;/button&gt;
+        &lt;button onclick="page.changeValue()"&gt;Change value&lt;/button&gt;
+      `;
+    }
+  }
+        </code>
+      </pre>
+    </wfc-card>
+
+    <wfc-card id="build">
+      <div slot="headline">Build app</div>
+      <div slot="supporting-text">build.js</div>
+      <div slot="supporting-text">No need for webpack or other bundlers. ESbuild is packed in and pre configured.
+      </div>
+      <a href="/build">Build config</a>
+
+      <pre>
+        <code class="language-javascript">
+  import build from '@thewebformula/lithe/build';
+  
+  /**
+  * runs dev server by default on port 3000 with livereload
+  * basedir defaults to 'app/'
+  */
+  build({ basedir: 'app/' });
+      </code>
+    </pre>
+
+  <div style="margin-top: 42px; margin-bottom: 12px;">
+    <div style="font-size: 24px;">Run commands</div>
+  </div>
+  <pre>
+      <code class="language-bash">
+  # Development run
+  node build.js
+
+  # Development run with watch to enable livereload
+  node --watch-path=./app build.js
+
+  # Production run. minifies and gzips
+  NODE_ENV=production node build.js
+  
+        </code>
+      </pre>
+    </wfc-card>
+
+    <wfc-card id="middleware">
+      <div slot="headline">Serve app</div>
+      <div slot="supporting-text">server.js</div>
+      <div slot="supporting-text">Handle routing and file serving with middleware. GZIP compression is automatically
+        handled.</div>
+      <a href="/serve">Serve config</a>
+
+      <div class="card-content" style="margin-top: 42px; margin-bottom: 12px;">
+        <div style="font-size: 24px;">Native server</div>
+      </div>
+      <pre>
+        <code class="language-javascript">
+  import { createServer } from 'node:http';
+  import { middlewareNode } from '@thewebformula/lithe/middleware';
+  
+  const middleware = middlewareNode({
+    basedir: 'docs/',
+    outdir: 'dist/',
+    copyFiles: [
+      { from: 'docs/favicon.ico', to: 'dist/' }
+    ]
+  });
+  
+  createServer(async (req, res) =&gt; {
+    const handled = await middleware(req, res);
+    if (handled === true) return;
+    
+    // Do other stuff
+  }).listen(3000);
+        </code>
+      </pre>
+
+      <div class="card-content" style="margin-top: 42px; margin-bottom: 12px;">
+        <div style="font-size: 24px;">Express server</div>
+      </div>
+      <pre>
+        <code class="language-javascript">
+  import express from 'express';
+  import { middlewareExpress } from '@thewebformula/lithe/middleware';
+  
+  const app = express();
+  app.use(middlewareExpress({
+    basedir: 'docs/',
+    outdir: 'dist/',
+    copyFiles: [
+      { from: 'docs/favicon.ico', to: 'dist/' }
+    ]
+  }));
+  app.use(express.static('./docs'));
+  app.listen(3000);
+        </code>
+      </pre>
+
+      <div class="card-content" style="margin-top: 42px; margin-bottom: 12px;">
+        <div style="font-size: 24px;">Livereload</div>
+      </div>
+      <pre>
+        <code class="language-bash">
+  # Simply use node --watch to enable livereload
+  node --watch-path=./src --watch-path=./docs server.js
+        </code>
+      </pre>
+    </wfc-card>
+  </div>
+</section>
+</page-2036554646></div>
+
+  <wfc-navigation-bar class="auto-hide">
+    <wfc-navigation-button></wfc-navigation-button>
+  </wfc-navigation-bar>
+</body>
+
+</html>
