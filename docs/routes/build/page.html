@@ -31,9 +31,6 @@
   * Full config options
   */
   build({
-    // Enable spa routing : Default true
-    spa: true,
-
     // folder that contains 'app.js' : Default 'app.js'
     basedir: 'app/',
 
@@ -83,6 +80,7 @@
     devServerLiveReload: true,
     
     devServerPort: 3000,
+    
 
     /**
     * devWarnings
@@ -91,6 +89,13 @@
     * otherwise it defaults to 'false'
     */
     devWarnings: false,
+
+    /**
+    * securityLevel
+    * Set security level warnings for html
+    * Default: 1
+    */
+    securityLevel: 1,
 
     // supports regex's with wildcards (*, **)
     copyFiles: [

@@ -25,6 +25,7 @@ const isDev = process.env.NODE_ENV !== 'production';
  * @param {Number} config.devServerPort Dev server port. Default: 3000
  * @param {Boolean} config.devServerLivereload Enable live reload. Default: true
  * @param {Boolean} config.devWarnings Enable console warning (only html sanitization currently). Default: false
+ * @param {Number} config.securityLevel Change html template security level for warnings. Values: 0,1,2 - Default: 1
  * @param {Object[]} config.copyFiles Copy file config
  * @param {String} config.copyFiles[].from Location of file
  * @param {String} config.copyFiles[].to Destination for file
@@ -43,6 +44,7 @@ export default async function build(config = {
   devServerPort: 3000,
   devServerLivereload: true,
   devWarnings: false,
+  securityLevel: 1,
   copyFiles: [{
     from: '',
     to: '',
@@ -63,6 +65,11 @@ export default async function build(config = {
     if (config.gzip === undefined) config.gzip = true;
     if (config.minify === undefined) config.minify = true;
     if (config.gzip === undefined) config.gzip = true;
+  }
+
+  if (config.securityLevel && ![0, 1, 2].includes(config.securityLevel)) {
+    console.warn('Invalid security level value. You cna use [0,1,2]. Defaulting to 1');
+    config.securityLevel = 1;
   }
 
   if (config.onStart) await config.onStart();
@@ -286,7 +293,7 @@ function injectCode(config) {
         if (contents.match(routesImportRegex) === null) {
           // TODO
           // contents = `import { routes, enableSPA } from \'@thewebformula/lithe\';${config.spa ? '\nenableSPA()' : ''}\n${config.routes.routesCode}\n${contents}`;
-          contents = `import { routes, enableSPA } from \'@thewebformula/lithe\';\nenableSPA();\n${config.routes.routesCode}\n${contents}`;
+          contents = `import { setSecurityLevel, routes, enableSPA } from \'@thewebformula/lithe\';\nenableSPA();\nsetSecurityLevel(${config.securityLevel === undefined ? 1 : config.securityLevel});\n${config.routes.routesCode}\n${contents}`;
         }
         return { contents };
       });
