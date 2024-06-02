@@ -84,8 +84,10 @@ export function preventNavigation(enabled = true) {
 export function enableSPA() {
   document.addEventListener('click', event => {
     if (!event.target.matches('[href]')) return;
-    // allow external links
-    if (event.target.getAttribute('href').includes('://')) return;
+    const href = event.target.getAttribute('href');
+    if (href.startsWith('mailto:') || href.startsWith('tel:') || href.startsWith('sms:')) return;
+    if (href.includes('://')) return;
+    
     event.preventDefault();
     route(new URL(event.target.href));
   }, false);

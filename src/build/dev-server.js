@@ -63,13 +63,14 @@ async function handleFiles(url, app) {
     'Content-Type': getMimeType(url),
     'Cache-Control': 'max-age=604800'
   };
+
   let filePath;
   if (match) {
     filePath = path.resolve('.', match.filePath);
     const gzip = match.copiedFile ? match.gzip : app.gzip;
     if (gzip) headers['Content-encoding'] = 'gzip';
   } else {
-    filePath = path.join(app.outdir, url);
+    filePath = path.join(app.outdir, url.split('?')[0]);
     if (!(await access(filePath).then(() => true).catch(() => false))) return false;
   }
 
@@ -117,5 +118,9 @@ function getMimeType(url) {
       return 'font/otf';
     case 'map':
       return 'application/json';
+    case 'xml':
+      return 'text/xml';
+    default:
+      return '';
   }
 }

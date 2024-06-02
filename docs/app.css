@@ -1,9 +1,9 @@
 @import url(./colorTokens.css);
 @import url(./dracula.css);
 
-:root {
+/* :root {
   font-family: system-ui, Arial;
-}
+} */
 
 html {
   overflow-x: hidden;
@@ -182,7 +182,7 @@ wfc-card + wfc-card {
   flex-direction: row-reverse;
   justify-content: center;
 }
-body.wfc-window-compact .page-content-section {
+body.window-compact .page-content-section {
   flex-direction: column;
 }
 
