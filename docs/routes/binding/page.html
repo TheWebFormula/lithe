@@ -1,46 +1,50 @@
-<h3 class="page-title">Signals and binding</h3>
-<div class="page-subheader wfc-font-title-medium">Bind variables to templates using signals</div>
+<article>
+  <header>
+    <h1>Signals and binding</h1>
+    <div class="page-subheader mc-font-title-medium">Bind variables to templates using signals</div>
+  </header>
 
+  <div class="article-main">
+    <nav class="links-nav">
+      <h2>Links</h2>
+      <ul class="links">
+        <li><a href="#signal">Signal</a></li>
+        <li><a href="#compute">Compute</a></li>
+        <li><a href="#effect">Effect</a></li>
+      </ul>
+    </nav>
 
-<section class="page-content-section">
-  <nav class="links-nav" aria-label="page-content">
-    <div class="wfc-font-headline-small page-secondary-header">Links</div>
-    <ul class="links">
-      <li><a href="#signal">Signal</a></li>
-      <li><a href="#compute">Compute</a></li>
-      <li><a href="#effect">Effect</a></li>
-    </ul>
-  </nav>
+    <div class="article-content">
 
-  <div class="page-content-container">
-    <wfc-card id="signal">
-      <div slot="headline">Signal</div>
-      <div slot="supporting-text">A signal is a wrapper around a value that can notify interested consumers when that value changes</div>
-
-      <wfc-textfield a class="wfc-raise-label" style="margin-top: 24px;" label="Type something" value="${page.basicBind}"
-        oninput="page.basicBind.value = this.value">
-      </wfc-textfield>
-      
-      <div a style="margin-bottom: 12px; margin-left: 16px;">Value: ${page.basicBind}</div>
-      
-      <wfc-button onclick="page.updateValue()">Set value to Updated</wfc-button>
-      
-      <pre>
-        <code class="language-html">
+      <section id="signal" aria-label="Signal example">
+        <mc-card>
+          <h2 slot="headline">Signal</h2>
+          <div slot="supporting-text">A signal is a wrapper around a value that can notify interested consumers when that value changes</div>
+        
+          <mc-textfield a class="mc-raise-label" style="margin-top: 24px;" label="Type something" value="${page.basicBind}"
+            oninput="page.basicBind.value = this.value">
+          </mc-textfield>
+        
+          <div a style="margin-bottom: 12px; margin-left: 16px;">Value: ${page.basicBind}</div>
+        
+          <mc-button onclick="page.updateValue()">Set value to Updated</mc-button>
+        
+          <pre>
+            <code class="language-html">
   ${`<!-- Signals automatically update the HTML -->
 
-  <wfc-textfield
+  <mc-textfield
     label="Type something"
     value="\${page.basicBind}"
     oninput="page.basicBind.value = this.value"
-  ></wfc-textfield>
+  ></mc-textfield>
 
   <div>Value: \${page.basicBind}</div>
-  <wfc-button onclick="page.updateValue()">Set value to Updated</wfc-button>`}
-        </code>
-      </pre>
-      <pre>
-        <code class="language-javascript">
+  <mc-button onclick="page.updateValue()">Set value to Updated</mc-button>`}
+            </code>
+          </pre>
+          <pre>
+            <code class="language-javascript">
   ${`import { Component, Signal } from '@thewebformula/lithe';
   import htmlTemplate from './page.html';
 
@@ -59,11 +63,11 @@
       this.basicBind.value = 'Updated';
     }
   }`}
-        </code>
-      </pre>
-
-      <pre>
-        <code class="language-javascript">
+            </code>
+          </pre>
+        
+          <pre>
+            <code class="language-javascript">
   ${`
   // quick example of using Signal, Compute, and effect
     
@@ -95,37 +99,39 @@
       dispose();
     }
   }`}
-        </code>
-      </pre>
-    </wfc-card>
+            </code>
+          </pre>
+        </mc-card>
+      </section>
 
 
-    <wfc-card id="compute">
-      <div slot="headline">Compute</div>
-      <div slot="supporting-text">Compute provides a way to interact with multiple signals to provide a single value</div>
-    
-      <wfc-textfield b class="wfc-raise-label" type="number" style="margin-top: 24px;" label="Type something" value="${page.number}"
-        oninput="page.number.value = this.value">
-      </wfc-textfield>
-    
-      <div b style="margin-bottom: 12px; margin-left: 16px;">Value: ${page.numberTimesTwo}</div>
-
-      <pre>
-        <code class="language-html">
+      <section id="compute" aria-label="Compute example">
+        <mc-card>
+          <h2 slot="headline">Compute</h2>
+          <div slot="supporting-text">Compute provides a way to interact with multiple signals to provide a single value</div>
+        
+          <mc-textfield b class="mc-raise-label" type="number" style="margin-top: 24px;" label="Type something" value="${page.number}"
+            oninput="page.number.value = this.value">
+          </mc-textfield>
+        
+          <div b style="margin-bottom: 12px; margin-left: 16px;">Value: ${page.numberTimesTwo}</div>
+        
+          <pre>
+            <code class="language-html">
   ${`<!-- Computes automatically update the HTML -->
   
-  <wfc-textfield
+  <mc-textfield
     type="number"
     label="Type something"
     value="\${page.number}"
     oninput="page.number.value = this.value">
-  </wfc-textfield>
+  </mc-textfield>
 
   <div>Value: \${page.numberTimesTwo}</div>`}
-        </code>
-      </pre>
-      <pre>
-        <code class="language-javascript">
+            </code>
+          </pre>
+          <pre>
+            <code class="language-javascript">
   ${`import { Component, Signal, Compute } from '@thewebformula/lithe';
   import html from './page.html';
 
@@ -143,17 +149,20 @@
       super();
     }
   }`}
-        </code>
-      </pre>
-    </wfc-card>
+            </code>
+          </pre>
+        </mc-card>
+      </section>
 
 
-    <wfc-card id="effect">
-      <div slot="headline">Effect</div>
-      <div slot="supporting-text">Effects allows you to run code based on any changes for signals or computes it contains. The difference between effect and compute is that effects do not return values.</div>
-    
-      <pre>
-        <code class="language-javascript">
+      <section id="effect" aria-label="Effect example">
+        <mc-card>
+          <h2 slot="headline">Effect</h2>
+          <div slot="supporting-text">Effects allows you to run code based on any changes for signals or computes it contains. The difference between effect and compute
+            is that effects do not return values.</div>
+        
+          <pre>
+            <code class="language-javascript">
   ${`import { Component, Signal, effect } from '@thewebformula/lithe';
   import html from './page.html';
 
@@ -179,8 +188,10 @@
       dispose();
     }
   }`}
-        </code>
-      </pre>
-    </wfc-card>
+            </code>
+          </pre>
+        </mc-card>
+      </section>
+    </div>
   </div>
-</section>
+</article>

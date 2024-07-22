@@ -1,39 +1,46 @@
-<h3 class="page-title">Getting started</h3>
-<div class="page-subheader wfc-font-title-medium">Build a basic web application</div>
+<article>
+  <header>
+    <h1>Getting started</h1>
+    <div class="page-subheader mc-font-title-medium">Material theme, colors, motion, font</div>
+  </header>
 
-<section class="page-content-section">
-  <nav class="links-nav" aria-label="page-content">
-    <div class="wfc-font-headline-small page-secondary-header">Links</div>
-    <ul class="links">
-      <li><a href="#install">Install</a></li>
-      <li><a href="#routing">Routing</a></li>
-      <li><a href="#indexhtml">index.html</a></li>
-      <li><a href="#appjs">app.js</a></li>
-      <li><a href="#appcss">app.css</a></li>
-      <li><a href="#pagejs">Page</a></li>
-      <li><a href="#build">build</a></li>
-      <li><a href="#middleware">Server middleware</a></li>
-    </ul>
-  </nav>
+  <div class="article-main">
+    <nav class="links-nav">
+      <h2>Links</h2>
+      <ul class="links">
+        <li><a href="#install">Install</a></li>
+        <li><a href="#routing">Routing</a></li>
+        <li><a href="#indexhtml">index.html</a></li>
+        <li><a href="#appjs">app.js</a></li>
+        <li><a href="#appcss">app.css</a></li>
+        <li><a href="#pagejs">Page</a></li>
+        <li><a href="#build">build</a></li>
+        <!-- <li><a href="#middleware">Server middleware</a></li> -->
+      </ul>
+    </nav>
 
-  <div class="page-content-container">
-    <wfc-card id="install">
-      <div slot="headline">Install</div>
+    <div class="article-content">
 
-      <pre>
-        <code class="language-bash">
+      <section id="install" aria-label="Installation">
+        <mc-card>
+          <h2 slot="headline">Install</h2>
+        
+          <pre>
+            <code class="language-bash">
   ${`npm install @thewebformula/lithe`}
-        </code>
-      </pre>
-    </wfc-card>
+            </code>
+          </pre>
+        </mc-card>
+      </section>
 
 
-    <wfc-card id="routing">
-      <div slot="headline">Routing</div>
-      <div slot="supporting-text">@thewebformula/lithe uses directory based routing. All routes go in a 'routes' folder.</div>
-
-      <pre>
-        <code class="language-yaml">
+      <section id="routing" aria-label="Routing">
+        <mc-card >
+          <h2 slot="headline">Routing</h2>
+          <div slot="supporting-text">@thewebformula/lithe uses directory based routing. All routes go in a 'routes' folder.</div>
+        
+          <pre style="margin-bottom: 0;">
+            <code class="language-yaml" style="border-radius: 0;">
   app/
   └── routes/
       ├── index/
@@ -50,39 +57,41 @@
       └── four/
           └── [...all]/
               └── index.js # four/* (four/a/b/)
-        </code>
-      </pre>
+            </code>
+          </pre>
+        
+          <div style="margin: 18px">
+            <div class="mc-font-body-large route-list">app/routes/index/index.js → <span>/</span></div>
+            <div class="mc-font-body-large route-list">app/routes/one/index.js → <span>one</span></div>
+            <div class="mc-font-body-large route-list">app/routes/two[id?]/index.js → <span>two/:id?</span></div>
+            <div class="mc-font-body-large route-list">app/routes/three/[id]/index.js → <span>three/:id</span></div>
+            <div class="mc-font-body-large route-list">app/routes/four/[...rest]/index.js →
+              <span>four/*</span>
+            </div>
+        
+            <div class="mc-font-title-medium" style="margin-top: 24px; margin-bottom: 8px;">Directory route details</div>
+            <div class="mc-font-body-large route-list"><span>routes/index/index.js</span> Root page (/)</div>
+            <div class="mc-font-body-large route-list"><span>routes/404/index.js</span> Not found page. Auto redirect on non
+              matching routes</div>
+            <div class="mc-font-body-large route-list"><span>index.js</span> Route component file</div>
+            <div class="mc-font-body-large route-list"><span>[id]</span> Directory that represents a url parameter</div>
+            <div class="mc-font-body-large route-list"><span>[id?]</span> Directory that represents an options url parameter
+            </div>
+            <div class="mc-font-body-large route-list"><span>name[id?]</span> Inline url parameter to avoid sub folder</div>
+            <div class="mc-font-body-large route-list"><span>[...rest]</span> Directory that represents catch-all route</div>
+            <div class="mc-font-body-large route-list"><span>[...rest?]</span> Directory that represents optional catch-all
+              route</div>
+          </div>
+        </mc-card>
+      </section>
 
-      <div style="margin: 18px">
-        <div class="wfc-font-body-large route-list">app/routes/index/index.js → <span>/</span></div>
-        <div class="wfc-font-body-large route-list">app/routes/one/index.js → <span>one</span></div>
-        <div class="wfc-font-body-large route-list">app/routes/two[id?]/index.js → <span>two/:id?</span></div>
-        <div class="wfc-font-body-large route-list">app/routes/three/[id]/index.js → <span>three/:id</span></div>
-        <div class="wfc-font-body-large route-list">app/routes/four/[...rest]/index.js →
-          <span>four/*</span>
-        </div>
 
-        <div class="wfc-font-title-medium" style="margin-top: 24px; margin-bottom: 8px;">Directory route details</div>
-        <div class="wfc-font-body-large route-list"><span>routes/index/index.js</span> Root page (/)</div>
-        <div class="wfc-font-body-large route-list"><span>routes/404/index.js</span> Not found page. Auto redirect on non
-          matching routes</div>
-        <div class="wfc-font-body-large route-list"><span>index.js</span> Route component file</div>
-        <div class="wfc-font-body-large route-list"><span>[id]</span> Directory that represents a url parameter</div>
-        <div class="wfc-font-body-large route-list"><span>[id?]</span> Directory that represents an options url parameter
-        </div>
-        <div class="wfc-font-body-large route-list"><span>name[id?]</span> Inline url parameter to avoid sub folder</div>
-        <div class="wfc-font-body-large route-list"><span>[...rest]</span> Directory that represents catch-all route</div>
-        <div class="wfc-font-body-large route-list"><span>[...rest?]</span> Directory that represents optional catch-all
-          route</div>
-      </div>
-    </wfc-card>
-
-
-    <wfc-card id="indexhtml">
-      <div slot="headline">index.html</div>
-    
-      <pre>
-        <code class="language-html">
+      <section id="indexhtml" aria-label="index.html example">
+        <mc-card>
+          <h2 slot="headline">index.html</h2>
+        
+          <pre>
+            <code class="language-html">
   ${`<!doctype html>
     <html lang="en">
     
@@ -106,18 +115,20 @@
       <div id="page-content"></div>
     </body>
   </html>`}
-        </code>
-      </pre>
-    </wfc-card>
+            </code>
+          </pre>
+        </mc-card>
+      </section>
 
 
-    <wfc-card id="appjs">
-      <div slot="headline">Main application file</div>
-      <div slot="supporting-text">app.js</div>
-      <div slot="supporting-text">Required: Automatically uses app.js as entry file for bundling</div>
-
-      <pre>
-        <code class="language-javascript">
+      <section id="appjs" aria-label="app.js example">
+        <mc-card>
+          <h2 slot="headline">Main application file</h2>
+          <div slot="supporting-text">app.js</div>
+          <div slot="supporting-text">Required: Automatically uses app.js as entry file for bundling</div>
+        
+          <pre>
+            <code class="language-javascript">
   ${`/* Main app file
   * you can import any code in here
   */
@@ -128,10 +139,10 @@
         </code>
       </pre>
 
-      <div style="margin-top: 42px; margin-bottom: 12px;">
-        <div style="font-size: 16px;">Prevent navigation allows you to lock down the app for uses like authentication</div>
-      </div>
-      <pre>
+  <div style="margin-top: 42px; margin-bottom: 12px;">
+    <div style="font-size: 16px;">Prevent navigation allows you to lock down the app for uses like authentication</div>
+  </div>
+  <pre>
         <code class="language-javascript">
   ${`import { preventNavigation } from '@thewebformula/lithe';
   
@@ -140,33 +151,38 @@
     if (location.pathname !== '/login') location.href = '/login';
     preventNavigation(true);
   }`}
-        </code>
-      </pre>
-    </wfc-card>
+            </code>
+          </pre>
+        </mc-card>
+      </section>
 
-    <wfc-card id="appcss">
-      <div slot="headline">Main application Styles</div>
-      <div slot="supporting-text">app.css</div>
-      <div slot="supporting-text">Optional: Will bundle and minify into a single file</div>
 
-      <pre>
-        <code class="language-javascript">
+      <section id="appcss" aria-label="app.css example">
+        <mc-card>
+          <h2 slot="headline">Main application Styles</h2>
+          <div slot="supporting-text">app.css</div>
+          <div slot="supporting-text">Optional: Will bundle and minify into a single file</div>
+        
+          <pre>
+            <code class="language-javascript">
   ${`@import url('./other.css');
 
   body {
     background-color: white;
   }`}
-        </code>
-      </pre>
-    </wfc-card>
+            </code>
+          </pre>
+        </mc-card>
+      </section>
 
 
-    <wfc-card id="pagejs">
-      <div slot="headline">Page</div>
-      <div slot="supporting-text">page.js and page.html</div>
-
-      <pre>
-        <code class="language-javascript" wfc-no-binding>
+      <section id="pagejs" aria-label="page.js example">
+        <mc-card>
+          <h2 slot="headline">Page</h2>
+          <div slot="supporting-text">page.js and page.html</div>
+        
+          <pre>
+            <code class="language-javascript">
   ${`import { Component, Signal, html } from '@thewebformula/lithe';
   import htmlTemplate from './page.html'; // automatically bundles
   
@@ -175,10 +191,10 @@
     static pageTitle = 'Page';
 
     /**
-     * Pass in HTML string. Use for imported .HTML
-     * Supports template literals: <div>\${this.var}</div>
-     * @type {String}
-     */
+      * Pass in HTML string. Use for imported .HTML
+      * Supports template literals: <div>\${this.var}</div>
+      * @type {String}
+      */
     static htmlTemplate = htmlTemplate;
 
     someVar = new Signal('Some var');
@@ -200,7 +216,8 @@
     beforeRender() { }
     
     afterEnder() {
-      this.querySelector('#event-listener-button').addEventListener('click', this.clickIt_bound);
+      this.querySelector('#event-listener-button')
+        .addEventListener('click', this.clickIt_bound);
     }
     
     clickIt() {
@@ -236,19 +253,22 @@
       \`;
     }
   }`}
-        </code>
-      </pre>
-    </wfc-card>
+            </code>
+          </pre>
+        </mc-card>
+      </section>
+      
 
-    <wfc-card id="build">
-      <div slot="headline">Build app</div>
-      <div slot="supporting-text">build.js</div>
-      <div slot="supporting-text">No need for webpack or other bundlers. ESbuild is packed in and pre configured.
-      </div>
-      <a href="/build">Build config</a>
-
-      <pre>
-        <code class="language-javascript">
+      <section id="build" aria-label="Build app">
+        <mc-card>
+          <h2 slot="headline">Build app</h2>
+          <div slot="supporting-text">build.js</div>
+          <div slot="supporting-text">No need for webpack or other bundlers. ESbuild is packed in and pre configured.
+          </div>
+          <a href="/build">Build config</a>
+        
+          <pre>
+            <code class="language-javascript">
   ${`import build from '@thewebformula/lithe/build';
   
   /**
@@ -273,22 +293,25 @@
   # Production run. minifies and gzips
   NODE_ENV=production node build.js
   `}
-        </code>
-      </pre>
-    </wfc-card>
+            </code>
+          </pre>
+        </mc-card>
+      </section>
 
-    <wfc-card id="middleware">
-      <div slot="headline">Serve app</div>
-      <div slot="supporting-text">server.js</div>
-      <div slot="supporting-text">Handle routing and file serving with middleware. GZIP compression is automatically
-        handled.</div>
-      <a href="/serve">Serve config</a>
 
-      <div class="card-content" style="margin-top: 42px; margin-bottom: 12px;">
-        <div style="font-size: 24px;">Native server</div>
-      </div>
-      <pre>
-        <code class="language-javascript">
+      <!-- <section id="middleware" aria-label="Middleware example">
+        <mc-card>
+          <h2 slot="headline">Serve app</h2>
+          <div slot="supporting-text">server.js</div>
+          <div slot="supporting-text">Handle routing and file serving with middleware. GZIP compression is automatically
+            handled.</div>
+          <a href="/serve">Serve config</a>
+        
+          <div class="card-content" style="margin-top: 42px; margin-bottom: 12px;">
+            <div style="font-size: 24px;">Native server</div>
+          </div>
+          <pre>
+            <code class="language-javascript">
   ${`import { createServer } from 'node:http';
   import { middlewareNode } from '@thewebformula/lithe/middleware';
   
@@ -306,14 +329,14 @@
     
     // Do other stuff
   }).listen(3000);`}
-        </code>
-      </pre>
-
-      <div class="card-content" style="margin-top: 42px; margin-bottom: 12px;">
-        <div style="font-size: 24px;">Express server</div>
-      </div>
-      <pre>
-        <code class="language-javascript">
+            </code>
+          </pre>
+        
+          <div class="card-content" style="margin-top: 42px; margin-bottom: 12px;">
+            <div style="font-size: 24px;">Express server</div>
+          </div>
+          <pre>
+            <code class="language-javascript">
   ${`import express from 'express';
   import { middlewareExpress } from '@thewebformula/lithe/middleware';
   
@@ -327,18 +350,20 @@
   }));
   app.use(express.static('./docs'));
   app.listen(3000);`}
-        </code>
-      </pre>
-
-      <div class="card-content" style="margin-top: 42px; margin-bottom: 12px;">
-        <div style="font-size: 24px;">Livereload</div>
-      </div>
-      <pre>
-        <code class="language-bash">
+            </code>
+          </pre>
+        
+          <div class="card-content" style="margin-top: 42px; margin-bottom: 12px;">
+            <div style="font-size: 24px;">Livereload</div>
+          </div>
+          <pre>
+            <code class="language-bash">
   ${`# Simply use node --watch to enable livereload
   node --watch-path=./src --watch-path=./docs server.js`}
-        </code>
-      </pre>
-    </wfc-card>
+            </code>
+          </pre>
+        </mc-card>
+      </section> -->
+    </div>
   </div>
-</section>
+</article>

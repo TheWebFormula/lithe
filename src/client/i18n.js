@@ -17,7 +17,7 @@ export function i18n(key, ...variables) {
   const compute = new Compute(() => {
     const message = currentTranslations.messages[key];
     if (!message) {
-      if (window.wfcDev) console.warn(`Cannot localize. Missing key: ${key}`);
+      if (window.liDev) console.warn(`Cannot localize. Missing key: ${key}`);
       return key;
     }
 
@@ -44,7 +44,7 @@ i18n.setLocale = locale => {
   locale = Intl.getCanonicalLocales(locale)[0].split('-')[0];
   const changed = locale !== currentLocal;
   if (changed) {
-    if (useCache) localStorage.setItem('wfc-locale', locale);
+    if (useCache) localStorage.setItem('li-locale', locale);
     currentLocal = locale;
     currentTranslations = translations[currentLocal];
     for (const signal of signals) {
@@ -55,13 +55,13 @@ i18n.setLocale = locale => {
 
 i18n.cache = () => {
   useCache = true;
-  const storedMessages = localStorage.getItem('wfc-locale-messages');
+  const storedMessages = localStorage.getItem('li-locale-messages');
   if (storedMessages) {
     for (const [_local, config] of Object.entries(JSON.parse(storedMessages))) {
       addTranslation(_local, config);
     }
   }
-  const locale = localStorage.getItem('wfc-locale');
+  const locale = localStorage.getItem('li-locale');
   if (locale) setLocale(locale);
 }
 
@@ -69,7 +69,7 @@ i18n.format = (formatterName, value) => {
   const compute = new Compute(() => {
     const formatter = translations[currentLocal].formatters[formatterName];
     if (!formatter) {
-      if (window.wfcDev) console.warn(`Cannot find formatter: ${formatterName}`);
+      if (window.liDev) console.warn(`Cannot find formatter: ${formatterName}`);
       return '';
     }
 
@@ -96,9 +96,9 @@ i18n.addTranslation = (locale, data) => {
 
   if (locale === currentLocal) currentTranslations = translations[locale];
   if (useCache) {
-    const current = JSON.parse(localStorage.getItem('wfc-locale-messages') || {});
+    const current = JSON.parse(localStorage.getItem('li-locale-messages') || {});
     current[locale] = translations[locale];
-    localStorage.setItem('wfc-locale-messages', JSON.stringify(current));
+    localStorage.setItem('li-locale-messages', JSON.stringify(current));
   }
 }
 
@@ -162,5 +162,5 @@ function getRelativeTimeFormatter(locale, options) {
 
 function languageChange() {
   setLocale(navigator.language);
-  // window.dispatchEvent(new Event('wfclanguagechange'));
+  // window.dispatchEvent(new Event('lilanguagechange'));
 }

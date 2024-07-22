@@ -1,23 +1,29 @@
-<h3 class="page-title">Build / Serve</h3>
-<div class="page-subheader wfc-font-title-medium">Serve or build app with bundles optimized based on routes</div>
+<article>
+  <header>
+    <h1>Build</h1>
+    <div class="page-subheader mc-font-title-medium">Build app with bundles optimized based on routes</div>
+  </header>
 
-<section class="page-content-section">
-  <div class="page-content-container">
-    <wfc-card id="build">
-      <div slot="headline">Build app</div>
-      <div slot="supporting-text">No need for webpack or other bundlers. ESbuild is packed in and pre configured. Builds are
-        also optimized based on route entry points.</div>
-      <ul slot="supporting-text">
-        <li>Minification</li>
-        <li>Sourcemaps</li>
-        <li>Dev server</li>
-        <li>live relaoding</li>
-        <li>Gzip content</li>
-        <li>File copying</li>
-      </ul>
-      
-      <pre>
-        <code class="language-javascript">
+  <div class="article-main">
+
+    <div class="article-content" style="margin-right: 16px;">
+
+      <section id="build" aria-label="Build">
+        <mc-card>
+          <h2 slot="headline">Build app</h2>
+          <div slot="supporting-text">No need for webpack or other bundlers. ESbuild is packed in and pre configured. Builds are
+            also optimized based on route entry points.</div>
+          <ul slot="supporting-text">
+            <li>Minification</li>
+            <li>Sourcemaps</li>
+            <li>Dev server</li>
+            <li>live relaoding</li>
+            <li>Gzip content</li>
+            <li>File copying</li>
+          </ul>
+        
+          <pre>
+            <code class="language-javascript">
   ${`import build from '@thewebformula/lithe/build';
 
   /**
@@ -123,14 +129,14 @@
     // callback after bundle
     onEnd: () => {}
   });`}
-        </code>
-      </pre>
-
-      <div class="card-content" style="margin-top: 42px; margin-bottom: 12px;">
-        <div style="font-size: 24px;">Native server</div>
-      </div>
-      <pre>
-        <code class="language-javascript">
+            </code>
+          </pre>
+        
+          <div class="card-content" style="margin-top: 42px; margin-bottom: 12px;">
+            <div style="font-size: 24px;">Native server</div>
+          </div>
+          <pre>
+            <code class="language-javascript">
   ${`import { createServer } from 'node:http';
   import { middlewareNode } from '@thewebformula/lithe/middleware';
   
@@ -149,14 +155,14 @@
     
     // Do other stuff
   }).listen(3000);`}
-        </code>
-      </pre>
-      
-      <div class="card-content" style="margin-top: 42px; margin-bottom: 12px;">
-        <div style="font-size: 24px;">Express server</div>
-      </div>
-      <pre>
-        <code class="language-javascript">
+            </code>
+          </pre>
+        
+          <div class="card-content" style="margin-top: 42px; margin-bottom: 12px;">
+            <div style="font-size: 24px;">Express server</div>
+          </div>
+          <pre>
+            <code class="language-javascript">
   ${`import express from 'express';
   import { middlewareExpress } from '@thewebformula/lithe/middleware';
   
@@ -171,15 +177,15 @@
   }));
   app.use(express.static('./docs'));
   app.listen(3000);`}
-        </code>
-      </pre>
-
-
-      <div class="card-content" style="margin-top: 42px; margin-bottom: 12px;">
-        <div style="font-size: 24px;">Run commands</div>
-      </div>
-      <pre>
-        <code class="language-bash">
+            </code>
+          </pre>
+        
+        
+          <div class="card-content" style="margin-top: 42px; margin-bottom: 12px;">
+            <div style="font-size: 24px;">Run commands</div>
+          </div>
+          <pre>
+            <code class="language-bash">
   ${`# Development run
   node build.js
   
@@ -188,8 +194,10 @@
   
   # Production run. minifies, gzips, and writes files
   NODE_ENV=production node build.js`}
-        </code>
-      </pre>
-    </wfc-card>
+            </code>
+          </pre>
+        </mc-card>
+      </section>
+    </div>
   </div>
-</section>
+</article>

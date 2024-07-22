@@ -1,10 +1,10 @@
-import '@webformula/material/components/navigation-drawer';
-import '@webformula/material/components/navigation-bar';
-import '@webformula/material/components/anchor';
-import '@webformula/material/components/card';
-import '@webformula/material/components/button';
-import '@webformula/material/components/switch';
-import '@webformula/material/components/textfield';
+import '@thewebformula/materially/components/navigation-drawer';
+import '@thewebformula/materially/components/navigation-bar';
+import '@thewebformula/materially/components/anchor';
+import '@thewebformula/materially/components/card';
+import '@thewebformula/materially/components/button';
+import '@thewebformula/materially/components/switch';
+import '@thewebformula/materially/components/textfield';
 
 if (typeof hljs === 'undefined') {
   const hljsTag = document.querySelector('#hljsscript');
@@ -27,12 +27,11 @@ window.addEventListener('load', () => {
 });
 
 window.addEventListener('locationchange', () => {
-  // setTimeout(() => {
-    hljs.highlightAll();
-    if (!location.hash) return;
-    handleHashAnchor(location.hash, false);
-  // });
+  hljs.highlightAll();
+  if (!location.hash) return;
+  handleHashAnchor(location.hash, false);
 });
+
 
 window.addEventListener('hashchange', () => {
   if (!location.hash) return;
@@ -45,7 +44,7 @@ function handleHashAnchor(hash, animate = true) {
     const element = document.querySelector(hash);
     if (element) {
       if (animate) document.documentElement.scroll({ top: element.offsetTop, behavior: 'smooth' });
-      else document.documentElement.scroll({ top: element.offsetTop });
+      else document.documentElement.scroll({ top: element.offsetTop, behavior: 'instant' });
     }
-  } catch { console.log('error'); }
+  } catch (e) { console.log('error', e); }
 }

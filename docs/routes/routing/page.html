@@ -1,24 +1,27 @@
-<h3 class="page-title">Getting started</h3>
-<div class="page-subheader wfc-font-title-medium">Build a basic web application</div>
+<article>
+  <header>
+    <h1>Getting started</h1>
+    <div class="page-subheader mc-font-title-medium">Build a basic web application</div>
+  </header>
 
+  <div class="article-main">
+    <nav class="links-nav">
+      <h2>Links</h2>
+      <ul class="links">
+        <li><a href="#routing">Directory routing</a></li>
+        <li><a href="#pageexample">Page.js</a></li>
+      </ul>
+    </nav>
 
+    <div class="article-content">
 
-<section class="page-content-section">
-  <nav class="links-nav" aria-label="page-content">
-    <div class="wfc-font-headline-small page-secondary-header">Links</div>
-    <ul class="links">
-      <li><a href="#routing">Directory routing</a></li>
-      <li><a href="#pageexample">Page.js</a></li>
-    </ul>
-  </nav>
-
-  <div class="page-content-container">
-    <wfc-card id="routing">
-      <div slot="headline">Routing</div>
-      <div slot="supporting-text">@thewebformula/lithe uses directory based routing. All routes go in a 'routes' folder.</div>
-    
-      <pre>
-        <code class="language-yaml">
+      <section id="routing" aria-label="Routing example">
+        <mc-card>
+          <h2 slot="headline">Routing</h2>
+          <div slot="supporting-text">@thewebformula/lithe uses directory based routing. All routes go in a 'routes' folder.</div>
+        
+          <pre style="margin-bottom: 0;">
+            <code class="language-yaml" style="border-radius: 0;">
   ${`app/
   └── routes/
       ├── index/
@@ -35,39 +38,42 @@
       └── four/
           └── [...all]/
               └── index.js # four/*all (four/a/b/)`}
-        </code>
-      </pre>
-    
-      <div style="margin: 18px">
-        <div class="wfc-font-body-large route-list">app/routes/index/index.js → <span>/</span></div>
-        <div class="wfc-font-body-large route-list">app/routes/one/index.js → <span>one</span></div>
-        <div class="wfc-font-body-large route-list">app/routes/two[id?]/index.js → <span>two/:id?</span></div>
-        <div class="wfc-font-body-large route-list">app/routes/three/[id]/index.js → <span>three/:id</span></div>
-        <div class="wfc-font-body-large route-list">app/routes/four/[...rest]/index.js →
-          <span>four/*rest</span>
-        </div>
-    
-        <div class="wfc-font-title-medium" style="margin-top: 24px; margin-bottom: 8px;">Directory route details</div>
-        <div class="wfc-font-body-large route-list"><span>routes/index/index.js</span> Root page (/)</div>
-        <div class="wfc-font-body-large route-list"><span>routes/404/index.js</span> Not found page. Auto redirect on non
-          matching routes</div>
-        <div class="wfc-font-body-large route-list"><span>index.js</span> Route component file</div>
-        <div class="wfc-font-body-large route-list"><span>[id]</span> Directory that represents a url parameter</div>
-        <div class="wfc-font-body-large route-list"><span>[id?]</span> Directory that represents an options url parameter
-        </div>
-        <div class="wfc-font-body-large route-list"><span>name[id?]</span> Inline url parameter to avoid sub folder</div>
-        <div class="wfc-font-body-large route-list"><span>[...rest]</span> Directory that represents catch-all route</div>
-        <div class="wfc-font-body-large route-list"><span>[...rest?]</span> Directory that represents optional catch-all
-          route</div>
-      </div>
-    </wfc-card>
-    
-    <wfc-card id="pageexample">
-      <div slot="headline">Page</div>
-      <div slot="supporting-text">Accessing url parameters</div>
-    
-      <pre>
-        <code class="language-javascript" wfc-no-binding>
+            </code>
+          </pre>
+        
+          <div style="margin: 18px">
+            <div class="mc-font-body-large route-list">app/routes/index/index.js → <span>/</span></div>
+            <div class="mc-font-body-large route-list">app/routes/one/index.js → <span>one</span></div>
+            <div class="mc-font-body-large route-list">app/routes/two[id?]/index.js → <span>two/:id?</span></div>
+            <div class="mc-font-body-large route-list">app/routes/three/[id]/index.js → <span>three/:id</span></div>
+            <div class="mc-font-body-large route-list">app/routes/four/[...rest]/index.js →
+              <span>four/*rest</span>
+            </div>
+        
+            <div class="mc-font-title-medium" style="margin-top: 24px; margin-bottom: 8px;">Directory route details</div>
+            <div class="mc-font-body-large route-list"><span>routes/index/index.js</span> Root page (/)</div>
+            <div class="mc-font-body-large route-list"><span>routes/404/index.js</span> Not found page. Auto redirect on non
+              matching routes</div>
+            <div class="mc-font-body-large route-list"><span>index.js</span> Route component file</div>
+            <div class="mc-font-body-large route-list"><span>[id]</span> Directory that represents a url parameter</div>
+            <div class="mc-font-body-large route-list"><span>[id?]</span> Directory that represents an options url parameter
+            </div>
+            <div class="mc-font-body-large route-list"><span>name[id?]</span> Inline url parameter to avoid sub folder</div>
+            <div class="mc-font-body-large route-list"><span>[...rest]</span> Directory that represents catch-all route</div>
+            <div class="mc-font-body-large route-list"><span>[...rest?]</span> Directory that represents optional catch-all
+              route</div>
+          </div>
+        </mc-card>
+      </section>
+
+
+      <section id="pageexample" aria-label="Page example">
+        <mc-card>
+          <h2 slot="headline">Page</h2>
+          <div slot="supporting-text">Accessing url parameters</div>
+        
+          <pre>
+            <code class="language-javascript">
   ${`import { Component } from '@thewebformula/lithe';
   import html from './page.html'; // automatically bundles
   
@@ -90,8 +96,10 @@
       console.log(this.urlParameters); // { rest: 'a/b' }
     }
   }`}
-        </code>
-      </pre>
-    </wfc-card>
+            </code>
+          </pre>
+        </mc-card>
+      </section>
+    </div>
   </div>
-</section>
+</article>

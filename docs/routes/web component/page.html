@@ -1,26 +1,29 @@
-<h3 class="page-title">Web component</h3>
-<div class="page-subheader wfc-font-title-medium">Webformula core provides a convenient way to build native web components</div>
+<article>
+  <header>
+    <h1>Web component</h1>
+    <div class="page-subheader mc-font-title-medium">Lithe provides a convenient way to build native web components</div>
+  </header>
 
-<custom-button></custom-button>
+  <div class="article-main">
+    <nav class="links-nav">
+      <h2>Links</h2>
+      <ul class="links">
+        <li><a href="#pagejs">page.js</a></li>
+        <li><a href="#componentjs">component.js</a></li>
+        <li><a href="#interacting">Interacting with components</a></li>
+      </ul>
+    </nav>
 
-<section class="page-content-section">
-  <nav class="links-nav" aria-label="page-content">
-    <div class="wfc-font-headline-small page-secondary-header">Links</div>
-    <ul class="links">
-      <li><a href="#pagejs">page.js</a></li>
-      <li><a href="#componentjs">component.js</a></li>
-      <li><a href="#nteracting">Interacting with components</a></li>
-    </ul>
-  </nav>
+    <div class="article-content">
 
-  <div class="page-content-container">
-    <wfc-card id="pagejs">
-      <div slot="headline">Page file</div>
-      <div slot="supporting-text">page.js</div>
-      <div slot="supporting-text">Web component is imported in this file</div>
-
-      <pre>
-        <code class="language-javascript">
+      <section id="pagejs" aria-label="Page example">
+        <mc-card>
+          <h2 slot="headline">Page file</h2>
+          <div slot="supporting-text">page.js</div>
+          <div slot="supporting-text">Web component is imported in this file</div>
+        
+          <pre>
+            <code class="language-javascript">
   ${`import { Component, html } from '@thewebformula/lithe';
   /* HTML imports will bundle with the build */
   import htmlTemplate from './page.html';
@@ -49,23 +52,26 @@
       `}\`;
     }
   }`}
-        </code>
-      </pre>
-    </wfc-card>
+            </code>
+          </pre>
+        </mc-card>
+      </section>
 
-    <wfc-card id="componentjs">
-      <div slot="headline">Component file</div>
-      <div slot="supporting-text">component.js</div>
-      
-      <pre>
-        <code class="language-html">
+
+      <section id="componentjs" aria-label="Component example">
+        <mc-card>
+          <h2 slot="headline">Component file</h2>
+          <div slot="supporting-text">component.js</div>
+        
+          <pre>
+            <code class="language-html">
   ${`<!-- component.html -->
   <button><slot></slot></button>`}
-        </code>
-      </pre>
-      
-      <pre>
-        <code class="language-javascript">
+            </code>
+          </pre>
+        
+          <pre>
+            <code class="language-javascript">
   ${`import { Component } from '@thewebformula/lithe';
   import htmlTemplate from './component.html';
   
@@ -136,11 +142,11 @@
     }
 
     /**
-     * Method that returns a html template string. This is an alternative to use static htmlTemplate
-     * @name template
-     * @function
-     * @return {String}
-     */
+      * Method that returns a html template string. This is an alternative to use static htmlTemplate
+      * @name template
+      * @function
+      * @return {String}
+      */
     template() { return '<div></div>' }
 
     connectedCallback() {}
@@ -162,33 +168,35 @@
   
   // define web component
   customElements.define('custom-button', CustomButton);`}
-        </code>
-      </pre>
-    </wfc-card>
+            </code>
+          </pre>
+        </mc-card>
+      </section>
 
 
-    <wfc-card id="nteracting">
-      <div slot="headline">Interacting with component elements</div>
-      
-      <pre>
-        <code class="language-html">
+      <section id="interacting" aria-label="Component interaction example">
+        <mc-card>
+          <h2 slot="headline">Interacting with component elements</h2>
+        
+          <pre>
+            <code class="language-html">
   ${`<!-- index.html -->
   <body>
     <custom-webcomponent></custom-webcomponent>
   </body>`}
-        </code>
-      </pre>
-
-      <pre>
-        <code class="language-html">
+            </code>
+          </pre>
+        
+          <pre>
+            <code class="language-html">
   ${`<!-- component.html -->
   <button onclick="this.closest('custom-webcomponent').clickIt()">Click it direct</button>
   <button id="eventlistener-button">Click it event listener</button>`}
-        </code>
-      </pre>
-    
-      <pre>
-        <code class="language-javascript">
+            </code>
+          </pre>
+        
+          <pre>
+            <code class="language-javascript">
   ${`import { Component } from '@thewebformula/lithe';
   import html from './component.html'; // automatically bundles
   
@@ -220,8 +228,10 @@
   
   // define web component
   customElements.define('custom-webcomponent', CustomWebcomponent);`}
-        </code>
-      </pre>
-    </wfc-card>
+            </code>
+          </pre>
+        </mc-card>
+      </section>
+    </div>
   </div>
-</section>
+</article>

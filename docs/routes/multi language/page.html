@@ -1,48 +1,53 @@
-<h3 class="page-title">Localization</h3>
+<article>
+  <header>
+    <h1>Localization and internationalization</h1>
+  </header>
 
-<section class="page-content-section">
-  <nav class="links-nav" aria-label="page-content">
-    <div class="wfc-font-headline-small page-secondary-header">Links</div>
-    <ul class="links">
-      <li><a href="#Localization">Localization</a></li>
-    </ul>
-  </nav>
-
-  <div class="page-content-container">
-    <wfc-card id="Localization">
-      <div slot="headline">Localization</div>
-      <div slot="supporting-text">Localization allows to configure multiple locales with local message configurations</div>
-      <ul slot="supporting-text">
-        <li>Pluralization</li>
-        <li>Date formatting</li>
-        <li>Number formatting</li>
-        <li>Relative time formatting</li>
+  <div class="article-main">
+    <nav class="links-nav">
+      <h2>Links</h2>
+      <ul class="links">
+        <li><a href="#Localization">Localization</a></li>
       </ul>
+    </nav>
 
-      <wfc-switch ${page.languagesChecked ? 'checked' : '' } onchange="page.changeLanguage(this.checked)">en / es</wfc-switch>
+    <div class="article-content">
 
-      <div>${i18n('About')}</div>
-      <div>${i18n('key_string')}</div>
-      <div>${page.count} ${i18n.format('itemPlural', page.count)}</div>
-      <div>${i18n('time_from_now', page.time)}</div>
-      <div>${i18n('date_key', page.date)}</div>
-      <div>${i18n('currency_key', page.currency)}</div>
-
-      <div style="margin-top: 24px">
-        <div class="wfc-font-title-medium">Dynamic pluralization with signals</div>
-        <wfc-textfield label="${i18n('Label days')}" type="number" value="${page.days}" style="margin-top: 12px; margin-bottom: 12px;"
-          oninput="page.days.value = this.value"></wfc-textfield>
-        <div>${i18n('relativeTime_key', page.days)}</div>
-      </div>
-    
-      <pre>
-        <code class="language-javascript" wfc-no-binding>
+      <section id="Localization" aria-label="Example">
+        <mc-card>
+          <h2 slot="headline">Localization</h2>
+          <div slot="supporting-text">Localization allows to configure multiple locales with local message configurations</div>
+          <ul slot="supporting-text">
+            <li>Pluralization</li>
+            <li>Date formatting</li>
+            <li>Number formatting</li>
+            <li>Relative time formatting</li>
+          </ul>
+        
+          <mc-switch ${page.languagesChecked ? 'checked' : '' } onchange="page.changeLanguage(this.checked)">en / es</mc-switch>
+        
+          <div>${i18n('About')}</div>
+          <div>${i18n('key_string')}</div>
+          <div>${page.count} ${i18n.format('itemPlural', page.count)}</div>
+          <div>${i18n('time_from_now', page.time)}</div>
+          <div>${i18n('date_key', page.date)}</div>
+          <div>${i18n('currency_key', page.currency)}</div>
+        
+          <div style="margin-top: 24px">
+            <div class="mc-font-title-medium">Dynamic pluralization with signals</div>
+            <mc-textfield label="${i18n('Label days')}" type="number" value="${page.days}" style="margin-top: 12px; margin-bottom: 12px;"
+              oninput="page.days.value = this.value"></mc-textfield>
+            <div>${i18n('relativeTime_key', page.days)}</div>
+          </div>
+        
+          <pre>
+            <code class="language-javascript" mc-no-binding>
   ${`import { i18n } from '@thewebformula/lithe';
   
   /* Set locale
-   *   Defaults to browser if not set
-   *   You can use language only locale 'en' and 'en-US'
-   */
+    *   Defaults to browser if not set
+    *   You can use language only locale 'en' and 'en-US'
+    */
   i18n.setLocale('en-US');
 
   // turn on cache. This will load and save data to localStorage
@@ -51,11 +56,11 @@
   // Load local messages
   i18n.addTranslation('en', en);
   i18n.addTranslation('es', es);`}
-        </code>
-      </pre>
-
-      <pre>
-        <code class="language-html" wfc-no-binding>
+            </code>
+          </pre>
+        
+          <pre>
+            <code class="language-html" mc-no-binding>
   ${`<!-- Use i18n method to translate keys -->
   <div>\${i18n('About')}</div>
   <div>\${i18n('key_string')}</div>
@@ -69,23 +74,23 @@
   <div>\${i18n('currency_key', page.currency)}</div>
   
   <div>
-    <div class="wfc-font-title-medium">Dynamic pluralization with signals</div>
-    <wfc-textfield label="\${i18n('Label days')}" type="number" value="\${page.days}"
-      oninput="page.days.value = this.value"></wfc-textfield>
+    <div class="mc-font-title-medium">Dynamic pluralization with signals</div>
+    <mc-textfield label="\${i18n('Label days')}" type="number" value="\${page.days}"
+      oninput="page.days.value = this.value"></mc-textfield>
     <div>\${i18n('relativeTime_key', page.days)}</div>
   </div>
   
   <!-- Attribute binding -->
-  <wfc-textfield i18n-attr="label" label="Label days" value="\${page.days}" oninput="page.days = this.value"></wfc-textfield>
+  <mc-textfield i18n-attr="label" label="Label days" value="\${page.days}" oninput="page.days = this.value"></mc-textfield>
   
   <!-- Attribute binding multiple -->
   <div i18n-attr="one,two" one="one" two="two"></div>`}
-        </code>
-      </pre>
-
-
-      <pre>
-        <code class="language-json" wfc-no-binding>
+            </code>
+          </pre>
+        
+        
+          <pre>
+            <code class="language-json" mc-no-binding>
   ${`// en
   
   // type configuration
@@ -134,11 +139,11 @@
     "place_ordinal": "$1 $placeOrdinal($1)",
     "currency_key": "$currencyFormat($1)",
     "relativeTime_key": "$relativeTimeFormat($1)" } }` }
-        </code>
-      </pre>
-
-      <pre>
-        <code class="language-json" wfc-no-binding>
+            </code>
+          </pre>
+        
+          <pre>
+            <code class="language-json" mc-no-binding>
   ${`// es
   
   // type configuration
@@ -187,8 +192,10 @@
     "date_key": "$dateFormat($1)",
     "currency_key": "$currencyFormat($1)",
     "relativeTime_key": "$relativeTimeFormat($1)" } }` }
-        </code>
-      </pre>
-    </wfc-card>
+            </code>
+          </pre>
+        </mc-card>
+      </section>
+    </div>
   </div>
-</section>
+</article>
