@@ -9,6 +9,7 @@ build({
   outdir: 'dist/',
   copyFiles: [
     { from: 'docs/favicon.ico', to: 'dist/' },
+    { from: 'docs/icons/*', to: 'dist/icons/' },
     { from: 'docs/highlight-11.8.0.js', to: 'dist/' }
   ]
 });
