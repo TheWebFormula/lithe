@@ -5,7 +5,7 @@ import en from '../../locales/en.json' assert { type: "json" };
 import es from '../../locales/es.json' assert { type: "json" };
 
 export default class extends Component {
-  static pageTitle = 'Multiple languages';
+  static title = 'Multiple languages';
   static htmlTemplate = htmlTemplate;
 
   languagesChecked = false;

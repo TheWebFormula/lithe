@@ -198,7 +198,7 @@ async function buildIndexHTML(appJSOutput, appCSSOutput, routeConfigs, config) {
     ))].map(v => `\n  <link rel="modulepreload" href="/${v}" />`).join('');
 
     const title = document.querySelector('title');
-    if (title) title.textContent = routeModule.default.pageTitle;
+    if (title) title.textContent = routeModule.default.title;
     const previousPageReloads = document.querySelectorAll('link[page]');
     for (const p of previousPageReloads) {
       p.remove();

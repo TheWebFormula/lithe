@@ -3,7 +3,7 @@ import htmlTemplate from './page.html';
 
 
 export default class extends Component {
-  static pageTitle = 'Signals and binding';
+  static title = 'Signals and binding';
   static htmlTemplate = htmlTemplate;
 
   basicBind = new Signal('');

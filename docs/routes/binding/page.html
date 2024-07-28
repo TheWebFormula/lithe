@@ -49,7 +49,7 @@
   import htmlTemplate from './page.html';
 
   export default class extends Component {
-    static pageTitle = 'Signal';
+    static title = 'Signal';
     static htmlTemplate = htmlTemplate;
     
     basicBind = new Signal('');
@@ -75,7 +75,7 @@
   import htmlTemplate from './page.html';
 
   export default class extends Component {
-    static pageTitle = 'Signal Compute effect';
+    static title = 'Signal Compute effect';
     static htmlTemplate = htmlTemplate;
     
     one = new Signal(1);
@@ -136,7 +136,7 @@
   import html from './page.html';
 
   export default class extends Component {
-    static pageTitle = 'Compute';
+    static title = 'Compute';
     static htmlTemplate = html;
     
     number = new Signal(1);
@@ -167,7 +167,7 @@
   import html from './page.html';
 
   export default class extends Component {
-    static pageTitle = 'Effect';
+    static title = 'Effect';
     static htmlTemplate = html;
     
     one = new Signal(1);

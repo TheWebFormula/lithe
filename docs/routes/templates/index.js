@@ -2,7 +2,7 @@ import { Component, Signal } from '@thewebformula/lithe';
 import htmlTemplate from './page.html';
 
 export default class extends Component {
-  static pageTitle = 'Templates';
+  static title = 'Templates';
   static htmlTemplate = htmlTemplate;
 
   plainText = 'plainText value';
