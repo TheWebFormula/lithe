@@ -78,7 +78,6 @@ export default class Component extends HTMLElement {
       this.style.display = 'contents';
     }
 
-    // TODO nest this in is not page
     if (this.constructor.useShadowRoot) {
       this.attachShadow({ mode: 'open', delegatesFocus: this.constructor.shadowRootDelegateFocus });
     } else if (this.constructor.styleSheets[0] instanceof CSSStyleSheet) {

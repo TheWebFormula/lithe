@@ -1,6 +1,6 @@
 import { parseHTML, NodeFilter, Node, DOMParser, NodeList, HTMLTemplateElement, DocumentFragment } from 'linkedom';
 
-// TODO do i need to inject the app index.html
+
 const dom = parseHTML(`<!doctype html>
 <html lang="en">
   <head>

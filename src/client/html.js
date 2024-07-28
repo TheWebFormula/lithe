@@ -270,7 +270,7 @@ function escape(str) {
  * Provide basic protection from XSS
  *   This is meant as a safety net. This should not be relied on to prevent attacks.
  * 
- * TODO replace with HTML Sanitizer API when available. https://developer.mozilla.org/en-US/docs/Web/API/HTML_Sanitizer_API
+ * TODO replace with HTML Sanitizer API when available. Currently still in working spec
  */
 const dangerousAttributeValueRegex = /javascript:|eval\(|alert|document.cookie|document\[['|"]cookie['|"]\]|&\#\d/gi;
 function sanitizeNode(node) {

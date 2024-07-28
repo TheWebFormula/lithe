@@ -1,6 +1,6 @@
 import { isSignal, Compute } from './signal.js';
 
-// TODO Fetcher adding accept-language header
+
 const translations = {};
 const signals = new Set();
 const valueRegex = /\$(\d)|\$(\w+)\(\$(\d)\)/g;
