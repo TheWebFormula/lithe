@@ -1,5 +1,7 @@
 import esbuild from 'esbuild';
 import path from 'node:path';
+import { Buffer } from 'node:buffer';
+import minifyHtml from '@minify-html/node';
 import { access, readFile, readdir, stat, rm, writeFile } from 'node:fs/promises';
 import { gzip } from 'node:zlib';
 import { promisify } from 'node:util';
@@ -38,6 +40,7 @@ export default async function build(config = {
   outdir: 'dist/',
   chunks: true,
   minify: true,
+  keepHTMLComments: false,
   sourcemaps: false,
   gzip: true,
   devServer: true,
@@ -61,10 +64,13 @@ export default async function build(config = {
     if (config.sourcemaps === undefined) config.sourcemaps = true;
     if (config.devServer !== false && config.devServerLivereload !== false) config.liveReloadScript = liveReloadScript;
     config.debugScript = debugScript(config.devWarnings);
+    config.keepHTMLComments = config.keepHTMLComments === false ? false : true;
+    if (config.keepHTMLComments !== false) config.liveReloadScript = liveReloadScript;
   } else {
     if (config.gzip === undefined) config.gzip = true;
     if (config.minify === undefined) config.minify = true;
     if (config.gzip === undefined) config.gzip = true;
+    config.keepHTMLComments = config.keepHTMLComments === true ? true : false;
   }
 
   if (config.securityLevel && ![0, 1, 2].includes(config.securityLevel)) {
@@ -90,8 +96,7 @@ export default async function build(config = {
     metafile: true,
     entryNames: '[name]-[hash]',
     format: 'esm',
-    loader: { '.html': 'text' },
-    plugins: [pluginCss, injectCode(config)],
+    plugins: [pluginHTML(config), pluginCss(config.minify), injectCode(config)],
     minify: config.minify,
     splitting: config.chunks,
     sourcemap: config.sourcemap
@@ -104,7 +109,7 @@ export default async function build(config = {
     metafile: true,
     entryNames: '[name]-[hash]',
     minify: config.minify,
-    loader: { '.css': 'css' }
+    plugins: [minifyCSS(config.minify)]
   });
   
   const {
@@ -300,26 +305,66 @@ function injectCode(config) {
   }
 };
 
-const pluginCss = {
-  name: 'css',
-  setup(build) {
-    // bundle css file and inline
-    build.onLoad({ filter: /\.css$/ }, async args => {
-      const contextCss = await esbuild.build({
-        entryPoints: [args.path],
-        bundle: true,
-        write: false,
-        minify: true,
-        loader: { '.css': 'css' }
+function pluginHTML(config) {
+  return {
+    name: 'html',
+    setup(build) {
+      build.onLoad({ filter: /\.html$/ }, async args => {
+        let contents = await readFile(args.path, 'utf-8');
+        if (config.minify) {
+          try {
+            contents = minifyHtml.minify(Buffer.from('`' + contents.trim() + '`'), {
+              ensure_spec_compliant_unquoted_attribute_values: true,
+              keep_spaces_between_attributes: true,
+              keep_comments: config.keepHTMLComments
+            }).toString().slice(1, -1)
+          } catch (e) { }
+        }
+        return {
+          contents,
+          loader: 'text'
+        };
       });
-      const contents = `
-        const styles = new CSSStyleSheet();
-        styles.replaceSync(\`${contextCss.outputFiles[0].text}\`);
-        export default styles;`;
-      return { contents };
-    });
-  }
-};
+    }
+  };
+}
+
+function minifyCSS(minify) {
+  return {
+    name: 'minifyCSS',
+    setup(build) {
+      build.onLoad({ filter: /\.css$/ }, async (args) => {
+        const f = await readFile(args.path)
+        const css = await esbuild.transform(f, { loader: 'css', minify })
+        return { loader: 'css', contents: css.code }
+      })
+    }
+  };
+}
+
+function pluginCss(minify) {
+  return {
+    name: 'css',
+    setup(build) {
+      // bundle css file and inline
+      build.onLoad({ filter: /\.css$/ }, async args => {
+        // need to use build instead of transform because transform is not resolving @imports from node modules
+        const contextCss = await esbuild.build({
+          entryPoints: [args.path],
+          bundle: true,
+          write: false,
+          minify,
+          loader: { '.css': 'css' }
+        });
+        const contents = `
+          const styles = new CSSStyleSheet();
+          styles.replaceSync(\`${contextCss.outputFiles[0].text}\`);
+          export default styles;`;
+        return { contents };
+      });
+    }
+  };
+}
 
 
 const debugScript = (devWarnings) => `

@@ -7,6 +7,7 @@ build({
   gzip: false,
   basedir: 'docs/',
   outdir: 'dist/',
+  keepHTMLComments: true,
   copyFiles: [
     { from: 'docs/favicon.ico', to: 'dist/' },
     { from: 'docs/icons/*', to: 'dist/icons/' },

@@ -24,7 +24,7 @@
             <li>Relative time formatting</li>
           </ul>
         
-          <mc-switch ${page.languagesChecked ? 'checked' : '' } onchange="page.changeLanguage(this.checked)">en / es</mc-switch>
+          <mc-switch checked="${page.languagesChecked}" onchange="page.changeLanguage(this.checked)">en / es</mc-switch>
         
           <div>${i18n('About')}</div>
           <div>${i18n('key_string')}</div>
