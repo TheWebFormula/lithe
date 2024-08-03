@@ -11,6 +11,6 @@ build({
     { from: 'docs/favicon.ico', to: 'dist/' },
     { from: 'docs/icons/*', to: 'dist/icons/' },
     { from: 'docs/manifest.json', to: 'dist/' },
-    { from: 'docs/highlight-11.8.0.js', to: 'dist/' }
+    { from: 'docs/highlight-11.10.0.js', to: 'dist/' }
   ]
 });

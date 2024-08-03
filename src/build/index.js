@@ -82,7 +82,7 @@ export default async function build(config = {
   config.routes = await routeParser(config);
   const entryPoints = [config.appJsPath];
   // add entry points for each page
-  if (config.chunks) entryPoints.concat(config.routes.routesConfig.map(v => v.filePath));
+  if (config.chunks) entryPoints.push(...config.routes.routesConfig.map(v => v.filePath));
   const { metafile } = await esbuild.build({
     entryPoints,
     bundle: true,
@@ -184,11 +184,12 @@ async function buildIndexHTML(appJSOutput, appCSSOutput, routeConfigs, config) {
   // render template and build index html file for each page
   const data = await Promise.all(routeConfigs.map(async route => {
     // load page to build template
-    const routeModule = await window.litheRoutes.find(v => v.path === route.routePath).component;
-    customElements.define(`page-${route.hash}`, routeModule.default);
-    routeModule.default._isPage = true;
-    routeModule.default._isBuild = true;
-    const instance = new routeModule.default();
+    let routeModule = window.litheRoutes.find(v => v.path === route.routePath).component;
+    if (config.chunks) routeModule = (await routeModule).default;
+    customElements.define(`page-${route.hash}`, routeModule);
+    routeModule._isPage = true;
+    routeModule._isBuild = true;
+    const instance = new routeModule();
     instance.render();
 
     // prepare module preload links
@@ -198,7 +199,7 @@ async function buildIndexHTML(appJSOutput, appCSSOutput, routeConfigs, config) {
     ))].map(v => `\n  <link rel="modulepreload" href="/${v}" />`).join('');
 
     const title = document.querySelector('title');
-    if (title) title.textContent = routeModule.default.title;
+    if (title) title.textContent = routeModule.title;
     const previousPageReloads = document.querySelectorAll('link[page]');
     for (const p of previousPageReloads) {
       p.remove();

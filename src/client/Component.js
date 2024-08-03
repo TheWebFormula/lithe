@@ -1,5 +1,8 @@
 import { html, watchSignals, destroySignalCache } from './html.js';
 
+const dashCaseRegex = /-([a-z])/g;
+const onRegex = /^on/;
+let templates = new Map();
 
 /**
  * Component class used for pages and web components
@@ -112,12 +115,12 @@ export default class Component extends HTMLElement {
     name = name.replace(dashCaseRegex, (_, s) => s.toUpperCase());
     if (type === 'event') {
       if (this.#attributeEvents[name]) {
-        this.removeEventListener(name.replace(/^on/, ''), this.#attributeEvents[name]);
+        this.removeEventListener(name.replace(onRegex, ''), this.#attributeEvents[name]);
         this.#attributeEvents[name] = undefined;
       }
       if (newValue) {
         this.#attributeEvents[name] = this.#attributeDescriptorTypeConverter(newValue, type);
-        this.addEventListener(name.replace(/^on/, ''), this.#attributeEvents[name]);
+        this.addEventListener(name.replace(onRegex, ''), this.#attributeEvents[name]);
       }
     } else {
       this.attributeChangedCallbackExtended(
@@ -141,8 +144,8 @@ export default class Component extends HTMLElement {
   render() {
     if (!this.#prepared) this.#prepareRender();
 
-    this.beforeRender();
     destroySignalCache();
+    this.beforeRender();
     this.replaceChildren(this.template());
     if (!this.isConnected && this.constructor._isPage) this.#pageContent.append(this);
     watchSignals();
@@ -155,16 +158,25 @@ export default class Component extends HTMLElement {
   _internalDisconnectedCallback() {
     destroySignalCache();
   }
-  
+
   #prepareRender() {
-    this.#prepared = true;
+    // set page title
     if (this.constructor._isPage) {
       const title = document.documentElement.querySelector('title');
       title.textContent = this.constructor.title;
     }
 
-    const templateString = this.constructor.htmlTemplate || this.template.toString().replace(/^[^`]*/, '').replace(/[^`]*$/, '').slice(1, -1);
-    this.template = () => new Function('page', `return page.constructor._html\`${templateString}\`;`).call(this, this);
+    // get or build template function
+    let template = templates.get(this.constructor);
+    if (!template) {
+      const templateString = this.constructor.htmlTemplate || this.template.toString().replace(/^[^`]*/, '').replace(/[^`]*$/, '').slice(1, -1);
+      template = new Function('page', `return page.constructor._html\`${templateString}\`;`);
+      templates.set(this.constructor, template);
+    }
+
+    // scope template function
+    this.template = () => template.call(this, this);
+    this.#prepared = true;
   }
 
 
@@ -181,7 +193,7 @@ export default class Component extends HTMLElement {
       case 'string':
         return value || '';
       case 'event':
-        return !value ? null : () => new Function('page', value).call(this, window.page);
+        return !value ? null : () => new Function('page', value).call(this, this);
       default:
         return value;
     }

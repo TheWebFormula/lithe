@@ -92,7 +92,10 @@ function buildPathRegex(route) {
 // generate code to inject for routes
 function generateRouteCode(routes, config) {
   return `
-${routes.map(route => `const ${route.routeModuleName} = import('${route.importPath}');`).join('\n')}
+${config.chunks ?
+  routes.map(route => `const ${route.routeModuleName} = import('${route.importPath}');`).join('\n')
+  : routes.map(route => `import ${route.routeModuleName} from '${route.importPath}';`).join('\n')
+}
 
 routes([
   ${routes.map(route => `{
@@ -102,11 +105,5 @@ routes([
     component: ${route.routeModuleName}${!route.notFound ? '' : `,
     notFound: true`}
   }`)}
-]);${!config.isDev ? '' : `\n\nwindow.litheRoutes = [${routes.map(route => `{
-  path: '${route.routePath}',
-  regex: ${route.regex},
-  hash: ${route.hash},
-  component: ${route.routeModuleName}${!route.notFound ? '' : `,
-  notFound: true`}
-}`)}];`}`;
+]);`;
 }

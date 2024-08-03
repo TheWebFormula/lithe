@@ -69,9 +69,7 @@ export function html(strings, ...args) {
   template += strings[i];
 
   if (!templateCache.has(template)) templateCache.set(template, buildTemplateElement(template));
-  const templateElement = templateCache.get(template);
-
-  return prepareTemplateElement(templateElement, signals, subClonedNodes);
+  return prepareTemplateElement(templateCache.get(template), signals, subClonedNodes);
 }
 
 function htmlCompute(callback) {
@@ -88,13 +86,39 @@ export function watchSignals() {
   });
 }
 
-// what is html is used outside of page?
+// TODO what if html is used outside of page? there does not seem to be much difference running a cleanup function
 export function destroySignalCache() {
+  // let signalCacheDestroyCheckList = [];
+  templateCache.clear();
+
   for (const sig of signalsToWatch) {
     sig.unwatch(signalChange);
+    // signalCacheDestroyCheckList.push(sig);
   }
   signalsToWatch.clear();
+
+  // isSignalConnected(signalCacheDestroyCheckList);
 }
+
+// function isSignalConnected(signalCacheDestroyCheckList) {
+//   setTimeout(() => {
+//     for (const sig of signalCacheDestroyCheckList) {
+//       let cached = signalCache.get(sig);
+//       for (let i = 0; i < cached.length; i++) {
+//         if (!cached[i][0].isConnected) {
+//           cached[i] = undefined;
+//           cached.splice(i, 1);
+//         }
+//       }
+//       if (cached.length === 0) {
+//         signalCache.delete(sig);
+//         console.log(sig);
+//       }
+//     }
+
+//     signalCacheDestroyCheckList.length = 0;
+//   });
+// }
 
 
 
@@ -207,9 +231,10 @@ function prepareTemplateElement(templateElement, args, subClonedNodes) {
         break;
 
       case Node.ELEMENT_NODE:
-        const toRemove = []
-        const toAdd = []
+        let toRemove = []
+        let toAdd = []
         let i = 0;
+
         for (; i < node.attributes.length; i++) {
           const attr = node.attributes[i];
           if (attr.value.includes(attrString)) {
@@ -247,6 +272,9 @@ function prepareTemplateElement(templateElement, args, subClonedNodes) {
           node.setAttributeNode(toAdd[i]);
           node.removeAttributeNode(toRemove[i]);
         }
+
+        toAdd = undefined;
+        toRemove = undefined;
     }
   }
 

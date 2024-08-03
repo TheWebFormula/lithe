@@ -29,8 +29,8 @@
   },
   "homepage": "https://github.com/TheWebFormula/lithe#readme",
   "dependencies": {
-    "esbuild": "^0.21.3",
-    "linkedom": "^0.18.0"
+    "esbuild": "^0.23.0",
+    "linkedom": "^0.18.4"
   },
   "devDependencies": {
     "@thewebformula/lithe": "file:./",
