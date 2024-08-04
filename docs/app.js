@@ -5,6 +5,7 @@ import '@thewebformula/materially/components/card';
 import '@thewebformula/materially/components/button';
 import '@thewebformula/materially/components/switch';
 import '@thewebformula/materially/components/textfield';
+import './code-block.js';
 
 if (typeof hljs === 'undefined') {
   const hljsTag = document.querySelector('#hljsscript');
@@ -18,7 +19,7 @@ if (typeof hljs === 'undefined') {
 }
 
 function initHLJS() {
-  hljs.configure({ ignoreUnescapedHTML: true });
+  hljs.configure({ ignoreUnescapedHTML: true, cssSelector: 'code-block' });
   hljs.highlightAll();
 }
 

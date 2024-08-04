@@ -22,38 +22,36 @@
           <div slot="supporting-text">page.js</div>
           <div slot="supporting-text">Web component is imported in this file</div>
         
-          <pre>
-            <code class="language-javascript">
-  ${`import { Component, html } from '@thewebformula/lithe';
-  /* HTML imports will bundle with the build */
-  import htmlTemplate from './page.html';
+          <code-block language="javascript">
+${`import { Component, html } from '@thewebformula/lithe';
+/* HTML imports will bundle with the build */
+import htmlTemplate from './page.html';
 
-  // imported component
-  import './component.js';
+// imported component
+import './component.js';
+
+export default class extends Component {
+  // html page title
+  static title = 'Page';
+
+  // you can set the html from and import or use the template method (see below)
+  static htmlTemplate = htmlTemplate;
   
-  export default class extends Component {
-    // html page title
-    static title = 'Page';
+  constructor() {
+    super();
+  }
 
-    // you can set the html from and import or use the template method (see below)
-    static htmlTemplate = htmlTemplate;
-    
-    constructor() {
-      super();
-    }
+  // this can be used in place of import the html file
+  template() {
+    return html\`${`
+      <div>Page Content</div>
 
-    // this can be used in place of import the html file
-    template() {
-      return html\`${`
-        <div>Page Content</div>
-
-        <!-- custom component -->
-        <custom-button>Click</custom-button>
-      `}\`;
-    }
-  }`}
-            </code>
-          </pre>
+      <!-- custom component -->
+      <custom-button>Click</custom-button>
+    `}\`;
+  }
+}`}
+          </code-block>
         </mc-card>
       </section>
 
@@ -63,113 +61,109 @@
           <h2 slot="headline">Component file</h2>
           <div slot="supporting-text">component.js</div>
         
-          <pre>
-            <code class="language-html">
-  ${`<!-- component.html -->
-  <button><slot></slot></button>`}
-            </code>
-          </pre>
+          <code-block language="html">
+${`<!-- component.html -->
+<button><slot></slot></button>`}
+          </code-block>
         
-          <pre>
-            <code class="language-javascript">
-  ${`import { Component } from '@thewebformula/lithe';
-  import htmlTemplate from './component.html';
+          <code-block language="javascript">
+${`import { Component } from '@thewebformula/lithe';
+import htmlTemplate from './component.html';
+
+class CustomButton extends Component {
+  /**
+    * Pass in HTML string. Use for imported .HTML
+    * Supports template literals: <div>${this.var}</div>
+    * @type {String}
+    */
+  static htmlTemplate = htmlTemplate;
+
+
+  /**
+    * Hook up shadow root
+    * @type {Boolean}
+    */
+  static useShadowRoot = false;
+
   
-  class CustomButton extends Component {
+  /**
+    * @type {Boolean}
+    */
+  static shadowRootDelegateFocus = false;
+
+
+  /**
+    * Pass in styles for shadow root.
+    * Can use imported stylesheets: import styles from '../styles.css' assert { type: 'css' };
+    * @type {CSSStyleSheet}
+    */
+  static shadowRootStyleSheets;
+
+
+  /**
+    * @typedef {String} AttributeType
+    * @value '' default handling
+    * @value 'string' Convert to a string. null = ''
+    * @value 'number' Convert to a number. isNaN = ''
+    * @value 'int' Convert to a int. isNaN = ''
+    * @value 'boolean' Convert to a boolean. null = false
+    * @value 'event' Allows code to be executed. Similar to onchange="console.log('test')"
+    */
     /**
-      * Pass in HTML string. Use for imported .HTML
-      * Supports template literals: <div>${this.var}</div>
-      * @type {String}
-      */
-    static htmlTemplate = htmlTemplate;
+    * Enhances observedAttributes, allowing you to specify types
+    * You can still use \`observedAttributes\` in stead of this.
+    * @type {Array.<[name:String, AttributeType]>}
+    */
+  static get observedAttributesExtended() { return []; }; // static observedAttributesExtended = [['required', 'boolean']];
+  
+
+  /**
+    * Use with observedAttributesExtended
+    * You can still use \`attributeChangedCallback\` in stead of this.
+    * @function
+    * @param {String} name - Attribute name
+    * @param {String} oldValue - Old attribute value
+    * @param {String} newValue - New attribute value
+    */
+  attributeChangedCallbackExtended(name, oldValue, newValue) { }
 
 
-    /**
-      * Hook up shadow root
-      * @type {Boolean}
-      */
-    static useShadowRoot = false;
+  // need to bind events to access \`this\`
+  #onClick_bound = this.#onClick.bind(this);
 
-    
-    /**
-      * @type {Boolean}
-      */
-    static shadowRootDelegateFocus = false;
+  
+  constructor() {
+    super();
+  }
 
+  /**
+    * Method that returns a html template string. This is an alternative to use static htmlTemplate
+    * @name template
+    * @function
+    * @return {String}
+    */
+  template() { return '<div></div>' }
 
-    /**
-      * Pass in styles for shadow root.
-      * Can use imported stylesheets: import styles from '../styles.css' assert { type: 'css' };
-      * @type {CSSStyleSheet}
-      */
-    static shadowRootStyleSheets;
+  connectedCallback() {}
+  disconnectedCallback() {}
+  beforeRender() {}
 
-
-    /**
-      * @typedef {String} AttributeType
-      * @value '' default handling
-      * @value 'string' Convert to a string. null = ''
-      * @value 'number' Convert to a number. isNaN = ''
-      * @value 'int' Convert to a int. isNaN = ''
-      * @value 'boolean' Convert to a boolean. null = false
-      * @value 'event' Allows code to be executed. Similar to onchange="console.log('test')"
-      */
-      /**
-      * Enhances observedAttributes, allowing you to specify types
-      * You can still use \`observedAttributes\` in stead of this.
-      * @type {Array.<[name:String, AttributeType]>}
-      */
-    static get observedAttributesExtended() { return []; }; // static observedAttributesExtended = [['required', 'boolean']];
-    
-
-    /**
-      * Use with observedAttributesExtended
-      * You can still use \`attributeChangedCallback\` in stead of this.
-      * @function
-      * @param {String} name - Attribute name
-      * @param {String} oldValue - Old attribute value
-      * @param {String} newValue - New attribute value
-      */
-    attributeChangedCallbackExtended(name, oldValue, newValue) { }
-
-
-    // need to bind events to access \`this\`
-    #onClick_bound = this.#onClick.bind(this);
-
-    
-    constructor() {
-      super();
-    }
-
-    /**
-      * Method that returns a html template string. This is an alternative to use static htmlTemplate
-      * @name template
-      * @function
-      * @return {String}
-      */
-    template() { return '<div></div>' }
-
-    connectedCallback() {}
-    disconnectedCallback() {}
-    beforeRender() {}
-
-    afterRender() {
-      this.#root.querySelector('button').addEventListener('click', this.#onClick_bound);
-    }
-    
-    disconnectedCallback() {
-      this.#root.querySelector('button').removeEventListener('click', this.#onClick_bound);
-    }
-
-    #onClick() {
-      console.log('Custom button component clicked!');
-    }
+  afterRender() {
+    this.#root.querySelector('button').addEventListener('click', this.#onClick_bound);
   }
   
-  // define web component
-  customElements.define('custom-button', CustomButton);`}
-            </code>
-          </pre>
+  disconnectedCallback() {
+    this.#root.querySelector('button').removeEventListener('click', this.#onClick_bound);
+  }
+
+  #onClick() {
+    console.log('Custom button component clicked!');
+  }
+}
+
+// define web component
+customElements.define('custom-button', CustomButton);`}
+          </code-block>
         </mc-card>
       </section>
 
@@ -178,58 +172,52 @@
         <mc-card>
           <h2 slot="headline">Interacting with component elements</h2>
         
-          <pre>
-            <code class="language-html">
-  ${`<!-- index.html -->
-  <body>
-    <custom-webcomponent></custom-webcomponent>
-  </body>`}
-            </code>
-          </pre>
+          <code-block language="html">
+${`<!-- index.html -->
+<body>
+  <custom-webcomponent></custom-webcomponent>
+</body>`}
+          </code-block>
         
-          <pre>
-            <code class="language-html">
-  ${`<!-- component.html -->
-  <button onclick="this.closest('custom-webcomponent').clickIt()">Click it direct</button>
-  <button id="eventlistener-button">Click it event listener</button>`}
-            </code>
-          </pre>
-        
-          <pre>
-            <code class="language-javascript">
-  ${`import { Component } from '@thewebformula/lithe';
-  import html from './component.html'; // automatically bundles
+          <code-block language="html">
+${`<!-- component.html -->
+<button onclick="this.closest('custom-webcomponent').clickIt()">Click it direct</button>
+<button id="eventlistener-button">Click it event listener</button>`}
+        </code-block>
+      
+        <code-block language="javascript">
+${`import { Component } from '@thewebformula/lithe';
+import html from './component.html'; // automatically bundles
+
+class CustomWebcomponent extends Component {
+  static htmlTemplate = html;
+
+  // need to bind events to access \`this\`
+  #onClick_bound = this.clickIt.bind(this);
+
+  varOne = 'var one';
+
   
-  class CustomWebcomponent extends Component {
-    static htmlTemplate = html;
+  constructor() {
+    super();
+  }
 
-    // need to bind events to access \`this\`
-    #onClick_bound = this.clickIt.bind(this);
-
-    varOne = 'var one';
-
-    
-    constructor() {
-      super();
-    }
-
-    afterRender() {
-      this.#root.querySelector('#eventlistener-button').addEventListener('click', this.#onClick_bound);
-    }
-    
-    disconnectedCallback() {
-      this.#root.querySelector('#eventlistener-button').removeEventListener('click', this.#onClick_bound);
-    }
-
-    clickIt() {
-      console.log('click it!');
-    }
+  afterRender() {
+    this.#root.querySelector('#eventlistener-button').addEventListener('click', this.#onClick_bound);
   }
   
-  // define web component
-  customElements.define('custom-webcomponent', CustomWebcomponent);`}
-            </code>
-          </pre>
+  disconnectedCallback() {
+    this.#root.querySelector('#eventlistener-button').removeEventListener('click', this.#onClick_bound);
+  }
+
+  clickIt() {
+    console.log('click it!');
+  }
+}
+
+// define web component
+customElements.define('custom-webcomponent', CustomWebcomponent);`}
+          </code-block>
         </mc-card>
       </section>
     </div>

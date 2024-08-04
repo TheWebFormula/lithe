@@ -1,4 +1,4 @@
-import { Component, Signal, Compute, html } from '@thewebformula/lithe';
+import { Component, Signal, Compute } from '@thewebformula/lithe';
 import htmlTemplate from './page.html';
 
 

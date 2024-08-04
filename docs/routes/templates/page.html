@@ -57,80 +57,76 @@
                 ${`commented out ${page.plainText}`}
               -->
         
-          <pre>
-            <code class="language-html">
-  ${`<!-- page.html -->
-  <mc-divider></mc-divider>
-  <div class="mc-font-title-medium">Template html</div>
+          <code-block language="html">
+${`<!-- page.html -->
+<mc-divider></mc-divider>
+<div class="mc-font-title-medium">Template html</div>
 
-  <div>Some plain text in a div</div>
-  <div><strong>Plain text variable</strong> \${page.plainText}</div>
+<div>Some plain text in a div</div>
+<div><strong>Plain text variable</strong> \${page.plainText}</div>
 
-  <div>
-    <div class="mc-font-title-large">Signal variable</div>
+<div>
+  <div class="mc-font-title-large">Signal variable</div>
 
-    <mc-textfield value="\${page.signalVar}" oninput="page.signalVar.value = this.value" label="Update value"></mc-textfield>
-    <div><strong style="color: #444">Bound</strong> \${page.signalVar}</div>
-  </div>
+  <mc-textfield value="\${page.signalVar}" oninput="page.signalVar.value = this.value" label="Update value"></mc-textfield>
+  <div><strong style="color: #444">Bound</strong> \${page.signalVar}</div>
+</div>
 
 
-  <div>
-    <div class="mc-font-title-large">Dynamically computing HTML</div>
-    <mc-switch checked="\${page.showFirst}" onchange="page.showFirst.value = this.checked">Switch HTML</mc-switch>
-    \${html(() => (
-      page.showFirst.value ?
-        html\`<div>First</div>\` :
-        html\`<div>Second</div>\`
-    ))}
-  </div>
+<div>
+  <div class="mc-font-title-large">Dynamically computing HTML</div>
+  <mc-switch checked="\${page.showFirst}" onchange="page.showFirst.value = this.checked">Switch HTML</mc-switch>
+  \${html(() => (
+    page.showFirst.value ?
+      html\`<div>First</div>\` :
+      html\`<div>Second</div>\`
+  ))}
+</div>
 
-  <div>
-    <div class="mc-font-title-large">Looping with Signals</div>
-    <mc-textfield id="valueinput" placeholder="...value"></mc-textfield>
-    <mc-button onclick="page.addValue(valueinput.value);">Add value</mc-button>
-    \${html(() => page.loopVar.value.map(item => html\`<div>Value: \${item.value}</div>\`))}
-  </div>
+<div>
+  <div class="mc-font-title-large">Looping with Signals</div>
+  <mc-textfield id="valueinput" placeholder="...value"></mc-textfield>
+  <mc-button onclick="page.addValue(valueinput.value);">Add value</mc-button>
+  \${html(() => page.loopVar.value.map(item => html\`<div>Value: \${item.value}</div>\`))}
+</div>
 
-  <!--
-    HTML comments work on expressions
-    \${\`commented out \${page.plainText}\`}
-  -->`}
-            </code>
-          </pre>
-          <pre>
-            <code class="language-javascript">
-  ${`// page.js
-  import { Component } from '@thewebformula/lithe';
-  import htmlTemplate from './page.html';
+<!--
+  HTML comments work on expressions
+  \${\`commented out \${page.plainText}\`}
+-->`}
+          </code-block>
+          <code-block language="javascript">
+${`// page.js
+import { Component } from '@thewebformula/lithe';
+import htmlTemplate from './page.html';
 
-  export default class extends Component {
-    static title = 'Template html file';
+export default class extends Component {
+  static title = 'Template html file';
 
-    // Load HTML template file
-    static htmlTemplate = htmlTemplate;
-    
+  // Load HTML template file
+  static htmlTemplate = htmlTemplate;
+  
 
-    plainText = 'plainText value';
-    signalVar = new Signal('signalVar value');
-    loopVar = new Signal([
-      { value: 'One' },
-      { value: 'Two' },
-      { value: 'Three' }
-    ]);
-    showFirst = new Signal(true);
+  plainText = 'plainText value';
+  signalVar = new Signal('signalVar value');
+  loopVar = new Signal([
+    { value: 'One' },
+    { value: 'Two' },
+    { value: 'Three' }
+  ]);
+  showFirst = new Signal(true);
 
-    
-    constructor() {
-      super();
-    }
+  
+  constructor() {
+    super();
+  }
 
-    addValue(value) {
-      if (!value) return;
-      this.loopVar.value = [...this.loopVar.value, {value}];
-    }
-  }`}
-            </code>
-          </pre>
+  addValue(value) {
+    if (!value) return;
+    this.loopVar.value = [...this.loopVar.value, {value}];
+  }
+}`}
+          </code-block>
         </mc-card>
       </section>
 
@@ -149,61 +145,55 @@
           <div style="margin-top: 42px; margin-bottom: -8px;">
             <div style="font-size: 24px;">HTML file</div>
           </div>
-          <pre>
-            <code class="language-html">
-  ${`<!-- page.html -->
-  <h3>Page</h3>
-  <div>Content</div>`}
-            </code>
-          </pre>
-          <pre>
-            <code class="language-javascript">
-  ${`// page.js
-  import { Component } from '@thewebformula/lithe';
-  import htmlTemplate from './page.html';
+          <code-block language="html">
+${`<!-- page.html -->
+<h3>Page</h3>
+<div>Content</div>`}
+        </code-block>
+        <code-block language="javascript">
+${`// page.js
+import { Component } from '@thewebformula/lithe';
+import htmlTemplate from './page.html';
 
-  export default class extends Component {
-    static title = 'Template html file';
+export default class extends Component {
+  static title = 'Template html file';
 
-    // Load HTML template file
-    static htmlTemplate = htmlTemplate;
-    
-    constructor() {
-      super();
-    }
-  }`}
-            </code>
-          </pre>
+  // Load HTML template file
+  static htmlTemplate = htmlTemplate;
+  
+  constructor() {
+    super();
+  }
+}`}
+          </code-block>
         
           <div style="margin-top: 42px; margin-bottom: 12px;">
             <div style="font-size: 24px;">Page function</div>
           </div>
         
-          <pre>
-            <code class="language-javascript">
-  ${`// page.js page function
-  import { Component, html } from '@thewebformula/lithe';
+          <code-block language="javascript">
+${`// page.js page function
+import { Component, html } from '@thewebformula/lithe';
 
-  export default class extends Component {
-    static title = 'Template function';
+export default class extends Component {
+  static title = 'Template function';
 
-    // Load HTML template file
-    static htmlTemplate = htmlTemplate;
-    
-    constructor() {
-      super();
-    }
+  // Load HTML template file
+  static htmlTemplate = htmlTemplate;
+  
+  constructor() {
+    super();
+  }
 
-    // Template function
-    template() {
-      return html\`
-        <h3>Page</h3>
-        <div>Content</div>
-      \`;
-    }
-  }`}
-            </code>
-          </pre>
+  // Template function
+  template() {
+    return html\`
+      <h3>Page</h3>
+      <div>Content</div>
+    \`;
+  }
+}`}
+          </code-block>
         </mc-card>
       </section>
     </div>

@@ -22,180 +22,172 @@
             <li>File copying</li>
           </ul>
         
-          <pre>
-            <code class="language-javascript">
-  ${`import build from '@thewebformula/lithe/build';
+          <code-block language="javascript">
+${`import build from '@thewebformula/lithe/build';
+
+/**
+* Basic
+* If using 'app/' as root folder then no config needed
+*/
+build();
+
+
+/**
+* Full config options
+*/
+build({
+  // folder that contains 'app.js' : Default 'app.js'
+  basedir: 'app/',
+
+  // folder that contains 'app.js' : Default 'dist/'
+  outdir: 'dist/',
 
   /**
-  * Basic
-  * If using 'app/' as root folder then no config needed
+  * Default true
+  * Split code using routes for optimal loading
   */
-  build();
+  chunks: true,
+
+  /**
+  * Minify code
+  * Set to 'true' when 'NODE_ENV=production'
+  *   otherwise it defaults to 'false'
+  */
+  minify: true,
+
+  /**
+  * Create source maps
+  * Set to 'false' when 'NODE_ENV=production'
+  *   otherwise it defaults to 'true'
+  */
+  sourcemaps: false,
+
+  /**
+  * Compress code
+  * Set to 'true' when 'NODE_ENV=production'
+  *   otherwise it defaults to 'false'
+  */
+  gzip: true,
+
+  /**
+  * Run dev server
+  * Set to 'false' when 'NODE_ENV=production'
+  * otherwise it defaults to 'true'
+  */
+  devServer: true,
+
+  /**
+  * Livereload
+  * Simply use watch to enable 'node --watch build.js'
+  * Set to 'false' when 'NODE_ENV=production'
+  * otherwise it defaults to 'true'
+  */
+  devServerLiveReload: true,
+  
+  devServerPort: 3000,
   
 
   /**
-  * Full config options
+  * devWarnings
+  * Enable console warning
+  * only html sanitization currently
+  * otherwise it defaults to 'false'
   */
-  build({
-    // folder that contains 'app.js' : Default 'app.js'
-    basedir: 'app/',
+  devWarnings: false,
 
-    // folder that contains 'app.js' : Default 'dist/'
-    outdir: 'dist/',
+  /**
+  * securityLevel
+  * Set security level warnings for html
+  * Default: 1
+  */
+  securityLevel: 1,
 
-    /**
-    * Default true
-    * Split code using routes for optimal loading
-    */
-    chunks: true,
-
-    /**
-    * Minify code
-    * Set to 'true' when 'NODE_ENV=production'
-    *   otherwise it defaults to 'false'
-    */
-    minify: true,
-
-    /**
-    * Create source maps
-    * Set to 'false' when 'NODE_ENV=production'
-    *   otherwise it defaults to 'true'
-    */
-    sourcemaps: false,
-
-    /**
-    * Compress code
-    * Set to 'true' when 'NODE_ENV=production'
-    *   otherwise it defaults to 'false'
-    */
-    gzip: true,
-
-    /**
-    * Run dev server
-    * Set to 'false' when 'NODE_ENV=production'
-    * otherwise it defaults to 'true'
-    */
-    devServer: true,
-
-    /**
-    * Livereload
-    * Simply use watch to enable 'node --watch build.js'
-    * Set to 'false' when 'NODE_ENV=production'
-    * otherwise it defaults to 'true'
-    */
-    devServerLiveReload: true,
-    
-    devServerPort: 3000,
-    
-
-    /**
-    * devWarnings
-    * Enable console warning
-    * only html sanitization currently
-    * otherwise it defaults to 'false'
-    */
-    devWarnings: false,
-
-    /**
-    * securityLevel
-    * Set security level warnings for html
-    * Default: 1
-    */
-    securityLevel: 1,
-
-    // supports regex's with wildcards (*, **)
-    copyFiles: [
-      {
-        from: 'app/image.jpg',
-        to: 'dist/'
-      },
-      {
-        from: 'app/routes/**/(?!page)*.html',
-        to: 'dist/routes'
-      },
-      {
-        from: 'app/code.js',
-        to: 'dist/code.js',
-        transform({ content, outputFileNames }) {
-          // doo work
-          return content;
-        }
+  // supports regex's with wildcards (*, **)
+  copyFiles: [
+    {
+      from: 'app/image.jpg',
+      to: 'dist/'
+    },
+    {
+      from: 'app/routes/**/(?!page)*.html',
+      to: 'dist/routes'
+    },
+    {
+      from: 'app/code.js',
+      to: 'dist/code.js',
+      transform({ content, outputFileNames }) {
+        // doo work
+        return content;
       }
-    ],
+    }
+  ],
 
-    // callback before bundle
-    onStart: () => {},
+  // callback before bundle
+  onStart: () => {},
 
-    // callback after bundle
-    onEnd: () => {}
-  });`}
-            </code>
-          </pre>
+  // callback after bundle
+  onEnd: () => {}
+});`}
+          </code-block>
         
           <div class="card-content" style="margin-top: 42px; margin-bottom: 12px;">
             <div style="font-size: 24px;">Native server</div>
           </div>
-          <pre>
-            <code class="language-javascript">
-  ${`import { createServer } from 'node:http';
-  import { middlewareNode } from '@thewebformula/lithe/middleware';
+          <code-block language="javascript">
+${`import { createServer } from 'node:http';
+import { middlewareNode } from '@thewebformula/lithe/middleware';
+
+// same options as above
+const middleware = middlewareNode({
+  basedir: 'docs/',
+  outdir: 'dist/',
+  copyFiles: [
+    { from: 'docs/favicon.ico', to: 'dist/' }
+  ]
+});
+
+createServer(async (req, res) => {
+  const handled = await middleware(req, res);
+  if (handled === true) return;
   
-  // same options as above
-  const middleware = middlewareNode({
-    basedir: 'docs/',
-    outdir: 'dist/',
-    copyFiles: [
-      { from: 'docs/favicon.ico', to: 'dist/' }
-    ]
-  });
-  
-  createServer(async (req, res) => {
-    const handled = await middleware(req, res);
-    if (handled === true) return;
-    
-    // Do other stuff
-  }).listen(3000);`}
-            </code>
-          </pre>
+  // Do other stuff
+}).listen(3000);`}
+          </code-block>
         
           <div class="card-content" style="margin-top: 42px; margin-bottom: 12px;">
             <div style="font-size: 24px;">Express server</div>
           </div>
-          <pre>
-            <code class="language-javascript">
-  ${`import express from 'express';
-  import { middlewareExpress } from '@thewebformula/lithe/middleware';
-  
-  const app = express();
-  // same options as above
-  app.use(middlewareExpress({
-    basedir: 'docs/',
-    outdir: 'dist/',
-    copyFiles: [
-      { from: 'docs/favicon.ico', to: 'dist/' }
-    ]
-  }));
-  app.use(express.static('./docs'));
-  app.listen(3000);`}
-            </code>
-          </pre>
+          <code-block language="javascript">
+${`import express from 'express';
+import { middlewareExpress } from '@thewebformula/lithe/middleware';
+
+const app = express();
+// same options as above
+app.use(middlewareExpress({
+  basedir: 'docs/',
+  outdir: 'dist/',
+  copyFiles: [
+    { from: 'docs/favicon.ico', to: 'dist/' }
+  ]
+}));
+app.use(express.static('./docs'));
+app.listen(3000);`}
+          </code-block>
         
         
           <div class="card-content" style="margin-top: 42px; margin-bottom: 12px;">
             <div style="font-size: 24px;">Run commands</div>
           </div>
-          <pre>
-            <code class="language-bash">
-  ${`# Development run
-  node build.js
-  
-  # Development run with watch to enable livereload
-  node --watch-path=./app build.js
-  
-  # Production run. minifies, gzips, and writes files
-  NODE_ENV=production node build.js`}
-            </code>
-          </pre>
+          <code-block language="bash">
+${`# Development run
+node build.js
+
+# Development run with watch to enable livereload
+node --watch-path=./app build.js
+
+# Production run. minifies, gzips, and writes files
+NODE_ENV=production node build.js`}
+          </code-block>
         </mc-card>
       </section>
     </div>

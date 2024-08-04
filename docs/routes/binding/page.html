@@ -21,86 +21,80 @@
           <h2 slot="headline">Signal</h2>
           <div slot="supporting-text">A signal is a wrapper around a value that can notify interested consumers when that value changes</div>
         
-          <mc-textfield a class="mc-raise-label" style="margin-top: 24px;" label="Type something" value="${page.basicBind}"
+          <mc-textfield class="mc-raise-label" style="margin-top: 24px;" label="Type something" value="${page.basicBind}"
             oninput="page.basicBind.value = this.value">
           </mc-textfield>
         
-          <div a style="margin-bottom: 12px; margin-left: 16px;">Value: ${page.basicBind}</div>
+          <div style="margin-bottom: 12px; margin-left: 16px;">Value: ${page.basicBind}</div>
         
           <mc-button onclick="page.updateValue()">Set value to Updated</mc-button>
         
-          <pre>
-            <code class="language-html">
-  ${`<!-- Signals automatically update the HTML -->
+          <code-block language="html">
+${`<!-- Signals automatically update the HTML -->
 
-  <mc-textfield
-    label="Type something"
-    value="\${page.basicBind}"
-    oninput="page.basicBind.value = this.value"
-  ></mc-textfield>
+<mc-textfield
+  label="Type something"
+  value="\${page.basicBind}"
+  oninput="page.basicBind.value = this.value"
+></mc-textfield>
 
-  <div>Value: \${page.basicBind}</div>
-  <mc-button onclick="page.updateValue()">Set value to Updated</mc-button>`}
-            </code>
-          </pre>
-          <pre>
-            <code class="language-javascript">
-  ${`import { Component, Signal } from '@thewebformula/lithe';
-  import htmlTemplate from './page.html';
+<div>Value: \${page.basicBind}</div>
+<mc-button onclick="page.updateValue()">Set value to Updated</mc-button>`}
+          </code-block>
+          <code-block language="javascript">
+${`import { Component, Signal } from '@thewebformula/lithe';
+import htmlTemplate from './page.html';
 
-  export default class extends Component {
-    static title = 'Signal';
-    static htmlTemplate = htmlTemplate;
-    
-    basicBind = new Signal('');
-    
-    constructor() {
-      super();
-    }
+export default class extends Component {
+  static title = 'Signal';
+  static htmlTemplate = htmlTemplate;
+  
+  basicBind = new Signal('');
+  
+  constructor() {
+    super();
+  }
 
-    updateValue() {
-      // HTML will automatically update
-      this.basicBind.value = 'Updated';
-    }
-  }`}
-            </code>
-          </pre>
+  updateValue() {
+    // HTML will automatically update
+    this.basicBind.value = 'Updated';
+  }
+}`}
+          </code-block>
         
-          <pre>
-            <code class="language-javascript">
-  ${`
-  // quick example of using Signal, Compute, and effect
-    
-  import { Component, Signal, Compute, effect } from '@thewebformula/lithe';
-  import htmlTemplate from './page.html';
+          <code-block language="javascript">
+${`
+// quick example of using Signal, Compute, and effect
+  
+import { Component, Signal, Compute, effect } from '@thewebformula/lithe';
+import htmlTemplate from './page.html';
 
-  export default class extends Component {
-    static title = 'Signal Compute effect';
-    static htmlTemplate = htmlTemplate;
-    
-    one = new Signal(1);
-    // Compute will run when first created
-    two = new Compute(() => {
-      return this.one.value * 2;
+export default class extends Component {
+  static title = 'Signal Compute effect';
+  static htmlTemplate = htmlTemplate;
+  
+  one = new Signal(1);
+  // Compute will run when first created
+  two = new Compute(() => {
+    return this.one.value * 2;
+  });
+  
+  constructor() {
+    super();
+
+    // runs when any signals or computes contained inside change
+    // effect will run when first created
+    const dispose = effect(() => {
+      if (this.two > 10) {
+        // do some work
+      }
     });
-    
-    constructor() {
-      super();
 
-      // runs when any signals or computes contained inside change
-      // effect will run when first created
-      const dispose = effect(() => {
-        if (this.two > 10) {
-          // do some work
-        }
-      });
-
-      // dispose effect
-      dispose();
-    }
-  }`}
-            </code>
-          </pre>
+    // dispose effect
+    dispose();
+  }
+}`}
+          </code-block>
         </mc-card>
       </section>
 
@@ -116,41 +110,37 @@
         
           <div b style="margin-bottom: 12px; margin-left: 16px;">Value: ${page.numberTimesTwo}</div>
         
-          <pre>
-            <code class="language-html">
-  ${`<!-- Computes automatically update the HTML -->
+          <code-block language="html">
+${`<!-- Computes automatically update the HTML -->
+
+<mc-textfield
+  type="number"
+  label="Type something"
+  value="\${page.number}"
+  oninput="page.number.value = this.value">
+</mc-textfield>
+
+<div>Value: \${page.numberTimesTwo}</div>`}
+          </code-block>
+          <code-block language="javascript">
+${`import { Component, Signal, Compute } from '@thewebformula/lithe';
+import html from './page.html';
+
+export default class extends Component {
+  static title = 'Compute';
+  static htmlTemplate = html;
   
-  <mc-textfield
-    type="number"
-    label="Type something"
-    value="\${page.number}"
-    oninput="page.number.value = this.value">
-  </mc-textfield>
-
-  <div>Value: \${page.numberTimesTwo}</div>`}
-            </code>
-          </pre>
-          <pre>
-            <code class="language-javascript">
-  ${`import { Component, Signal, Compute } from '@thewebformula/lithe';
-  import html from './page.html';
-
-  export default class extends Component {
-    static title = 'Compute';
-    static htmlTemplate = html;
-    
-    number = new Signal(1);
-    // Compute will run when first created
-    numberTimesTwo = new Compute(() => {
-      return this.number.value * 2;
-    });
-    
-    constructor() {
-      super();
-    }
-  }`}
-            </code>
-          </pre>
+  number = new Signal(1);
+  // Compute will run when first created
+  numberTimesTwo = new Compute(() => {
+    return this.number.value * 2;
+  });
+  
+  constructor() {
+    super();
+  }
+}`}
+          </code-block>
         </mc-card>
       </section>
 
@@ -161,35 +151,33 @@
           <div slot="supporting-text">Effects allows you to run code based on any changes for signals or computes it contains. The difference between effect and compute
             is that effects do not return values.</div>
         
-          <pre>
-            <code class="language-javascript">
-  ${`import { Component, Signal, effect } from '@thewebformula/lithe';
-  import html from './page.html';
+          <code-block language="javascript">
+${`import { Component, Signal, effect } from '@thewebformula/lithe';
+import html from './page.html';
 
-  export default class extends Component {
-    static title = 'Effect';
-    static htmlTemplate = html;
-    
-    one = new Signal(1);
-    two = new Signal(2);
-    
-    constructor() {
-      super();
+export default class extends Component {
+  static title = 'Effect';
+  static htmlTemplate = html;
+  
+  one = new Signal(1);
+  two = new Signal(2);
+  
+  constructor() {
+    super();
 
-      // runs when any signals or computes contained inside change
-      // effect will run when first created
-      const dispose = effect(() => {
-        if (this.one.value < this.two.value) {
-          // do some work
-        }
-      });
+    // runs when any signals or computes contained inside change
+    // effect will run when first created
+    const dispose = effect(() => {
+      if (this.one.value < this.two.value) {
+        // do some work
+      }
+    });
 
-      // dispose effect
-      dispose();
-    }
-  }`}
-            </code>
-          </pre>
+    // dispose effect
+    dispose();
+  }
+}`}
+          </code-block>
         </mc-card>
       </section>
     </div>

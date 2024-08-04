@@ -144,11 +144,18 @@ export default class Component extends HTMLElement {
   render() {
     if (!this.#prepared) this.#prepareRender();
 
-    destroySignalCache();
     this.beforeRender();
-    this.replaceChildren(this.template());
-    if (!this.isConnected && this.constructor._isPage) this.#pageContent.append(this);
-    watchSignals();
+
+    if (this.constructor._isPage) {
+      destroySignalCache();
+      this.replaceChildren(this.template());
+      if (!this.isConnected) this.#pageContent.append(this);
+      watchSignals();
+    } else {
+      if (this.constructor.useShadowRoot) this.shadowRoot.replaceChildren(this.template());
+      else this.replaceChildren(this.template());
+    }
+    
     this.afterRender();
   }
 
@@ -172,6 +179,10 @@ export default class Component extends HTMLElement {
       const templateString = this.constructor.htmlTemplate || this.template.toString().replace(/^[^`]*/, '').replace(/[^`]*$/, '').slice(1, -1);
       template = new Function('page', `return page.constructor._html\`${templateString}\`;`);
       templates.set(this.constructor, template);
+    }
+
+    if (!this.constructor._isPage && this.constructor.useShadowRoot && this.constructor.styleSheets[0] instanceof CSSStyleSheet) {
+      this.shadowRoot.adoptedStyleSheets = this.constructor.styleSheets;
     }
 
     // scope template function

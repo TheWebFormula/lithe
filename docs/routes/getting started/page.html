@@ -25,11 +25,9 @@
         <mc-card>
           <h2 slot="headline">Install</h2>
         
-          <pre>
-            <code class="language-bash">
-  ${`npm install @thewebformula/lithe`}
-            </code>
-          </pre>
+          <code-block language="bash">
+${`npm install @thewebformula/lithe`}
+          </code-block>
         </mc-card>
       </section>
 
@@ -38,27 +36,25 @@
         <mc-card >
           <h2 slot="headline">Routing</h2>
           <div slot="supporting-text">@thewebformula/lithe uses directory based routing. All routes go in a 'routes' folder.</div>
-        
-          <pre style="margin-bottom: 0;">
-            <code class="language-yaml" style="border-radius: 0;">
-  app/
-  └── routes/
-      ├── index/
-      │   └── index.js     # /
-      ├── 404/
-      │   └── index.js     # /404 (or any url that is not found)
-      ├── one/
-      │   └── index.js     # one/
-      ├── two[id?]/
-      │   └── index.js     # two/:id?
-      ├── three/
-      │   └── [id]/
-      │       └── index.js # three/:id
-      └── four/
-          └── [...all]/
-              └── index.js # four/* (four/a/b/)
-            </code>
-          </pre>
+          
+          <code-block language="yaml">
+app/
+└── routes/
+    ├── index/
+    │   └── index.js     # /
+    ├── 404/
+    │   └── index.js     # /404 (or any url that is not found)
+    ├── one/
+    │   └── index.js     # one/
+    ├── two[id?]/
+    │   └── index.js     # two/:id?
+    ├── three/
+    │   └── [id]/
+    │       └── index.js # three/:id
+    └── four/
+        └── [...all]/
+            └── index.js # four/* (four/a/b/)
+          </code-block>
         
           <div style="margin: 18px">
             <div class="mc-font-body-large route-list">app/routes/index/index.js → <span>/</span></div>
@@ -89,34 +85,32 @@
       <section id="indexhtml" aria-label="index.html example">
         <mc-card>
           <h2 slot="headline">index.html</h2>
-        
-          <pre>
-            <code class="language-html">
-  ${`<!doctype html>
-    <html lang="en">
+          
+          <code-block language="html">
+${`<!doctype html>
+  <html lang="en">
+  
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Cache-Control" content="no-store" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+    <title></title>
     
-    <head>
-      <meta charset="UTF-8">
-      <meta http-equiv="Cache-Control" content="no-store" />
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
-      <title></title>
-      
-      <!-- app.js and app.css will automatically be updated to match bundle outputs -->
-      <\link href="app.css" rel="stylesheet">
-      <\script src="app.js" type="module"><\/script>
-    </head>
-    
-    <body>
-      <!-- page template render into this element -->
-      <page-content></page-content>
+    <!-- app.js and app.css will automatically be updated to match bundle outputs -->
+    <\link href="app.css" rel="stylesheet">
+    <\script src="app.js" type="module"><\/script>
+  </head>
+  
+  <body>
+    <!-- page template render into this element -->
+    <page-content></page-content>
 
-      <!-- Alternative using id attribute -->
-      <div id="page-content"></div>
-    </body>
-  </html>`}
-            </code>
-          </pre>
+    <!-- Alternative using id attribute -->
+    <div id="page-content"></div>
+  </body>
+</html>`}
+          </code-block>
         </mc-card>
       </section>
 
@@ -127,32 +121,29 @@
           <div slot="supporting-text">app.js</div>
           <div slot="supporting-text">Required: Automatically uses app.js as entry file for bundling</div>
         
-          <pre>
-            <code class="language-javascript">
-  ${`/* Main app file
-  * you can import any code in here
-  */
-  
-  import someModule from './someModule.js';
-  
-  // routes are automatically loaded`}
-        </code>
-      </pre>
+          <code-block language="javascript">
+${`/* Main app file
+* you can import any code in here
+*/
 
-  <div style="margin-top: 42px; margin-bottom: 12px;">
-    <div style="font-size: 16px;">Prevent navigation allows you to lock down the app for uses like authentication</div>
-  </div>
-  <pre>
-        <code class="language-javascript">
-  ${`import { preventNavigation } from '@thewebformula/lithe';
-  
-  // if not authenticated redirect to login and prevent navigation
-  if (!document.cookie.includes('authenticated=true')) {
-    if (location.pathname !== '/login') location.href = '/login';
-    preventNavigation(true);
-  }`}
-            </code>
-          </pre>
+import someModule from './someModule.js';
+
+// routes are automatically loaded`}
+        </code-block>
+
+        <div style="margin-top: 42px; margin-bottom: 12px;">
+          <div style="font-size: 16px;">Prevent navigation allows you to lock down the app for uses like authentication</div>
+        </div>
+
+        <code-block language="javascript">
+${`import { preventNavigation } from '@thewebformula/lithe';
+
+// if not authenticated redirect to login and prevent navigation
+if (!document.cookie.includes('authenticated=true')) {
+  if (location.pathname !== '/login') location.href = '/login';
+  preventNavigation(true);
+}`}
+          </code-block>
         </mc-card>
       </section>
 
@@ -163,15 +154,13 @@
           <div slot="supporting-text">app.css</div>
           <div slot="supporting-text">Optional: Will bundle and minify into a single file</div>
         
-          <pre>
-            <code class="language-javascript">
-  ${`@import url('./other.css');
+          <code-block language="css">
+${`@import url('./other.css');
 
-  body {
-    background-color: white;
-  }`}
-            </code>
-          </pre>
+body {
+  background-color: white;
+}`}
+          </code-block>
         </mc-card>
       </section>
 
@@ -181,80 +170,78 @@
           <h2 slot="headline">Page</h2>
           <div slot="supporting-text">page.js and page.html</div>
         
-          <pre>
-            <code class="language-javascript">
-  ${`import { Component, Signal, html } from '@thewebformula/lithe';
-  import htmlTemplate from './page.html'; // automatically bundles
-  
-  export default class extends Component {
-    // html page title
-    static title = 'Page';
+          <code-block language="javascript">
+${`import { Component, Signal, html } from '@thewebformula/lithe';
+import htmlTemplate from './page.html'; // automatically bundles
 
-    /**
-      * Pass in HTML string. Use for imported .HTML
-      * Supports template literals: <div>\${this.var}</div>
-      * @type {String}
-      */
-    static htmlTemplate = htmlTemplate;
+export default class extends Component {
+  // html page title
+  static title = 'Page';
 
-    someVar = new Signal('Some var');
-    clickIt_bound = this.clickIt.bind(this);
-    
-    
-    constructor() {
-      super();
-    }
-    
-    connectedCallback() {
-      console.log(this.urlParameters); // { id: 'value' }
-      console.log(this.searchParameters); // { id: 'value' }
-    }
-    
-    disconnectedCallback() { }
-    
-    // not called on initial render
-    beforeRender() { }
-    
-    afterEnder() {
-      this.querySelector('#event-listener-button')
-        .addEventListener('click', this.clickIt_bound);
-    }
-    
-    clickIt() {
-      console.log('clicked it!');
-    }
-    
-    changeValue() {
-      this.someVar.value = 'Value updated';
-    }
-    
-    /**
-    * Alternative method for html templates, instead of importing html file
+  /**
+    * Pass in HTML string. Use for imported .HTML
+    * Supports template literals: <div>\${this.var}</div>
+    * @type {String}
     */
-    template() {
-      return html\`
-        <div>Page Content</div>
-        <div>\${this.someVar}</div>
+  static htmlTemplate = htmlTemplate;
 
-        \${
-          // nested html
-          this.show ? html\`<div>Showing</div>\` : ''
-        }
+  someVar = new Signal('Some var');
+  clickIt_bound = this.clickIt.bind(this);
+  
+  
+  constructor() {
+    super();
+  }
+  
+  connectedCallback() {
+    console.log(this.urlParameters); // { id: 'value' }
+    console.log(this.searchParameters); // { id: 'value' }
+  }
+  
+  disconnectedCallback() { }
+  
+  // not called on initial render
+  beforeRender() { }
+  
+  afterEnder() {
+    this.querySelector('#event-listener-button')
+      .addEventListener('click', this.clickIt_bound);
+  }
+  
+  clickIt() {
+    console.log('clicked it!');
+  }
+  
+  changeValue() {
+    this.someVar.value = 'Value updated';
+  }
+  
+  /**
+  * Alternative method for html templates, instead of importing html file
+  */
+  template() {
+    return html\`
+      <div>Page Content</div>
+      <div>\${this.someVar}</div>
 
-        <!--
-          You can comment out expressions
-          ${`text`}
-        -->
-        
-        <!-- "page" will reference the current page class -->
-        <button onclick="page.clickIt()">Click Method</button>
-        <button id="event-listener-button">Event listener</button>
-        <button onclick="page.changeValue()">Change value</button>
-      \`;
-    }
-  }`}
-            </code>
-          </pre>
+      \${
+        // nested html
+        this.show ? html\`<div>Showing</div>\` : ''
+      }
+
+      <!--
+        You can comment out expressions
+        ${`text`}
+      -->
+      
+      <!-- "page" will reference the current page class -->
+      <button onclick="page.clickIt()">Click Method</button>
+      <button id="event-listener-button">Event listener</button>
+      <button onclick="page.changeValue()">Change value</button>
+    \`;
+  }
+}`}
+          </code-block>
         </mc-card>
       </section>
       
@@ -267,34 +254,29 @@
           </div>
           <a href="/build">Build config</a>
         
-          <pre>
-            <code class="language-javascript">
-  ${`import build from '@thewebformula/lithe/build';
-  
-  /**
-  * runs dev server by default on port 3000 with livereload
-  * basedir defaults to 'app/'
-  */
-  build({ basedir: 'app/' });`}
-      </code>
-    </pre>
+          <code-block language="javascript">
+${`import build from '@thewebformula/lithe/build';
 
-  <div style="margin-top: 42px; margin-bottom: 12px;">
-    <div style="font-size: 24px;">Run commands</div>
-  </div>
-  <pre>
-      <code class="language-bash">
-  ${`# Development run
-  node build.js
+/**
+* runs dev server by default on port 3000 with livereload
+* basedir defaults to 'app/'
+*/
+build({ basedir: 'app/' });`}
+        </code-block>
 
-  # Development run with watch to enable livereload
-  node --watch-path=./app build.js
+        <div style="margin-top: 42px; margin-bottom: 12px;">
+          <div style="font-size: 24px;">Run commands</div>
+        </div>
+        <code-block language="javascript">
+${`# Development run
+node build.js
 
-  # Production run. minifies and gzips
-  NODE_ENV=production node build.js
-  `}
-            </code>
-          </pre>
+# Development run with watch to enable livereload
+node --watch-path=./app build.js
+
+# Production run. minifies and gzips
+NODE_ENV=production node build.js`}
+          </code-block>
         </mc-card>
       </section>
 
@@ -310,8 +292,7 @@
           <div class="card-content" style="margin-top: 42px; margin-bottom: 12px;">
             <div style="font-size: 24px;">Native server</div>
           </div>
-          <pre>
-            <code class="language-javascript">
+          <code-block language="javascript">
   ${`import { createServer } from 'node:http';
   import { middlewareNode } from '@thewebformula/lithe/middleware';
   
@@ -329,14 +310,12 @@
     
     // Do other stuff
   }).listen(3000);`}
-            </code>
-          </pre>
+          </code-block>
         
           <div class="card-content" style="margin-top: 42px; margin-bottom: 12px;">
             <div style="font-size: 24px;">Express server</div>
           </div>
-          <pre>
-            <code class="language-javascript">
+          <code-block language="javascript">
   ${`import express from 'express';
   import { middlewareExpress } from '@thewebformula/lithe/middleware';
   
@@ -350,18 +329,15 @@
   }));
   app.use(express.static('./docs'));
   app.listen(3000);`}
-            </code>
-          </pre>
+          </code-block>
         
           <div class="card-content" style="margin-top: 42px; margin-bottom: 12px;">
             <div style="font-size: 24px;">Livereload</div>
           </div>
-          <pre>
-            <code class="language-bash">
+          <code-block language="html">
   ${`# Simply use node --watch to enable livereload
   node --watch-path=./src --watch-path=./docs server.js`}
-            </code>
-          </pre>
+          </code-block>
         </mc-card>
       </section> -->
     </div>

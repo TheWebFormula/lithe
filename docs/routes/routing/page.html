@@ -20,26 +20,24 @@
           <h2 slot="headline">Routing</h2>
           <div slot="supporting-text">@thewebformula/lithe uses directory based routing. All routes go in a 'routes' folder.</div>
         
-          <pre style="margin-bottom: 0;">
-            <code class="language-yaml" style="border-radius: 0;">
-  ${`app/
-  └── routes/
-      ├── index/
-      │   └── index.js     # /
-      ├── 404/
-      │   └── index.js     # /404 (or any url that is not found)
-      ├── one/
-      │   └── index.js     # one/
-      ├── two[id?]/
-      │   └── index.js     # two/:id?
-      ├── three/
-      │   └── [id]/
-      │       └── index.js # three/:id
-      └── four/
-          └── [...all]/
-              └── index.js # four/*all (four/a/b/)`}
-            </code>
-          </pre>
+          <code-block language="yaml">
+${`app/
+└── routes/
+    ├── index/
+    │   └── index.js     # /
+    ├── 404/
+    │   └── index.js     # /404 (or any url that is not found)
+    ├── one/
+    │   └── index.js     # one/
+    ├── two[id?]/
+    │   └── index.js     # two/:id?
+    ├── three/
+    │   └── [id]/
+    │       └── index.js # three/:id
+    └── four/
+        └── [...all]/
+            └── index.js # four/*all (four/a/b/)`}
+          </code-block>
         
           <div style="margin: 18px">
             <div class="mc-font-body-large route-list">app/routes/index/index.js → <span>/</span></div>
@@ -72,32 +70,30 @@
           <h2 slot="headline">Page</h2>
           <div slot="supporting-text">Accessing url parameters</div>
         
-          <pre>
-            <code class="language-javascript">
-  ${`import { Component } from '@thewebformula/lithe';
-  import html from './page.html'; // automatically bundles
+          <code-block language="javascript">
+${`import { Component } from '@thewebformula/lithe';
+import html from './page.html'; // automatically bundles
+
+export default class extends Component {
+  // html page title
+  static title = 'Page';
+
+  // hook up imported html. Supports template literals (\${this.someVar})
+  static htmlTemplate = html;
   
-  export default class extends Component {
-    // html page title
-    static title = 'Page';
+  constructor() {
+    super();
+  }
+  
+  connectedCallback() {
+    // one[id] one/:id one/value
+    console.log(this.urlParameters); // { id: 'value' }
 
-    // hook up imported html. Supports template literals (\${this.someVar})
-    static htmlTemplate = html;
-    
-    constructor() {
-      super();
-    }
-    
-    connectedCallback() {
-      // one[id] one/:id one/value
-      console.log(this.urlParameters); // { id: 'value' }
-
-      // two[...rest] two/*rest two/a/b
-      console.log(this.urlParameters); // { rest: 'a/b' }
-    }
-  }`}
-            </code>
-          </pre>
+    // two[...rest] two/*rest two/a/b
+    console.log(this.urlParameters); // { rest: 'a/b' }
+  }
+}`}
+          </code-block>
         </mc-card>
       </section>
     </div>
