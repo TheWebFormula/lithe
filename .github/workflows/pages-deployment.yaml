@@ -12,12 +12,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-        
-      - name: Create temp dist dir
-        run: mkdir ${{ runner.temp }}/dist
 
       - name: Build
         run: npm install && npm run build
+        working-directory: ./dist
 
       - name: Publish
         uses: cloudflare/pages-action@v1
