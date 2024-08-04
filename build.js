@@ -9,6 +9,7 @@ build({
   outdir: 'dist/',
   keepHTMLComments: true,
   copyFiles: [
+    { from: 'docs/_headers', to: 'dist/' },
     { from: 'docs/favicon.ico', to: 'dist/' },
     { from: 'docs/icons/*', to: 'dist/icons/' },
     { from: 'docs/manifest.json', to: 'dist/' },
