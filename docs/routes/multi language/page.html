@@ -40,7 +40,7 @@
             <div>${i18n('relativeTime_key', page.days)}</div>
           </div>
         
-          <code-block language="javascript">
+          <code-block language="javascript"><pre>
 ${`import { i18n } from '@thewebformula/lithe';
 
 /* Set locale
@@ -55,9 +55,9 @@ i18n.cache();
 // Load local messages
 i18n.addTranslation('en', en);
 i18n.addTranslation('es', es);`}
-          </code-block>
+          </pre></code-block>
         
-          <code-block language="html">
+          <code-block language="html"><pre>
 ${`<!-- Use i18n method to translate keys -->
 <div>\${i18n('About')}</div>
 <div>\${i18n('key_string')}</div>
@@ -82,10 +82,10 @@ ${`<!-- Use i18n method to translate keys -->
 
 <!-- Attribute binding multiple -->
 <div i18n-attr="one,two" one="one" two="two"></div>`}
-          </code-block>
+          </pre></code-block>
         
         
-          <code-block language="json">
+          <code-block language="json"><pre>
 ${`// en
 
 // type configuration
@@ -134,9 +134,9 @@ ${`// en
   "place_ordinal": "$1 $placeOrdinal($1)",
   "currency_key": "$currencyFormat($1)",
   "relativeTime_key": "$relativeTimeFormat($1)" } }` }
-          </code-block>
+          </pre></code-block>
         
-          <code-block language="json">
+          <code-block language="json"><pre>
 ${`// es
 
 // type configuration
@@ -185,7 +185,7 @@ ${`// es
   "date_key": "$dateFormat($1)",
   "currency_key": "$currencyFormat($1)",
   "relativeTime_key": "$relativeTimeFormat($1)" } }` }
-          </code-block>
+          </pre></code-block>
         </mc-card>
       </section>
     </div>

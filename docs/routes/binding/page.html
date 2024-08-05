@@ -29,7 +29,7 @@
         
           <mc-button onclick="page.updateValue()">Set value to Updated</mc-button>
         
-          <code-block language="html">
+          <code-block language="html"><pre>
 ${`<!-- Signals automatically update the HTML -->
 
 <mc-textfield
@@ -40,8 +40,8 @@ ${`<!-- Signals automatically update the HTML -->
 
 <div>Value: \${page.basicBind}</div>
 <mc-button onclick="page.updateValue()">Set value to Updated</mc-button>`}
-          </code-block>
-          <code-block language="javascript">
+          </pre></code-block>
+          <code-block language="javascript"><pre>
 ${`import { Component, Signal } from '@thewebformula/lithe';
 import htmlTemplate from './page.html';
 
@@ -60,9 +60,9 @@ export default class extends Component {
     this.basicBind.value = 'Updated';
   }
 }`}
-          </code-block>
+          </pre></code-block>
         
-          <code-block language="javascript">
+          <code-block language="javascript"><pre>
 ${`
 // quick example of using Signal, Compute, and effect
   
@@ -94,7 +94,7 @@ export default class extends Component {
     dispose();
   }
 }`}
-          </code-block>
+          </pre></code-block>
         </mc-card>
       </section>
 
@@ -110,7 +110,7 @@ export default class extends Component {
         
           <div b style="margin-bottom: 12px; margin-left: 16px;">Value: ${page.numberTimesTwo}</div>
         
-          <code-block language="html">
+          <code-block language="html"><pre>
 ${`<!-- Computes automatically update the HTML -->
 
 <mc-textfield
@@ -121,8 +121,8 @@ ${`<!-- Computes automatically update the HTML -->
 </mc-textfield>
 
 <div>Value: \${page.numberTimesTwo}</div>`}
-          </code-block>
-          <code-block language="javascript">
+          </pre></code-block>
+          <code-block language="javascript"><pre>
 ${`import { Component, Signal, Compute } from '@thewebformula/lithe';
 import html from './page.html';
 
@@ -140,7 +140,7 @@ export default class extends Component {
     super();
   }
 }`}
-          </code-block>
+          </pre></code-block>
         </mc-card>
       </section>
 
@@ -151,7 +151,7 @@ export default class extends Component {
           <div slot="supporting-text">Effects allows you to run code based on any changes for signals or computes it contains. The difference between effect and compute
             is that effects do not return values.</div>
         
-          <code-block language="javascript">
+          <code-block language="javascript"><pre>
 ${`import { Component, Signal, effect } from '@thewebformula/lithe';
 import html from './page.html';
 
@@ -177,7 +177,7 @@ export default class extends Component {
     dispose();
   }
 }`}
-          </code-block>
+          </pre></code-block>
         </mc-card>
       </section>
     </div>

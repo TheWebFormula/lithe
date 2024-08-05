@@ -31,7 +31,7 @@ section {
   margin-top: 36px;
 }
 
-code-block {
+code-block pre {
   position: relative;
   margin: 0;
   white-space: pre-wrap;
@@ -40,6 +40,11 @@ code-block {
   unicode-bidi: isolate;
   padding-left: 22px !important;
   padding-top: 22px !important;
+}
+
+code-block {
+  display: block;
+  position: relative;
 }
 
 code-block button {
@@ -55,30 +60,31 @@ code-block button {
   font-size: 13px;
   font-weight: bold;
   cursor: pointer;
+  z-index: 1;
 }
 
 code-block button:hover {
   background-color: rgba(255,255,255,0.2);
 }
 
-body.window-compact code-block {
+body.window-compact code-block pre {
   font-size: 12px;
   max-width: 358px;
 }
 
-mc-card code-block {
+mc-card code-block pre {
   margin: 0 -16px;
 }
 
-mc-card > code-block:first-of-type {
+mc-card > code-block:first-of-type pre {
   margin-top: 24px;
 }
 
-mc-card > code-block:last-of-type {
+mc-card > code-block:last-of-type pre {
   border-radius: 0 0 var(--mc-shape-medium) var(--mc-shape-medium);
 }
 
-mc-card > code-block:last-child {
+mc-card > code-block:last-child pre {
   margin-bottom: -16px;
 }
 

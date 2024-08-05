@@ -22,7 +22,7 @@
           <div slot="supporting-text">page.js</div>
           <div slot="supporting-text">Web component is imported in this file</div>
         
-          <code-block language="javascript">
+          <code-block language="javascript"><pre>
 ${`import { Component, html } from '@thewebformula/lithe';
 /* HTML imports will bundle with the build */
 import htmlTemplate from './page.html';
@@ -51,7 +51,7 @@ export default class extends Component {
     `}\`;
   }
 }`}
-          </code-block>
+          </pre></code-block>
         </mc-card>
       </section>
 
@@ -61,12 +61,12 @@ export default class extends Component {
           <h2 slot="headline">Component file</h2>
           <div slot="supporting-text">component.js</div>
         
-          <code-block language="html">
+          <code-block language="html"><pre>
 ${`<!-- component.html -->
 <button><slot></slot></button>`}
-          </code-block>
+          </pre></code-block>
         
-          <code-block language="javascript">
+          <code-block language="javascript"><pre>
 ${`import { Component } from '@thewebformula/lithe';
 import htmlTemplate from './component.html';
 
@@ -163,7 +163,7 @@ class CustomButton extends Component {
 
 // define web component
 customElements.define('custom-button', CustomButton);`}
-          </code-block>
+          </pre></code-block>
         </mc-card>
       </section>
 
@@ -172,20 +172,20 @@ customElements.define('custom-button', CustomButton);`}
         <mc-card>
           <h2 slot="headline">Interacting with component elements</h2>
         
-          <code-block language="html">
+          <code-block language="html"><pre>
 ${`<!-- index.html -->
 <body>
   <custom-webcomponent></custom-webcomponent>
 </body>`}
-          </code-block>
+          </pre></code-block>
         
-          <code-block language="html">
+          <code-block language="html"><pre>
 ${`<!-- component.html -->
 <button onclick="this.closest('custom-webcomponent').clickIt()">Click it direct</button>
 <button id="eventlistener-button">Click it event listener</button>`}
-        </code-block>
+        </pre></code-block>
       
-        <code-block language="javascript">
+        <code-block language="javascript"><pre>
 ${`import { Component } from '@thewebformula/lithe';
 import html from './component.html'; // automatically bundles
 
@@ -217,7 +217,7 @@ class CustomWebcomponent extends Component {
 
 // define web component
 customElements.define('custom-webcomponent', CustomWebcomponent);`}
-          </code-block>
+          </pre></code-block>
         </mc-card>
       </section>
     </div>

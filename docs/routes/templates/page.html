@@ -57,7 +57,7 @@
                 ${`commented out ${page.plainText}`}
               -->
         
-          <code-block language="html">
+          <code-block language="html"><pre>
 ${`<!-- page.html -->
 <mc-divider></mc-divider>
 <div class="mc-font-title-medium">Template html</div>
@@ -94,8 +94,8 @@ ${`<!-- page.html -->
   HTML comments work on expressions
   \${\`commented out \${page.plainText}\`}
 -->`}
-          </code-block>
-          <code-block language="javascript">
+          </pre></code-block>
+          <code-block language="javascript"><pre>
 ${`// page.js
 import { Component } from '@thewebformula/lithe';
 import htmlTemplate from './page.html';
@@ -126,7 +126,7 @@ export default class extends Component {
     this.loopVar.value = [...this.loopVar.value, {value}];
   }
 }`}
-          </code-block>
+          </pre></code-block>
         </mc-card>
       </section>
 
@@ -145,12 +145,12 @@ export default class extends Component {
           <div style="margin-top: 42px; margin-bottom: -8px;">
             <div style="font-size: 24px;">HTML file</div>
           </div>
-          <code-block language="html">
+          <code-block language="html"><pre>
 ${`<!-- page.html -->
 <h3>Page</h3>
 <div>Content</div>`}
-        </code-block>
-        <code-block language="javascript">
+        </pre></code-block>
+        <code-block language="javascript"><pre>
 ${`// page.js
 import { Component } from '@thewebformula/lithe';
 import htmlTemplate from './page.html';
@@ -165,13 +165,13 @@ export default class extends Component {
     super();
   }
 }`}
-          </code-block>
+          </pre></code-block>
         
           <div style="margin-top: 42px; margin-bottom: 12px;">
             <div style="font-size: 24px;">Page function</div>
           </div>
         
-          <code-block language="javascript">
+          <code-block language="javascript"><pre>
 ${`// page.js page function
 import { Component, html } from '@thewebformula/lithe';
 
@@ -193,7 +193,7 @@ export default class extends Component {
     \`;
   }
 }`}
-          </code-block>
+          </pre></code-block>
         </mc-card>
       </section>
     </div>

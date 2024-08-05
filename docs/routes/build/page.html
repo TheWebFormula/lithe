@@ -22,7 +22,7 @@
             <li>File copying</li>
           </ul>
         
-          <code-block language="javascript">
+          <code-block language="javascript"><pre>
 ${`import build from '@thewebformula/lithe/build';
 
 /**
@@ -128,12 +128,12 @@ build({
   // callback after bundle
   onEnd: () => {}
 });`}
-          </code-block>
+          </pre></code-block>
         
           <div class="card-content" style="margin-top: 42px; margin-bottom: 12px;">
             <div style="font-size: 24px;">Native server</div>
           </div>
-          <code-block language="javascript">
+          <code-block language="javascript"><pre>
 ${`import { createServer } from 'node:http';
 import { middlewareNode } from '@thewebformula/lithe/middleware';
 
@@ -152,12 +152,12 @@ createServer(async (req, res) => {
   
   // Do other stuff
 }).listen(3000);`}
-          </code-block>
+          </pre></code-block>
         
           <div class="card-content" style="margin-top: 42px; margin-bottom: 12px;">
             <div style="font-size: 24px;">Express server</div>
           </div>
-          <code-block language="javascript">
+          <code-block language="javascript"><pre>
 ${`import express from 'express';
 import { middlewareExpress } from '@thewebformula/lithe/middleware';
 
@@ -172,13 +172,13 @@ app.use(middlewareExpress({
 }));
 app.use(express.static('./docs'));
 app.listen(3000);`}
-          </code-block>
+          </pre></code-block>
         
         
           <div class="card-content" style="margin-top: 42px; margin-bottom: 12px;">
             <div style="font-size: 24px;">Run commands</div>
           </div>
-          <code-block language="bash">
+          <code-block language="bash"><pre>
 ${`# Development run
 node build.js
 
@@ -187,7 +187,7 @@ node --watch-path=./app build.js
 
 # Production run. minifies, gzips, and writes files
 NODE_ENV=production node build.js`}
-          </code-block>
+          </pre></code-block>
         </mc-card>
       </section>
     </div>

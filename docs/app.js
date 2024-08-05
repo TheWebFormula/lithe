@@ -19,7 +19,7 @@ if (typeof hljs === 'undefined') {
 }
 
 function initHLJS() {
-  hljs.configure({ ignoreUnescapedHTML: true, cssSelector: 'code-block' });
+  hljs.configure({ ignoreUnescapedHTML: true, cssSelector: 'code-block pre' });
   hljs.highlightAll();
 }
 
