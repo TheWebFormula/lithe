@@ -9,6 +9,11 @@ let templates = new Map();
  * @extends HTMLElement
  */
 export default class Component extends HTMLElement {
+  // used for building and routing
+  static _isPage = false;
+  static _defined = false;
+  static _isBuild = false;
+
   static _html = html;
 
   /**

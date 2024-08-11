@@ -4,11 +4,6 @@ const app = {
   preventNavigation: false
 };
 
-// prevent html code from throwing an error before route hookup
-//  onchange="page.var = 'value'"
-// window.page = { __initial__: true };
-
-
 /**
 * @typedef {Object} config
 * @property {Component} component Component class
@@ -121,7 +116,7 @@ async function route(locationObject, back = false, initial = false) {
     match.component = await Promise.resolve(match.component);
     if (typeof match.component !== 'function') match.component = match.component.default;
     match.component._isPage = true;
-    match.component._pagePathRegex = match.regex;
+    // match.component._pagePathRegex = match.regex;
     customElements.define(`page-${match.hash}`, match.component);
     match.component._defined = true;
   }

@@ -351,8 +351,9 @@ function sanitizeAttributeName(name, value) {
   return (shouldRemoveLevel1 && securityLevel > 0) || (shouldRemoveLevel2 && securityLevel === 2);
 }
 
+const spaceRegex = /\s+/g;
 function sanitizeAttributeValue(name, value) {
-  value = value.replace(/\s+/g, '').toLowerCase();
+  value = value.replace(spaceRegex, '').toLowerCase();
   if (value.match(dangerousAttributeValueRegex) !== null) {
     if (window.litheDev === true && securityLevel === 0) {
       console.warn(`Template sanitizer (WARNING): Potentially dangerous attribute NOT removed because of current level (${securityLevel}) "${name}: ${value}"`);

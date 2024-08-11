@@ -35,6 +35,6 @@
   },
   "devDependencies": {
     "@thewebformula/lithe": "file:./",
-    "@thewebformula/materially": "^0.3.0"
+    "@thewebformula/materially": "^0.3.1"
   }
 }
