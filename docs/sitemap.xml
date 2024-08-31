@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset
+      xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
+            http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
+
+<url>
+  <loc>https://lithe.dev/</loc>
+  <lastmod>2024-08-31T20:16:18+00:00</lastmod>
+  <priority>1.00</priority>
+</url>
+<url>
+  <loc>https://lithe.dev/getting-started</loc>
+  <lastmod>2024-08-31T20:16:18+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>https://lithe.dev/routing</loc>
+  <lastmod>2024-08-31T20:16:18+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>https://lithe.dev/build</loc>
+  <lastmod>2024-08-31T20:16:18+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>https://lithe.dev/binding</loc>
+  <lastmod>2024-08-31T20:16:18+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>https://lithe.dev/web-component</loc>
+  <lastmod>2024-08-31T20:16:18+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>https://lithe.dev/templates</loc>
+  <lastmod>2024-08-31T20:16:18+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>https://lithe.dev/fetcher</loc>
+  <lastmod>2024-08-31T20:16:18+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>https://lithe.dev/multi-language</loc>
+  <lastmod>2024-08-31T20:16:18+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+
+
+</urlset>

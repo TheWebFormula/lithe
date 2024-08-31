@@ -1,6 +1,6 @@
 {
   "name": "@thewebformula/lithe",
-  "version": "0.7.11",
+  "version": "0.7.12",
   "description": "A lithe framework for the web",
   "type": "module",
   "main": "index.js",
@@ -30,11 +30,11 @@
   "homepage": "https://github.com/TheWebFormula/lithe#readme",
   "dependencies": {
     "@minify-html/node": "^0.15.0",
-    "esbuild": "^0.23.0",
+    "esbuild": "^0.23.1",
     "linkedom": "^0.18.4"
   },
   "devDependencies": {
     "@thewebformula/lithe": "file:./",
-    "@thewebformula/materially": "^0.3.1"
+    "@thewebformula/materially": "^0.4.1"
   }
 }
