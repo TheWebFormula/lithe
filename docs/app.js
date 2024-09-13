@@ -5,6 +5,7 @@ import '@thewebformula/materially/components/card';
 import '@thewebformula/materially/components/button';
 import '@thewebformula/materially/components/switch';
 import '@thewebformula/materially/components/textfield';
+import '@thewebformula/materially/components/pane';
 import './code-block.js';
 
 if (typeof hljs === 'undefined') {

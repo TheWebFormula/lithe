@@ -1,0 +1,127 @@
+<article>
+  <header>
+    <h1>View transitions</h1>
+  </header>
+
+  <div class="article-main">
+    <nav class="links-nav">
+      <h2>Links</h2>
+      <ul class="links">
+        <li><a href="#Types">Types</a></li>
+        <li><a href="#customizing">Customizing</a></li>
+      </ul>
+    </nav>
+
+    <div class="article-content">
+
+      <section id="Types" aria-label="View transition types">
+        <mc-card>
+          <h2 slot="headline">Types</h2>
+          <div slot="supporting-text">There are multiple built in transitions you can utilize. These can be used individually per anchor link or you can set them globally.</div>
+          <ul>
+            <li>cross-fade</li>
+            <li>slide-right</li>
+            <li>slide-left</li>
+            <li>expand-from-element</li>
+          </ul>
+        
+          <code-block language="html"><pre>
+${`<!-- Set globally -->
+<meta name="view-transition" content="slide-left">
+<meta name="view-transition-back" content="slide-right">
+
+
+<!-- Set transition on anchor link
+        These will override the global settings -->
+<a href="/" transition-name="cross-fade">Welcome</a>
+<mc-card href="/item/123" transition-name="expand-from-element"></mc-card>`}
+          </pre></code-block>
+        </mc-card>
+      </section>
+
+
+      <section id="customizing" aria-label="Custom view transitions">
+        <mc-card>
+          <h2 slot="headline">Custom view transitions</h2>
+          <div slot="supporting-text">You can add your own view transitions. Both CSS and code transitions are supported.</div>
+        
+          <code-block language="css"><pre>
+/* Use standard css */
+::view-transition-old(slide-left) {
+  animation: page-slide-left-out;
+  animation-duration: 400ms;
+  animation-timing-function: ease;
+}
+::view-transition-new(slide-left) {
+  animation: page-slide-left-in;
+  animation-duration: 400ms;
+  animation-timing-function: ease;
+}
+
+@keyframes page-slide-left-in {
+  0% {
+    transform: translateX(100%);
+    clip-path: inset(0px 100% 0px 0px);
+  }
+  100% {
+    transform: translateX(0px);
+    clip-path: inset(0px 0px 0px 0px);
+  }
+}
+
+@keyframes page-slide-left-out {
+  0% {
+    transform: translateX(0px);
+    clip-path: inset(0px 0px 0px 0px);
+  }
+  100% {
+    transform: translateX(-100%);
+    clip-path: inset(0px 0px 0px 100%);
+  }
+}
+        </pre></code-block>
+        <code-block language="javascript"><pre>
+${`
+import { registerViewTransition } from '@thewebformula/lithe';
+
+registerViewTransition('the-name', {
+  setup(container, target) {
+    const scrollTop = document.documentElement.scrollTop;
+    document.documentElement.style.setProperty('--mc-view-transition-scroll-fix', \`translateY(-\${scrollTop}px)\`);
+    const containerBounds = container.getBoundingClientRect();
+    const targetBounds = target.getBoundingClientRect();
+
+    return {
+      containerBounds,
+      targetBounds,
+      scrollTop
+    };
+  },
+  animate(container, { containerBounds, targetBounds, scrollTop }) {
+    document.documentElement.animate(
+      [
+        {
+          transform: \`translate(\${targetBounds.x - containerBounds.x}px, \${targetBounds.y - containerBounds.y - scrollTop}px)\`,
+          height: \`\${targetBounds.height}px\`,
+          width: \`\${targetBounds.width}px\`
+        },
+        {
+          transform: \`translate(0px, 0px)\`,
+          height: \`\${container.offsetHeight}px\`,
+          width: \`\${container.offsetWidth}px\`,
+        }
+      ],
+      {
+        duration: 400,
+        easing: 'cubic-bezier(0.2, 0, 0, 1)',
+        pseudoElement: '::view-transition-new(expand-from-element)'
+      }
+    );
+  }
+});`}
+          </pre></code-block>
+        </mc-card>
+      </section>
+    </div>
+  </div>
+</article>
