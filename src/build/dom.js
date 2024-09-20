@@ -178,4 +178,5 @@ function pollyFill() {
   global.HTMLTemplateElement = HTMLTemplateElement;
   global.DocumentFragment = DocumentFragment;
   global.TouchEvent = class TouchEvent { };
+  global.PointerEvent = class PointerEvent { };
 }
