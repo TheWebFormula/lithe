@@ -1,7 +1,8 @@
 import esbuild from 'esbuild';
 import path from 'node:path';
-import { Buffer } from 'node:buffer';
-import minifyHtml from '@minify-html/node';
+// package is broken on m1 mac currently and the other options have to many sub dependencies
+// import minifyHtml from '@minify-html/node';
+// import { Buffer } from 'node:buffer';
 import { access, readFile, readdir, stat, rm, writeFile } from 'node:fs/promises';
 import { gzip } from 'node:zlib';
 import { promisify } from 'node:util';
@@ -108,8 +109,7 @@ export default async function build(config = {
     outdir: config.outdir,
     metafile: true,
     entryNames: '[name]-[hash]',
-    minify: config.minify,
-    plugins: [minifyCSS(config.minify)]
+    minify: config.minify
   });
   
   const {
@@ -311,33 +311,21 @@ function pluginHTML(config) {
     setup(build) {
       build.onLoad({ filter: /\.html$/ }, async args => {
         let contents = await readFile(args.path, 'utf-8');
-        if (config.minify) {
-          try {
-            contents = minifyHtml.minify(Buffer.from('`' + contents.trim() + '`'), {
-              ensure_spec_compliant_unquoted_attribute_values: true,
-              keep_spaces_between_attributes: true,
-              keep_comments: config.keepHTMLComments
-            }).toString().slice(1, -1)
-          } catch (e) { }
-        }
+        // package is broken on m1 mac currently and the other options have to many sub dependencies
+        // if (config.minify) {
+        //   try {
+        //     contents = minifyHtml.minify(Buffer.from('`' + contents.trim() + '`'), {
+        //       ensure_spec_compliant_unquoted_attribute_values: true,
+        //       keep_spaces_between_attributes: true,
+        //       keep_comments: config.keepHTMLComments
+        //     }).toString().slice(1, -1)
+        //   } catch (e) { }
+        // }
         return {
-          contents,
+          contents: contents.trim(),
           loader: 'text'
         };
       });
-    }
-  };
-}
-
-function minifyCSS(minify) {
-  return {
-    name: 'minifyCSS',
-    setup(build) {
-      build.onLoad({ filter: /\.css$/ }, async (args) => {
-        const f = await readFile(args.path)
-        const css = await esbuild.transform(f, { loader: 'css', minify })
-        return { loader: 'css', contents: css.code }
-      })
     }
   };
 }
