@@ -3,7 +3,7 @@ import path from 'node:path';
 // package is broken on m1 mac currently and the other options have to many sub dependencies
 // import minifyHtml from '@minify-html/node';
 // import { Buffer } from 'node:buffer';
-import { access, readFile, readdir, stat, rm, writeFile } from 'node:fs/promises';
+import { access, readFile, readdir, stat, rm, writeFile, mkdir } from 'node:fs/promises';
 import { gzip } from 'node:zlib';
 import { promisify } from 'node:util';
 import devServer from './dev-server.js';
@@ -72,6 +72,13 @@ export default async function build(config = {
     if (config.minify === undefined) config.minify = true;
     if (config.gzip === undefined) config.gzip = true;
     config.keepHTMLComments = config.keepHTMLComments === true ? true : false;
+  }
+
+  // create output dir
+  try {
+    await access(config.outdir);
+  } catch {
+    await mkdir(config.outdir);
   }
 
   if (config.securityLevel && ![0, 1, 2].includes(config.securityLevel)) {
