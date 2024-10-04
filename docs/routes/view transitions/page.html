@@ -23,7 +23,10 @@
             <li>slide-right</li>
             <li>slide-left</li>
             <li>expand-from-element</li>
+            <li>expand-from-element-back</li>
           </ul>
+
+          <a href="/" view-transition="expand-from-element" view-transition-back="expand-from-element-back" style="display: block; border-radius: 12px; background-color: white; width: 200px; height: 80px; text-align: center; line-height: 80px;">Expand example</a>
         
           <code-block language="html"><pre>
 ${`<!-- Set globally -->
@@ -32,9 +35,21 @@ ${`<!-- Set globally -->
 
 
 <!-- Set transition on anchor link
-        These will override the global settings -->
-<a href="/" transition-name="cross-fade">Welcome</a>
-<mc-card href="/item/123" transition-name="expand-from-element"></mc-card>`}
+     These will override the global settings -->
+<a href="/" view-transition="cross-fade">Welcome</a>
+<mc-card href="/item/123" view-transition="expand-from-element"></mc-card>
+
+
+<!-- Add a back transition
+     Back will only work after the initial view-transition -->
+<a href="/"
+   view-transition="expand-from-element"
+   view-transition-back="expand-from-element-back">Welcome</a>
+
+<a href="/"
+   view-transition="slide-left"
+   view-transition-back="slide-right">Welcome</a>
+`}
           </pre></code-block>
         </mc-card>
       </section>
