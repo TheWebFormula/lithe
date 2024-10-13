@@ -142,9 +142,11 @@ async function route(locationObject, back = false, initial = false, target) {
       return;
     }
 
+    const newContainer = document.querySelector('#page-content');
     runTransition({
+      newContainer,
+      oldContainer: target,
       back,
-      target,
       href: locationObject.href
     }, () => {
       routeTransition(currentPage, match, locationObject, back, initial);

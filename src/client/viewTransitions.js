@@ -98,12 +98,12 @@ const viewTransitions = {
 
 
 
-export function registerViewTransition(name, func) {
+export function registerViewTransition(name, config = { setup() {}, animate() {} }) {
   if (viewTransitions[name]) console.warn(`There is already a view transition registered with the name '${name}'. You have overridden it`);
-  viewTransitions[name] = func;
+  viewTransitions[name] = config;
 }
 
-export async function runTransition({ back, href, target }, renderCallback) {
+export async function runTransition({ oldContainer, newContainer, back, href }, renderCallback) {
   if (isReducedMotion === undefined) isReducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (viewTransitionNameGlobal === undefined) {
     const viewTransitionMeta = document.querySelector('[name=view-transition]');
@@ -124,7 +124,7 @@ export async function runTransition({ back, href, target }, renderCallback) {
   // clear back transition if not back
   if (!isBackTransition) backTransitionDetails = undefined;
 
-  const targetViewTransition = target?.getAttribute('view-transition');
+  const targetViewTransition = oldContainer?.getAttribute('view-transition');
   const transitionName = back ? (backTransitionDetails?.name || viewTransitionNameGlobalBack || viewTransitionNameGlobal) : (targetViewTransition || viewTransitionNameGlobal);
   if (!transitionName) {
     renderCallback();
@@ -134,14 +134,12 @@ export async function runTransition({ back, href, target }, renderCallback) {
   const transitionItem = viewTransitions[transitionName];
   if (!transitionItem) {
     console.warn(`No view transition with name: ${transitionName}`);
-    renderCallback();
-    return;
   }
-  
-  const container = document.querySelector('#page-content');
-  const setupData = isBackTransition ? transitionItem.setup(container, backTransitionDetails.setupData) : transitionItem.setup(container, target);
 
-  const targetViewTransitionBack = target?.getAttribute('view-transition-back');
+  let setupData;
+  if (transitionItem?.setup) setupData = isBackTransition ? transitionItem.setup(newContainer, backTransitionDetails.setupData) : transitionItem.setup(newContainer, oldContainer);
+
+  const targetViewTransitionBack = oldContainer?.getAttribute('view-transition-back');
   if (targetViewTransitionBack) {
     backTransitionDetails = {
       name: targetViewTransitionBack,
@@ -152,13 +150,13 @@ export async function runTransition({ back, href, target }, renderCallback) {
     backTransitionDetails = undefined;
   }
 
-  container.style.viewTransitionName = transitionName;
+  newContainer.style.viewTransitionName = transitionName;
   const transition = document.startViewTransition(renderCallback);
   await transition.ready;
-  transitionItem.animate(container, setupData);
+  if (transitionItem?.animate) transitionItem.animate(newContainer, setupData);
   if (isBackTransition) backTransitionDetails = undefined;
   transition.finished.then(() => {
-    container.style.viewTransitionName = '';
+    newContainer.style.viewTransitionName = '';
   });
 }
 
