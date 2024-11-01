@@ -86,7 +86,7 @@ export function watchSignals() {
   });
 }
 
-// TODO what if html is used outside of page? there does not seem to be much difference running a cleanup function
+// called from component
 export function destroySignalCache() {
   // let signalCacheDestroyCheckList = [];
   templateCache.clear();
@@ -100,6 +100,7 @@ export function destroySignalCache() {
   // isSignalConnected(signalCacheDestroyCheckList);
 }
 
+// This does not seem to be needed. The weak reference seems to handle things
 // function isSignalConnected(signalCacheDestroyCheckList) {
 //   setTimeout(() => {
 //     for (const sig of signalCacheDestroyCheckList) {

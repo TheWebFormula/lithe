@@ -1,7 +1,7 @@
-let backTransitionDetails;
 let isReducedMotion;
 let viewTransitionNameGlobal;
 let viewTransitionNameGlobalBack;
+let backTransitionStack = new Map();
 
 const viewTransitions = {
   'expand-from-element': {
@@ -103,7 +103,7 @@ export function registerViewTransition(name, config = { setup() {}, animate() {}
   viewTransitions[name] = config;
 }
 
-export async function runTransition({ oldContainer, newContainer, back, href }, renderCallback) {
+export async function runTransition({ oldContainer, newContainer, back, routeId }, renderCallback) {
   if (isReducedMotion === undefined) isReducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (viewTransitionNameGlobal === undefined) {
     const viewTransitionMeta = document.querySelector('[name=view-transition]');
@@ -117,12 +117,7 @@ export async function runTransition({ oldContainer, newContainer, back, href }, 
   }
 
   // check if we have a back transition
-  const canBeBack = back && !!backTransitionDetails;
-  // make sure we are returning to where we came from
-  const backHrefMatch = canBeBack ? href === backTransitionDetails.href : true;
-  const isBackTransition = canBeBack && backHrefMatch;
-  // clear back transition if not back
-  if (!isBackTransition) backTransitionDetails = undefined;
+  const backTransitionDetails = back && backTransitionStack.get(routeId);
 
   const targetViewTransition = oldContainer?.getAttribute('view-transition');
   const transitionName = back ? (backTransitionDetails?.name || viewTransitionNameGlobalBack || viewTransitionNameGlobal) : (targetViewTransition || viewTransitionNameGlobal);
@@ -137,24 +132,20 @@ export async function runTransition({ oldContainer, newContainer, back, href }, 
   }
 
   let setupData;
-  if (transitionItem?.setup) setupData = isBackTransition ? transitionItem.setup(newContainer, backTransitionDetails.setupData) : transitionItem.setup(newContainer, oldContainer);
+  if (transitionItem?.setup) setupData = backTransitionDetails ? transitionItem.setup(newContainer, backTransitionDetails.setupData) : transitionItem.setup(newContainer, oldContainer);
 
   const targetViewTransitionBack = oldContainer?.getAttribute('view-transition-back');
   if (targetViewTransitionBack) {
-    backTransitionDetails = {
+    backTransitionStack.set(routeId, {
       name: targetViewTransitionBack,
-      href: location.href,
       setupData
-    };
-  } else {
-    backTransitionDetails = undefined;
+    });
   }
 
   newContainer.style.viewTransitionName = transitionName;
   const transition = document.startViewTransition(renderCallback);
   await transition.ready;
   if (transitionItem?.animate) transitionItem.animate(newContainer, setupData);
-  if (isBackTransition) backTransitionDetails = undefined;
   transition.finished.then(() => {
     newContainer.style.viewTransitionName = '';
   });

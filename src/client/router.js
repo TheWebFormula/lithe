@@ -6,6 +6,8 @@ const app = {
   preventNavigation: false
 };
 
+let routeId = 0;
+
 /**
 * @typedef {Object} config
 * @property {Component} component Component class
@@ -141,13 +143,13 @@ async function route(locationObject, back = false, initial = false, target) {
       if (!hashMatches) window.dispatchEvent(new Event('hashchange'));
       return;
     }
-
+    
     const newContainer = document.querySelector('#page-content');
     runTransition({
       newContainer,
       oldContainer: target,
       back,
-      href: locationObject.href
+      routeId: window.history.state?.id
     }, () => {
       routeTransition(currentPage, match, locationObject, back, initial);
     });
@@ -167,7 +169,7 @@ function routeTransition(currentPage, match, locationObject, back, initial) {
 
   const nextPage = new match.component();
   // TODO remove when using navigation api
-  if (!back && !initial) window.history.pushState({}, nextPage.constructor.title, `${locationObject.pathname}${locationObject.search}${locationObject.hash}`);
+  if (!back && !initial) window.history.pushState({ id: routeId++ }, nextPage.constructor.title, `${locationObject.pathname}${locationObject.search}${locationObject.hash}`);
   window.page = nextPage;
 
   nextPage.render();
