@@ -1,7 +1,7 @@
 import { isSignal, Compute } from './signal.js';
 
 
-const translations = {};
+const translations = new Map();
 const signals = new Set();
 const valueRegex = /\$(\d)|\$(\w+)\(\$(\d)\)/g;
 let useCache = false;
@@ -28,7 +28,7 @@ export function i18n(key, ...variables) {
         return variable
       }
       if (formatterName && formatterVarIndex) {
-        const formatMethod = translations[currentLocal].formatters[formatterName].method;
+        const formatMethod = translations.get(currentLocal).formatters[formatterName].method;
         const variable = variables[parseInt(formatterVarIndex) - 1];
         if (isSignal(variable)) return formatMethod(variable.value);
         return formatMethod(variable);
@@ -46,7 +46,7 @@ i18n.setLocale = locale => {
   if (changed) {
     if (useCache) localStorage.setItem('li-locale', locale);
     currentLocal = locale;
-    currentTranslations = translations[currentLocal];
+    currentTranslations = translations.get(currentLocal);
     for (const signal of signals) {
       signal.updateValueVersion(true);
     }
@@ -67,7 +67,7 @@ i18n.cache = () => {
 
 i18n.format = (formatterName, value) => {
   const compute = new Compute(() => {
-    const formatter = translations[currentLocal].formatters[formatterName];
+    const formatter = translations.get(currentLocal).formatters[formatterName];
     if (!formatter) {
       if (window.liDev) console.warn(`Cannot find formatter: ${formatterName}`);
       return '';
@@ -84,20 +84,20 @@ i18n.addTranslation = (locale, data) => {
   locale = Intl.getCanonicalLocales(locale)[0].split('-')[0];
   if (typeof data !== 'object' || data === null) throw Error('data must be an object');
 
-  translations[locale] = data;
+  translations.set(locale, data);
   data.cardinalRules = new Intl.PluralRules(locale);
   data.ordinalRules = new Intl.PluralRules(locale, { type: 'ordinal' });
 
   if (data.formatters) {
     for (const [key, value] of Object.entries(data.formatters)) {
-      translations[locale].formatters[key] = buildFormatter(value, locale);
+      translations.get(locale).formatters[key] = buildFormatter(value, locale);
     }
   }
 
-  if (locale === currentLocal) currentTranslations = translations[locale];
+  if (locale === currentLocal) currentTranslations = translations.get(locale);
   if (useCache) {
     const current = JSON.parse(localStorage.getItem('li-locale-messages') || {});
-    current[locale] = translations[locale];
+    current[locale] = translations.get(locale);
     localStorage.setItem('li-locale-messages', JSON.stringify(current));
   }
 }
@@ -106,13 +106,13 @@ function buildFormatter(config, locale) {
   switch (config.type) {
     case 'cardinal':
       config.method = data => {
-        const cardinal = translations[locale].cardinalRules.select(parseInt(data));
+        const cardinal = translations.get(locale).cardinalRules.select(parseInt(data));
         return config[cardinal] || config.other;
       };
       break;
     case 'ordinal':
       config.method = data => {
-        const ordinal = translations[locale].ordinalRules.select(parseInt(data));
+        const ordinal = translations.get(locale).ordinalRules.select(parseInt(data));
         return config[ordinal] || config.other;
       };
       break;

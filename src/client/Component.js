@@ -71,7 +71,7 @@ export default class Component extends HTMLElement {
     */
   // static get observedAttributesExtended() { }
 
-  #attributeEvents = {};
+  #attributeEvents = new Map();
   #attributesLookup;
   #prepared;
   #pageContent;
@@ -119,13 +119,13 @@ export default class Component extends HTMLElement {
     const type = this.#attributesLookup[name];
     name = name.replace(dashCaseRegex, (_, s) => s.toUpperCase());
     if (type === 'event') {
-      if (this.#attributeEvents[name]) {
-        this.removeEventListener(name.replace(onRegex, ''), this.#attributeEvents[name]);
-        this.#attributeEvents[name] = undefined;
+      if (this.#attributeEvents.has(name)) {
+        this.removeEventListener(name.replace(onRegex, ''), this.#attributeEvents.get(name));
+        this.#attributeEvents.delete(name);
       }
       if (newValue) {
-        this.#attributeEvents[name] = this.#attributeDescriptorTypeConverter(newValue, type);
-        this.addEventListener(name.replace(onRegex, ''), this.#attributeEvents[name]);
+        this.#attributeEvents.set(name, this.#attributeDescriptorTypeConverter(newValue, type));
+        this.addEventListener(name.replace(onRegex, ''), this.#attributeEvents.get(name));
       }
     } else {
       this.attributeChangedCallbackExtended(
