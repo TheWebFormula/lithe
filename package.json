@@ -1,6 +1,6 @@
 {
   "name": "@thewebformula/lithe",
-  "version": "0.10.4",
+  "version": "0.10.5",
   "description": "A lithe framework for the web",
   "type": "module",
   "main": "index.js",
@@ -34,6 +34,6 @@
   },
   "devDependencies": {
     "@thewebformula/lithe": "file:./",
-    "@thewebformula/materially": "^0.6.0"
+    "@thewebformula/materially": "^0.7.2"
   }
 }
