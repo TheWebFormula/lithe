@@ -6,6 +6,7 @@ import '@thewebformula/materially/components/button';
 import '@thewebformula/materially/components/switch';
 import '@thewebformula/materially/components/textfield';
 import '@thewebformula/materially/components/pane';
+import '@thewebformula/materially/components/icon';
 import './code-block.js';
 
 if (typeof hljs === 'undefined') {

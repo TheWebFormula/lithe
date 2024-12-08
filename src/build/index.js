@@ -188,6 +188,63 @@ async function buildIndexHTML(appJSOutput, appCSSOutput, routeConfigs, config) {
     }
   }
 
+
+  // Add splash screen if configured
+  const splashScreen = document.querySelector('meta[name=splash-screen]');
+  if (splashScreen && splashScreen.getAttribute('content') === 'true') {
+    const themeColorMeta = document.querySelector('meta[name=theme-color]');
+    const themeColor = themeColorMeta?.getAttribute('content') || 'inherit';
+    document.head.insertAdjacentHTML('beforeend', `
+  <style>
+    body.li-splash {visibility: hidden;}
+    splash-screen {
+      display:none;
+      visibility: hidden;
+      opacity: 0;
+      position: fixed;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      inset: 0 0 0 0;
+      background-color: ${themeColor};
+      z-index: 99;
+      font-size: 20px;
+      color: rgb(from ${themeColor} calc(255 - r) calc(255 - g) calc(255 - b));
+      transition: opacity, display, visibility;
+      transition-behavior: allow-discrete;
+      transition-duration: 320ms;
+    }
+    body.li-splash splash-screen {
+      visibility: visible;
+      display: flex;
+      opacity: 1;
+      transition: none;
+    }
+    splash-screen img {max-width: 120px;}
+    splash-screen .welcome {line-height: 72px;}
+  </style>
+  <script>
+    let it;
+    let umc = false;
+    setTimeout(() => {
+      umc = document.body.querySelector('mc-navigation-drawer') || document.body.querySelector('mc-navigation-bar') || document.body.querySelector('mc-pane-container');
+      if ((umc && !document.body.classList.contains('mc-initiated')) || (!umc && !window.page)) {
+        document.body.classList.add('li-splash');
+        it = Date.now();
+        cs();
+      }
+    }, 300)
+
+    function cs() {
+      if ((umc && document.body.classList.contains('mc-initiated')) || (!umc && window.page)) setTimeout(() => document.body.classList.remove('li-splash'), Math.max(0, 1200 - (Date.now() - it)));
+      else setTimeout(cs, 200);
+    }
+  </script>
+`);
+    const themeIcon = document.querySelector('link[rel=apple-touch-icon]') || document.querySelector('link[rel=icon]');
+    if (!document.querySelector('splash-screen')) document.body.insertAdjacentHTML('afterbegin', `<splash-screen><div class="icon"><img src="${themeIcon.getAttribute('href')}" /></div><div class="welcome">${document.querySelector('title')?.textContent || ''}</div></splash-screen>`);
+  }
+
   // used to prevent router code from running
   window.__isBuilding = true;
   // load script so we can grab templates
