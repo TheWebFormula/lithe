@@ -130,6 +130,7 @@ async function route(locationObject, back = false, initial = false, target) {
     const cur = document.querySelector(`page-${match.hash}`);
     window.page = cur;
     cur.render();
+    document.documentElement.scrollTop = 0;
   } else {
     const currentPage = window.page;
     const samePage = currentPage?.constructor === match.component;
