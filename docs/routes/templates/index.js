@@ -5,7 +5,7 @@ export default class extends Component {
   static title = 'Templates';
   static htmlTemplate = htmlTemplate;
 
-  plainText = 'plainText value';
+  plainText = 'some value';
   signalVar = new Signal('signalVar value');
   loopVar = new Signal([
     { value: 'One' },

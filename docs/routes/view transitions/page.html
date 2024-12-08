@@ -26,7 +26,7 @@
             <li>expand-from-element-back</li>
           </ul>
 
-          <a href="/" view-transition="expand-from-element" view-transition-back="expand-from-element-back" style="display: block; border-radius: 12px; background-color: white; width: 200px; height: 80px; text-align: center; line-height: 80px;">Expand example</a>
+          <a href="/" view-transition="expand-from-element" view-transition-back="expand-from-element-back" style="display: block; border-radius: 12px; background-color: white; height: 80px; text-align: center; line-height: 80px;">Expand example (click browser back after)</a>
         
           <code-block language="html"><pre>
 ${`<!-- Set globally -->
@@ -61,19 +61,19 @@ ${`<!-- Set globally -->
           <div slot="supporting-text">You can add your own view transitions. Both CSS and code transitions are supported.</div>
         
           <code-block language="css"><pre>
-/* Use standard css */
-::view-transition-old(slide-left) {
+/* Use standard css to add view transition */
+::view-transition-old(slide-left-custom) {
   animation: page-slide-left-out;
   animation-duration: 400ms;
   animation-timing-function: ease;
 }
-::view-transition-new(slide-left) {
+::view-transition-new(slide-left-custom) {
   animation: page-slide-left-in;
   animation-duration: 400ms;
   animation-timing-function: ease;
 }
 
-@keyframes page-slide-left-in {
+@keyframes page-slide-left-custom-in {
   0% {
     transform: translateX(100%);
     clip-path: inset(0px 100% 0px 0px);
@@ -84,7 +84,7 @@ ${`<!-- Set globally -->
   }
 }
 
-@keyframes page-slide-left-out {
+@keyframes page-slide-left-custom-out {
   0% {
     transform: translateX(0px);
     clip-path: inset(0px 0px 0px 0px);
@@ -96,7 +96,7 @@ ${`<!-- Set globally -->
 }
         </pre></code-block>
         <code-block language="javascript"><pre>
-${`
+${`// Register view transition using javascript
 import { registerViewTransition } from '@thewebformula/lithe';
 
 registerViewTransition('the-name', {

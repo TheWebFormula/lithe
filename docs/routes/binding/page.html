@@ -108,7 +108,7 @@ export default class extends Component {
             oninput="page.number.value = this.value">
           </mc-textfield>
         
-          <div b style="margin-bottom: 12px; margin-left: 16px;">Value: ${page.numberTimesTwo}</div>
+          <div b style="margin-bottom: 12px; margin-left: 16px;">Value <span style="font-size: 12px; font-weight: bold;">(Input x 2)</span>: ${page.numberTimesTwo}</div>
         
           <code-block language="html"><pre>
 ${`<!-- Computes automatically update the HTML -->
@@ -120,7 +120,7 @@ ${`<!-- Computes automatically update the HTML -->
   oninput="page.number.value = this.value">
 </mc-textfield>
 
-<div>Value: \${page.numberTimesTwo}</div>`}
+<div>Value (Input x 2): \${page.numberTimesTwo}</div>`}
           </pre></code-block>
           <code-block language="javascript"><pre>
 ${`import { Component, Signal, Compute } from '@thewebformula/lithe';

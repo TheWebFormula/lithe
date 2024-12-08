@@ -8,7 +8,7 @@
       <h2>Links</h2>
       <ul class="links">
         <li><a href="#expressions">Expressions and bindings</a></li>
-        <li><a href="#templates">Templates</a></li>
+        <li><a href="#templates">Template HTML</a></li>
       </ul>
     </nav>
 
@@ -21,11 +21,7 @@
             is a <strong>html</strong> tag function for rendering text as html.</div>
         
         
-          <mc-divider></mc-divider>
-          <div class="mc-font-title-medium" style="margin-bottom: 20px">Template html</div>
-        
-          <div>Some plain text in a div</div>
-          <div><strong>Plain text variable</strong> ${page.plainText}</div>
+          <div style="margin-top: 42px;"><strong>Plain text variable:</strong> ${page.plainText}</div>
         
           <div style="margin: 42px 0px;">
             <div class="mc-font-title-large" style="margin-bottom: 8px;">Signal variable</div>
@@ -59,15 +55,10 @@
         
           <code-block language="html"><pre>
 ${`<!-- page.html -->
-<mc-divider></mc-divider>
-<div class="mc-font-title-medium">Template html</div>
-
-<div>Some plain text in a div</div>
-<div><strong>Plain text variable</strong> \${page.plainText}</div>
+<div><strong>Plain text variable:</strong> ${page.plainText}</div>
 
 <div>
   <div class="mc-font-title-large">Signal variable</div>
-
   <mc-textfield value="\${page.signalVar}" oninput="page.signalVar.value = this.value" label="Update value"></mc-textfield>
   <div><strong style="color: #444">Bound</strong> \${page.signalVar}</div>
 </div>
@@ -91,7 +82,7 @@ ${`<!-- page.html -->
 </div>
 
 <!--
-  HTML comments work on expressions
+  HTML comments can be used on expressions
   \${\`commented out \${page.plainText}\`}
 -->`}
           </pre></code-block>
@@ -107,7 +98,7 @@ export default class extends Component {
   static htmlTemplate = htmlTemplate;
   
 
-  plainText = 'plainText value';
+  plainText = 'some value';
   signalVar = new Signal('signalVar value');
   loopVar = new Signal([
     { value: 'One' },
@@ -133,8 +124,8 @@ export default class extends Component {
 
       <section id="templates" aria-label="Template example">
         <mc-card>
-          <h2 slot="headline">Templates</h2>
-          <div slot="supporting-text">There are two methods for including templates in pages and components</div>
+          <h2 slot="headline">Template HTML</h2>
+          <div slot="supporting-text">There are two methods for including template HTML in pages and components</div>
           <ul slot="supporting-text">
             <li>HTML file</li>
             <li>Page function</li>
