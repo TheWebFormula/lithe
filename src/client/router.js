@@ -7,6 +7,7 @@ const app = {
 };
 
 let routeId = 0;
+// make sure the page starts at 0. For some reason the page can start at 12 or 18 pixels. This causes a small page shift when it resets to 0.
 document.documentElement.scrollTop = 0;
 
 /**
@@ -131,7 +132,6 @@ async function route(locationObject, back = false, initial = false, target) {
     const cur = document.querySelector(`page-${match.hash}`);
     window.page = cur;
     cur.render();
-    // document.documentElement.scrollTop = 0;
   } else {
     const currentPage = window.page;
     const samePage = currentPage?.constructor === match.component;
