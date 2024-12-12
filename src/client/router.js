@@ -175,7 +175,6 @@ function routeTransition(currentPage, match, locationObject, back, initial) {
   window.page = nextPage;
 
   nextPage.render();
-  nextPage.connectedCallback();
 
   queueMicrotask(() => {
     if (!initial) window.dispatchEvent(new Event('locationchange'));
