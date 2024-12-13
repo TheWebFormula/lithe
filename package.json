@@ -1,6 +1,6 @@
 {
   "name": "@thewebformula/lithe",
-  "version": "0.11.2",
+  "version": "0.11.3",
   "description": "A lithe framework for the web",
   "type": "module",
   "main": "index.js",
