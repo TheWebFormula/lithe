@@ -253,7 +253,7 @@ async function buildIndexHTML(appJSOutput, appCSSOutput, routeConfigs, config) {
   // render template and build index html file for each page
   const data = await Promise.all(routeConfigs.map(async route => {
     // load page to build template
-    let routeModule = window.litheRoutes.find(v => v.path === route.routePath).component;
+    let routeModule = window.litheRoutes.get(route.routePath).component;
     if (config.chunks) routeModule = (await routeModule).default;
     customElements.define(`page-${route.hash}`, routeModule);
     routeModule._isPage = true;

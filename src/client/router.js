@@ -1,12 +1,12 @@
 import { runTransition } from './viewTransitions.js';
 
-const app = {
-  paths: [],
-  componentModuleQueue: [],
-  preventNavigation: false
-};
 
+let paths = new Map();
+let pathLookup = [];
+let notFound;
+let isPreventNavigation = false;
 let routeId = 0;
+
 // make sure the page starts at 0. For some reason the page can start at 12 or 18 pixels. This causes a small page shift when it resets to 0.
 document.documentElement.scrollTop = 0;
 
@@ -26,19 +26,19 @@ export function routes(config = [{
   notFound,
   hash
 }]) {
-  const invalid = config.find(r => !r.component || !r.path);
-  if (invalid) throw Error('Routes missing properties: { path, component }');
+  for (let i = 0; i < config.length; i += 1) {
+    const item = config[i];
+    if (!item.component || !item.path) throw Error('Routes missing properties: { path, component }');
 
-  let isCurrent = false;
-  for (const c of config) {
-    if (!app.paths.find(v => v.path === c.path)) {
-      app.paths.push(c);
-      if (!isCurrent) isCurrent = location.pathname.match(c.regex) !== null;
+    if (!paths.has(item.path)) {
+      paths.set(item.path, item);
+      pathLookup.push([item.regex, item.path]);
+      if (item.notFound) notFound = item;
     }
   }
 
-  window.litheRoutes = app.paths;
-  if (!window.__isBuilding && isCurrent) route(location, false, true);
+  window.litheRoutes = paths;
+  if (!window.__isBuilding) route(location, false, true);
 }
 
 
@@ -47,7 +47,7 @@ export function routes(config = [{
  * @param {boolean} enabled Enable for SPA
  */
 export function preventNavigation(enabled = true) {
-  app.preventNavigation = !!enabled;
+  isPreventNavigation = !!enabled;
 }
 
 
@@ -80,17 +80,17 @@ export function preventNavigation(enabled = true) {
 //   });
 // }
 
+const excludeLinkRegex = /^mailto:|^tel:|^sms:|:\/\//;
 
 /** Makes navigation localized for SPA */
 export function enableSPA() {
   document.addEventListener('click', event => {
     if (!event.target.matches('[href]')) return;
     const href = event.target.getAttribute('href');
-    if (href.startsWith('mailto:') || href.startsWith('tel:') || href.startsWith('sms:')) return;
-    if (href.includes('://')) return;
+    if (excludeLinkRegex.test(href)) return;
     event.preventDefault();
     const newRoute = !event.target.href ? location.origin + href : event.target.href;
-    const com = event.composedPath().reverse().slice(4);
+    // const com = event.composedPath().reverse().slice(4);
     route(new URL(newRoute), undefined, undefined, event.target);
   }, false);
 
@@ -113,10 +113,11 @@ export function enableSPA() {
  * @param {Boolean} [initial] Declare initial navigation
  */
 async function route(locationObject, back = false, initial = false, target) {
-  if (!initial && app.preventNavigation) return;
-  let match = app.paths.find(v => locationObject.pathname.match(v.regex) !== null);
-  if (!match) match = app.paths.find(v => v.notFound);
-  if (!match) console.warn(`No page found for path: ${locationObject.pathname}`);
+  if (!initial && isPreventNavigation) return;
+  let matchKey = pathLookup.find(v => v[0].test(locationObject.pathname));
+  if (!matchKey) matchKey = [,notFound?.path];
+  if (!matchKey) console.warn(`No page found for path: ${locationObject.pathname}`);
+  let match = paths.get(matchKey[1]);
 
   // using web components for pages so we need to define it
   if (!match.component._defined) {
