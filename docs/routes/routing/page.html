@@ -8,17 +8,98 @@
     <nav class="links-nav">
       <h2>Links</h2>
       <ul class="links">
-        <li><a href="#routing">Directory routing</a></li>
+        <li><a href="#routing">Routing</a></li>
+        <li><a href="#directoy">Directory routes</a></li>
+        <li><a href="#component">Component routes</a></li>
         <li><a href="#pageexample">Page.js</a></li>
       </ul>
     </nav>
 
     <div class="article-content">
-
-      <section id="routing" aria-label="Routing example">
+      <section id="routing" aria-label="Routing description">
         <mc-card>
           <h2 slot="headline">Routing</h2>
-          <div slot="supporting-text">@thewebformula/lithe uses directory based routing. All routes go in a 'routes' folder.</div>
+          <div slot="supporting-text">Lithe provides 2 methods for route configurations. Both methods can be used together.</div>
+
+          <div class="mc-font-title-medium" style="font-weight: bold;">Directory based routes</div>
+          <div class="mc-font-body-medium">Routes a based on the folder names inside the <strong>routes/</strong> folder. Routes are only added if the page components are imported</div>
+
+          <div class="mc-font-title-medium" style="font-weight: bold; margin-top: 24px;">Route components</div>
+          <div class="mc-font-body-medium">Routes are based on the <strong>li-route</strong> components added to the index.html. These will take precedence over directory routes</div>
+      
+          <code-block language="javascript">
+            <pre>
+${`/* routes/page-name/index.js
+ * This will automatically be added as a route (assuming you import this file)
+ */
+import { Component } from '@thewebformula/lithe';
+import htmlTemplate from './page.html';
+
+class PageClassName extends Component {
+  static title = 'Page title';
+  static htmlTemplate = htmlTemplate;
+
+  constructor() {
+    super();
+  }
+
+  connectedCallback() {
+    // one[id] one/:id one/value
+    console.log(this.urlParameters); // { id: 'value' }
+    
+    // two[...rest] two/*rest two/a/b
+    console.log(this.urlParameters); // { rest: 'a/b' }
+
+    // get search parameters
+    console.log(this.searchParameters);
+  }
+}
+customElements.define('page-component-name', PageClassName);`}
+            </pre>
+          </code-block>
+          <code-block language="javascript">
+            <pre>
+${`/* app.js
+ * Import route to add it to app
+ */
+import './routes/page-name/index.js';`}
+            </pre>
+          </code-block>
+
+          <code-block language="html">
+            <pre>
+${`
+<!-- index.html -->
+
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lithe</title>
+  <script type="module" src="/app.js"></script>
+</head>
+
+<body>
+  <!-- You can add / override a page using the li-route component.
+   Set path, set component to the customElement defined name -->
+  <li-route path="/some-path" component="page-component-name"></li-route>
+
+  <div id="page-content"></div>
+</body>
+
+</html>`}
+            </pre>
+          </code-block>
+        </mc-card>
+      </section>
+
+      <section id="directoy" aria-label="Directory routes">
+        <mc-card>
+          <h2 slot="headline">Directory routes</h2>
+          <div slot="supporting-text">Directory routes are automatically added to the app, as long as the files are imported. All routes go in a <strong>routes</strong> folder.</div>
         
           <code-block language="yaml"><pre>
 ${`app/
@@ -65,6 +146,42 @@ ${`app/
       </section>
 
 
+      <section id="component" aria-label="Directory routes">
+        <mc-card>
+          <h2 slot="headline">Component routes</h2>
+          <div slot="supporting-text">Component routes allow you to manually set the path for routes. These will take precedence over directory routes.</div>
+      
+          <code-block language="html">
+            <pre>
+${`
+<!-- index.html -->
+
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lithe</title>
+  <script type="module" src="/app.js"></script>
+</head>
+
+<body>
+  <!-- You can add / override a page using the li-route component.
+    Set path, set component to the customElement defined name -->
+  <li-route path="/some-path" component="page-component-name"></li-route>
+
+  <div id="page-content"></div>
+</body>
+
+</html>`}
+            </pre>
+          </code-block>
+        </mc-card>
+      </section>
+
+
       <section id="pageexample" aria-label="Page example">
         <mc-card>
           <h2 slot="headline">Page</h2>
@@ -72,14 +189,14 @@ ${`app/
         
           <code-block language="javascript"><pre>
 ${`import { Component } from '@thewebformula/lithe';
-import html from './page.html'; // automatically bundles
+import htmlTemplate from './page.html'; // automatically bundles
 
-export default class extends Component {
+class PageClassName extends Component {
   // html page title
-  static title = 'Page';
+  static title = 'Page title';
 
   // hook up imported html. Supports template literals (\${this.someVar})
-  static htmlTemplate = html;
+  static htmlTemplate = htmlTemplate;
   
   constructor() {
     super();
@@ -91,8 +208,12 @@ export default class extends Component {
 
     // two[...rest] two/*rest two/a/b
     console.log(this.urlParameters); // { rest: 'a/b' }
+
+    // get search parameters
+    console.log(this.searchParameters);
   }
-}`}
+}
+customElements.define('page-component-name', PageClassName);`}
           </pre></code-block>
         </mc-card>
       </section>

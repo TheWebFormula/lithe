@@ -1,10 +1,9 @@
-import { Component, Signal } from '@thewebformula/lithe';
+import { Component, Signal, i18n } from '@thewebformula/lithe';
 import htmlTemplate from './page.html';
-import { i18n } from '@thewebformula/lithe';
 import en from '../../locales/en.json' assert { type: "json" };
 import es from '../../locales/es.json' assert { type: "json" };
 
-export default class extends Component {
+class MultiLanguagePage extends Component {
   static title = 'Multiple languages';
   static htmlTemplate = htmlTemplate;
 
@@ -31,3 +30,4 @@ export default class extends Component {
     i18n.setLocale(navigator.language);
   }
 }
+customElements.define('multi-language-page', MultiLanguagePage);

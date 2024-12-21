@@ -1,330 +1,158 @@
-import esbuild from 'esbuild';
+import * as esbuild from 'esbuild';
+import { copy } from 'esbuild-plugin-copy';
+import http from 'node:http';
 import path from 'node:path';
-// package is broken on m1 mac currently and the other options have to many sub dependencies
-// import minifyHtml from '@minify-html/node';
-// import { Buffer } from 'node:buffer';
-import { access, readFile, readdir, stat, rm, writeFile, mkdir } from 'node:fs/promises';
-import { gzip } from 'node:zlib';
-import { promisify } from 'node:util';
-import devServer from './dev-server.js';
-import routeParser from './route-parser.js';
-import parseHTMLString from './dom.js';
-import copyFiles from './copy-files.js';
+import { readdir, stat, rm } from 'node:fs/promises';
+import buildRoutes from './buildRoutes.js';
 
-const asyncGzip = promisify(gzip);
+
 const isDev = process.env.NODE_ENV !== 'production';
-
-/**
- * Build application
- * @param {Object} config
- * @param {Boolean} config.spa Enable spa routing. Default: true
- * @param {String} config.basedir App root directory. Default: 'app/'
- * @param {String} config.outdir App bundle directory. Default: 'dist/'
- * @param {Boolean} config.chunks Chunk app per page. Default: true
- * @param {Boolean} config.minify Minify bundle. Default: true
- * @param {Boolean} config.sourcemaps Include sourcemaps. Default: false
- * @param {Boolean} config.gzip Compress bundle. Default: true
- * @param {Boolean} config.devServer Enable dev server. Default: true
- * @param {Number} config.devServerPort Dev server port. Default: 3000
- * @param {Boolean} config.devServerLivereload Enable live reload. Default: true
- * @param {Boolean} config.devWarnings Enable console warning (only html sanitization currently). Default: false
- * @param {Number} config.securityLevel Change html template security level for warnings. Values: 0,1,2 - Default: 1
- * @param {Object[]} config.copyFiles Copy file config
- * @param {String} config.copyFiles[].from Location of file
- * @param {String} config.copyFiles[].to Destination for file
- * @param {Function} config.copyFiles[].transform Transform function
- * @returns {Object} Build data
- */
 export default async function build(config = {
-  spa: true,
-  basedir: 'app/',
-  outdir: 'dist/',
-  chunks: true,
+  basedir: 'app',
+  entryPoints: 'app.js',
+  entryPointsCSS: 'app.css',
+  indexHTML: 'index.html',
+  outdir: 'dist',
   minify: true,
-  keepHTMLComments: false,
-  sourcemaps: false,
-  gzip: true,
+  sourcemap: false,
+  copy: [
+    { from: 'docs/somefile', to: 'dist/' }
+  ],
   devServer: true,
   devServerPort: 3000,
   devServerLivereload: true,
-  devWarnings: false,
+  devWarnings: true,
   securityLevel: 1,
-  copyFiles: [{
-    from: '',
-    to: '',
-    transform: ({
-      content,
-      outputFileNames
-    }) => { },
-    gzip: false
-  }],
   onStart: () => { },
   onEnd: () => { }
 }) {
-  if (isDev) {
-    if (config.sourcemaps === undefined) config.sourcemaps = true;
-    if (config.devServer !== false && config.devServerLivereload !== false) config.liveReloadScript = liveReloadScript;
-    config.debugScript = debugScript(config.devWarnings);
-    config.keepHTMLComments = config.keepHTMLComments === false ? false : true;
-    if (config.keepHTMLComments !== false) config.liveReloadScript = liveReloadScript;
-  } else {
-    if (config.gzip === undefined) config.gzip = true;
-    if (config.minify === undefined) config.minify = true;
-    if (config.gzip === undefined) config.gzip = true;
-    config.keepHTMLComments = config.keepHTMLComments === true ? true : false;
-  }
+  config.basedir = config.basedir || 'app';
+  config.entryPoints = path.join(config.basedir, config.entryPoints || 'app.js');
+  config.entryPointsCSS = path.join(config.basedir, config.entryPointsCSS || 'app.css');
+  config.indexHTML = path.join(config.basedir, config.indexHTML || 'index.html');
+  config.outdir = config.outdir || 'dist';
+  config.minify = config.minify !== undefined ? config.minify : isDev ? false : true;
+  config.sourcemap = config.sourcemap !== undefined ? config.sourcemap : isDev ? true : false;
+  config.copy = config.copy || [];
+  config.devServer = config.devServer !== undefined ? config.devServer : isDev ? true : false;
+  config.devServerPort = config.devServerPort || 3000;
+  config.devServerLivereload = config.devServerLivereload !== undefined ? config.devServerLivereload : isDev ? true : false;
+  config.devWarnings = config.devWarnings !== undefined ? config.devWarnings : isDev ? true : false;
 
-  // create output dir
-  try {
-    await access(config.outdir);
-  } catch {
-    await mkdir(config.outdir);
-  }
-
+  config.securityLevel = config.securityLevel || 1;
   if (config.securityLevel && ![0, 1, 2].includes(config.securityLevel)) {
     console.warn('Invalid security level value. You cna use [0,1,2]. Defaulting to 1');
     config.securityLevel = 1;
   }
 
-  if (config.onStart) await config.onStart();
   await cleanOutdir(config.outdir);
-  config.isDev = isDev;
-  config.appJsPath = path.join(config.basedir, '/app.js');
-  config.indexHTMLPath = path.join(config.basedir, '/index.html');
-  const appCSSPath = path.join(config.basedir, '/app.css');
-  const hasAppCSS = await access(appCSSPath).then(e => true).catch(e => false);
-  config.routes = await routeParser(config);
-  const entryPoints = [config.appJsPath];
-  // add entry points for each page
-  if (config.chunks) entryPoints.push(...config.routes.routesConfig.map(v => v.filePath));
-  const { metafile } = await esbuild.build({
-    entryPoints,
-    bundle: true,
-    outdir: config.outdir,
-    metafile: true,
-    entryNames: '[name]-[hash]',
-    format: 'esm',
-    plugins: [pluginHTML(config), pluginCss(config.minify), injectCode(config)],
-    minify: config.minify,
-    splitting: config.chunks,
-    sourcemap: config.sourcemap
-  });
-  
-  const appCSSContext = !hasAppCSS ? undefined : await esbuild.build({
-    entryPoints: [appCSSPath],
-    bundle: true,
-    outdir: config.outdir,
-    metafile: true,
-    entryNames: '[name]-[hash]',
-    minify: config.minify
-  });
-  
-  const {
-    routeConfigs,
-    outputs,
-    appJSOutput,
-    appCSSOutput
-  } = buildOutputs(metafile.outputs, appCSSContext?.metafile.outputs, config);
-  const indexHTMLFiles = await buildIndexHTML(appJSOutput, appCSSOutput, routeConfigs, config);
-  const copiedFiles = await copyFiles(config.copyFiles, outputs);
-  if (config.gzip) await gzipFiles(outputs.concat(indexHTMLFiles));
-  if (config.onEnd) await config.onEnd();
 
-  const returnData = {
-    outdir: config.outdir,
-    routes: routeConfigs.map(v => ({
-      route: v.routePath,
-      regex: v.regex,
-      filePath: v.indexHTMLFileName,
-      fileName: v.indexHTMLFileName.split('/').pop(),
-      notFound: v.notFound,
-      hash: v.hash
-    })),
-    files: outputs
-      .map(v => ({
-        filePath: v.output,
-        fileName: v.output.split('/').pop()
-      })).concat(...copiedFiles),
-    gzip: config.gzip
-  };
+  const buildPlugin = {
+    name: 'build',
+    setup(build) {
 
-  if (isDev && config.devServer !== false) devServer(returnData, config.devServerPort);
-  return returnData;
-}
-
-
-async function buildIndexHTML(appJSOutput, appCSSOutput, routeConfigs, config) {
-  const appScriptPath = `/${appJSOutput.output.split('/').pop()}`;
-  const appCssPath = appCSSOutput && `/${appCSSOutput.output.split('/').pop()}`;
-  let indexFile = await readFile(config.indexHTMLPath, 'utf-8');
-
-  const appScriptPreload = `\n  <link rel="modulepreload" href="${appScriptPath}"/>\n`;
-  const appImportChunks = appJSOutput.imports.map(v => v.path.split('/').pop()).filter(v => v.startsWith('chunk-'));
-  const appScriptTag = `<script src="${appScriptPath}" type="module" defer></script>`;
-  const appCssPreloadTag = !appCssPath ? '' : `  <link rel="preload" href="${appCssPath}" as="style">\n`;
-  const appCssTag = !appCssPath ? '' : `<link rel="stylesheet" href="${appCssPath}">`;
-  
-  // add mock dome so we can load the app script and render templates
-  parseHTMLString(indexFile);
-  const head = document.querySelector('head');
-  head.insertAdjacentHTML('afterbegin', appScriptPreload + appCssPreloadTag);
-
-  const appScriptElement = document.querySelector('script[src="app.js"]') || document.querySelector('script[src="/app.js"]') || document.querySelector('script[src="./app.js"]');
-  if (appScriptElement) {
-    appScriptElement.src = appScriptPath;
-    appScriptElement.type = 'module';
-    appScriptElement.defer = true;
-  } else {
-    head.insertAdjacentHTML('beforeend', appScriptTag);
-  }
-  head.insertAdjacentHTML('beforeend', `${config.liveReloadScript || ''}${isDev ? `\n${config.debugScript}` : ''}`);
-
-  if (appCssPath) {
-    const appStyleElement = document.querySelector('link[href="app.css"]') || document.querySelector('link[href="/app.css"]') || document.querySelector('link[href="./app.css"]');
-    if (appStyleElement) {
-      appStyleElement.href = appCssPath;
-    } else {
-      head.insertAdjacentHTML('beforeend', appCssTag);
-    }
-  }
-
-
-  // Add splash screen if configured
-  const splashScreen = document.querySelector('meta[name=splash-screen]');
-  if (splashScreen && splashScreen.getAttribute('content') === 'true') {
-    const themeColorMeta = document.querySelector('meta[name=theme-color]');
-    const themeColor = themeColorMeta?.getAttribute('content') || 'inherit';
-    document.head.insertAdjacentHTML('beforeend', `
-  <style>
-    body.li-splash {visibility: hidden;}
-    splash-screen {
-      display:none;
-      visibility: hidden;
-      opacity: 0;
-      position: fixed;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      inset: 0 0 0 0;
-      background-color: ${themeColor};
-      z-index: 99;
-      font-size: 20px;
-      color: rgb(from ${themeColor} calc(255 - r) calc(255 - g) calc(255 - b));
-      transition: opacity, display, visibility;
-      transition-behavior: allow-discrete;
-      transition-duration: 320ms;
-    }
-    body.li-splash splash-screen {
-      visibility: visible;
-      display: flex;
-      opacity: 1;
-      transition: none;
-    }
-    splash-screen img {max-width: 120px;}
-    splash-screen .welcome {line-height: 72px;}
-  </style>
-  <script>
-    let it;
-    let umc = false;
-    setTimeout(() => {
-      umc = document.body.querySelector('mc-navigation-drawer') || document.body.querySelector('mc-navigation-bar') || document.body.querySelector('mc-pane-container');
-      if ((umc && !document.body.classList.contains('mc-initiated')) || (!umc && !window.page)) {
-        document.body.classList.add('li-splash');
-        it = Date.now();
-        cs();
+      if (typeof config.onStart === 'function') {
+        build.onStart(async () => {
+          await config.onStart();
+        });
       }
-    }, 300)
 
-    function cs() {
-      if ((umc && document.body.classList.contains('mc-initiated')) || (!umc && window.page)) setTimeout(() => document.body.classList.remove('li-splash'), Math.max(0, 1200 - (Date.now() - it)));
-      else setTimeout(cs, 200);
+      build.onEnd(async (results) => {
+        const appOutput = Object.entries(results.metafile.outputs).map(([filename, item]) => [item.entryPoint, filename]).find(v => v[0] === config.entryPoints);
+        await buildRoutes(config, results.metafile.inputs, appOutput[1]);
+        if (typeof config.onEnd === 'function')  await config.onEnd();
+      });
     }
-  </script>
-`);
-    const themeIcon = document.querySelector('link[rel=apple-touch-icon]') || document.querySelector('link[rel=icon]');
-    if (!document.querySelector('splash-screen')) document.body.insertAdjacentHTML('afterbegin', `<splash-screen><div class="icon"><img src="${themeIcon.getAttribute('href')}" /></div><div class="welcome">${document.querySelector('title')?.textContent || ''}</div></splash-screen>`);
-  }
+  };
 
-  // used to prevent router code from running
-  window.__isBuilding = true;
-  // load script so we can grab templates
-  await import(path.resolve('.', appJSOutput.output));
-
-  // render template and build index html file for each page
-  const data = await Promise.all(routeConfigs.map(async route => {
-    // load page to build template
-    let routeModule = window.litheRoutes.get(route.routePath).component;
-    if (config.chunks) routeModule = (await routeModule).default;
-    customElements.define(`page-${route.hash}`, routeModule);
-    routeModule._isPage = true;
-    routeModule._isBuild = true;
-    const instance = new routeModule();
-    instance.render();
-
-    // prepare module preload links
-    const pageScriptPreload = route.routeScriptPath && route.routeScriptPath !== appScriptPath ? `\n  <link page rel="modulepreload" href="${route.routeScriptPath}" />` : '';
-    const pageImportChunks = [...new Set(appImportChunks.concat(
-      route.imports.map(v => v.path.split('/').pop()).filter(v => v.startsWith('chunk-'))
-    ))].map(v => `\n  <link rel="modulepreload" href="/${v}" />`).join('');
-
-    const title = document.querySelector('title');
-    if (title) title.textContent = routeModule.title;
-    const previousPageReloads = document.querySelectorAll('link[page]');
-    for (const p of previousPageReloads) {
-      p.remove();
+  const cssPlugin = !config.entryPointsCSS ? undefined : {
+    name: 'css',
+    setup(build) {
+      // bundle css file and inline
+      build.onLoad({ filter: /\.css$/ }, async args => {
+        // need to use build instead of transform because transform is not resolving @imports from node modules
+        const contextCss = await esbuild.build({
+          entryPoints: [args.path],
+          bundle: true,
+          write: false,
+          minify: config.minify,
+          loader: { '.css': 'css' }
+        });
+        let contents;
+        if (args.path.endsWith(config.entryPointsCSS)) contents = `
+          const styles = new CSSStyleSheet();
+          styles.replaceSync(\`${contextCss.outputFiles[0].text}\`);
+          document.adoptedStyleSheets = [...document.adoptedStyleSheets, styles];`;
+        else contents = `
+          const styles = new CSSStyleSheet();
+          styles.replaceSync(\`${contextCss.outputFiles[0].text}\`);
+          export default styles;`;
+        return { contents };
+      });
     }
+  };
 
-    const head = document.querySelector('head');
-    head.insertAdjacentHTML('afterbegin', `${pageScriptPreload}${pageImportChunks}`);
-    const content = `<!doctype html>\n${document.documentElement.outerHTML}`;
-    document.querySelector('#page-content').innerHTML = '';
-
-    return {
-      fileName: route.indexHTMLFileName,
-      content
-    };
-  }));
-
-  await Promise.all(data.map(async v => writeFile(v.fileName, v.content)));
-  return data.map(v => ({ output: v.fileName }));
-}
-
-
-// build information for writing outputs and building page index html files
-function buildOutputs(appOutputs, appCSSOutputs, config) {
-  const outputs = Object.keys(appOutputs).map(key => ({
-    output: key,
-    ...appOutputs[key]
-  }));
-
-  let appCSSOutput;
-  if (appCSSOutputs) {
-    appCSSOutput = Object.keys(appCSSOutputs).map(key => ({
-      output: key,
-      ...appCSSOutputs[key]
-    }))[0];
-    outputs.push(appCSSOutput)
-  }
-
-  const routeConfigs = config.routes.routesConfig.map(route => {
-    const moduleOutput = !config.chunks ? outputs.find(v => v.entryPoint === config.appJsPath) : outputs.find(b => b.entryPoint === route.filePath);
-    return {
-      ...route,
-      output: moduleOutput.output,
-      imports: moduleOutput.imports,
-      htmlImports: Object.keys(moduleOutput.inputs).filter(v => v.endsWith('html')),
-      routeScriptPath: `/${moduleOutput.output.split('/').pop()}`
-    };
+  let ctx = await esbuild.context({
+    entryPoints: [config.entryPoints],
+    bundle: true,
+    metafile: true,
+    outdir: config.outdir,
+    minify: config.minify,
+    sourcemap: config.sourcemap,
+    entryNames: isDev ? '[name]' : '[name]-[hash]',
+    loader: {
+      '.html': 'text'
+    },
+    plugins: [
+      buildPlugin,
+      cssPlugin,
+      copy({
+        resolveFrom: 'cwd',
+        assets: config.copy,
+        watch: true
+      })
+    ]
   });
 
-  return {
-    routeConfigs,
-    outputs,
-    appJSOutput: outputs.find(v => v.entryPoint === config.appJsPath),
-    appCSSOutput
-  };
-}
+  if (!config.devServer) {
+    await ctx.rebuild();
+    process.exit(0);
+  } else {
+    await ctx.watch();
+    let { host, port } = await ctx.serve({
+      servedir: config.outdir,
+    });
 
+    http.createServer((req, res) => {
+      let path = req.url !== '/esbuild' && req.url !== '/' && req.url.split('.').length === 1 ? `/index.html` : req.url;
+      // path = path.replace('%20', '-');
+      const options = {
+        host,
+        port,
+        path,
+        method: req.method,
+        headers: req.headers,
+      };
+
+      // Forward each incoming request to esbuild
+      const proxyReq = http.request(options, proxyRes => {
+        // If esbuild returns "not found", send a custom 404 page
+        if (proxyRes.statusCode === 404) {
+          res.writeHead(404, { 'Content-Type': 'text/html' })
+          res.end('<h1>A custom 404 page</h1>')
+          return
+        }
+
+        // Otherwise, forward the response from esbuild to the client
+        res.writeHead(proxyRes.statusCode, proxyRes.headers)
+        proxyRes.pipe(res, { end: true })
+      })
+
+      // Forward the body of the request to esbuild
+      req.pipe(proxyReq, { end: true })
+    }).listen(config.devServerPort)
+  }
+}
 
 
 async function cleanOutdir(dir) {
@@ -336,111 +164,97 @@ async function cleanOutdir(dir) {
   }));
 }
 
-async function gzipFiles(outputFiles) {
-  await Promise.all(outputFiles.map(async item => {
-    // some files are only temporarily used to build then deleted
-    const exists = await access(item.output).then(() => true).catch(() => false);
-    if (!exists) return;
 
-    try {
-      let content = await readFile(item.output);
-      const result = await asyncGzip(content);
-      await writeFile(item.output, result);
-    } catch (e) {
-      console.log('error', item, e)
-    }
-  }));
-}
+// let ctx = await esbuild.context({
+//   entryPoints: ['docs/app.js'],
+//   bundle: true,
+//   outdir: 'dist',
+//   sourcemap: true,
+//   loader: {
+//     '.html': 'text'
+//   },
+//   plugins: [
+//     pluginCss(false),
+//     {
+//       name: 'buildIndexes',
+//       setup() {
+//         buildRoutes();
+//       }
+//     },
+//     copy({
+//       resolveFrom: 'cwd',
+//       assets: [
+//         { from: 'docs/_headers', to: 'dist/' },
+//         { from: 'docs/robots.txt', to: 'dist/' },
+//         { from: 'docs/sitemap.xml', to: 'dist/' },
+//         { from: 'docs/favicon.ico', to: 'dist/' },
+//         { from: 'docs/icons/*', to: 'dist/icons/' },
+//         { from: 'docs/manifest.json', to: 'dist/' },
+//         { from: 'docs/highlight-11.10.0.js', to: 'dist/' }
+//       ],
+//       watch: true
+//     })
+//   ]
+// });
 
-const routesImportRegex = /routes[^@]+@webformula\/core(?:'|");/;
-function injectCode(config) {
-  return {
-    name: 'injectCode',
-    setup(build) {
-      // inject route config to app.js
-      build.onLoad({ filter: /app\.js/ }, async args => {
-        let contents = await readFile(args.path, 'utf-8');
-        if (contents.match(routesImportRegex) === null) {
-          contents = `import { setSecurityLevel, routes, enableSPA } from \'@thewebformula/lithe\';\nenableSPA();\nsetSecurityLevel(${config.securityLevel === undefined ? 1 : config.securityLevel});\n${config.routes.routesCode}\n${contents}`;
-        }
-        return { contents };
-      });
-    }
-  }
-};
+// await ctx.watch();
 
-function pluginHTML(config) {
-  return {
-    name: 'html',
-    setup(build) {
-      build.onLoad({ filter: /\.html$/ }, async args => {
-        let contents = await readFile(args.path, 'utf-8');
-        // package is broken on m1 mac currently and the other options have to many sub dependencies
-        // if (config.minify) {
-        //   try {
-        //     contents = minifyHtml.minify(Buffer.from('`' + contents.trim() + '`'), {
-        //       ensure_spec_compliant_unquoted_attribute_values: true,
-        //       keep_spaces_between_attributes: true,
-        //       keep_comments: config.keepHTMLComments
-        //     }).toString().slice(1, -1)
-        //   } catch (e) { }
-        // }
-        return {
-          contents: contents.trim(),
-          loader: 'text'
-        };
-      });
-    }
-  };
-}
+// let { host, port } = await ctx.serve({
+//   servedir: 'dist'
+// });
 
-function pluginCss(minify) {
-  return {
-    name: 'css',
-    setup(build) {
-      // bundle css file and inline
-      build.onLoad({ filter: /\.css$/ }, async args => {
-        // need to use build instead of transform because transform is not resolving @imports from node modules
-        const contextCss = await esbuild.build({
-          entryPoints: [args.path],
-          bundle: true,
-          write: false,
-          minify,
-          loader: { '.css': 'css' }
-        });
-        const contents = `
-          const styles = new CSSStyleSheet();
-          styles.replaceSync(\`${contextCss.outputFiles[0].text}\`);
-          export default styles;`;
-        return { contents };
-      });
-    }
-  };
-}
+// http.createServer((req, res) => {
+//   const options = {
+//     host,
+//     port,
+//     path: req.url !== '/esbuild' && req.url !== '/' && req.url.split('.').length === 1 ? `${req.url}.html` : req.url,
+//     method: req.method,
+//     headers: req.headers,
+//   }
 
+//   // Forward each incoming request to esbuild
+//   const proxyReq = http.request(options, proxyRes => {
+//     // If esbuild returns "not found", send a custom 404 page
+//     if (proxyRes.statusCode === 404) {
+//       res.writeHead(404, { 'Content-Type': 'text/html' })
+//       res.end('<h1>A custom 404 page</h1>')
+//       return
+//     }
 
-const debugScript = (devWarnings) => `
-<script>
-  window.litheDev = ${devWarnings === true ? 'true;' : 'false;'}
-  console.warn('Lithe: Debug mode');
+//     // Otherwise, forward the response from esbuild to the client
+//     res.writeHead(proxyRes.statusCode, proxyRes.headers)
+//     proxyRes.pipe(res, { end: true })
+//   })
 
-  window.getPageTemplate = () => {
-    console.log(window.page.getTemplate());
-  }
+//   // Forward the body of the request to esbuild
+//   req.pipe(proxyReq, { end: true })
+// }).listen(3000)
 
-  window.getRoutes = () => {
-    console.log(window.litheRoutes);
-  }
-</script>`;
-const liveReloadScript = `
-  <script>
-    let isReconnecting = false;
-    const es = new EventSource('/livereload');
-    es.addEventListener('error', () => { isReconnecting = true; });
-    es.addEventListener('open', () => {
-      if (isReconnecting) {
-        isReconnecting = false;
-        location.reload();
-      }
-    })
-  </script>`;
+// function pluginCss(minify) {
+//   return {
+//     name: 'css',
+//     setup(build) {
+//       // bundle css file and inline
+//       build.onLoad({ filter: /\.css$/ }, async args => {
+//         // need to use build instead of transform because transform is not resolving @imports from node modules
+//         const contextCss = await esbuild.build({
+//           entryPoints: [args.path],
+//           bundle: true,
+//           write: false,
+//           minify,
+//           loader: { '.css': 'css' }
+//         });
+//         let contents;
+//         if (args.path.endsWith('docs/app.css')) contents = `
+//           const styles = new CSSStyleSheet();
+//           styles.replaceSync(\`${contextCss.outputFiles[0].text}\`);
+//           document.adoptedStyleSheets = [...document.adoptedStyleSheets, styles];`;
+//         else contents = `
+//           const styles = new CSSStyleSheet();
+//           styles.replaceSync(\`${contextCss.outputFiles[0].text}\`);
+//           export default styles;`;
+//         return { contents };
+//       });
+//     }
+//   };
+// }

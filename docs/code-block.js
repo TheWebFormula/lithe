@@ -6,6 +6,7 @@ class CodeBlock extends Component {
 
   constructor() {
     super();
+    console.log('ok');
   }
 
   static get observedAttributesExtended() {

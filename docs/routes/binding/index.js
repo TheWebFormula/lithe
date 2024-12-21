@@ -2,7 +2,7 @@ import { Component, Signal, Compute } from '@thewebformula/lithe';
 import htmlTemplate from './page.html';
 
 
-export default class extends Component {
+class SignalsAndBindingPage extends Component {
   static title = 'Signals and binding';
   static htmlTemplate = htmlTemplate;
 
@@ -23,3 +23,4 @@ export default class extends Component {
     this.basicBind.value = 'Updated';
   }
 }
+customElements.define('signals-binding-page', SignalsAndBindingPage);
