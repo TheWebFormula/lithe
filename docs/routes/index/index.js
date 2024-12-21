@@ -1,7 +1,7 @@
 import { Component } from '@thewebformula/lithe';
 import htmlTemplate from './page.html';
 
-export default class extends Component {
+class HomePage extends Component {
   static title = 'Home';
   static htmlTemplate = htmlTemplate;
 
@@ -9,3 +9,4 @@ export default class extends Component {
     super();
   }
 }
+customElements.define('home-page', HomePage);

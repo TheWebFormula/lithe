@@ -39,6 +39,7 @@ export function i18n(key, ...variables) {
   signals.add(compute);
   return compute;
 }
+globalThis.i18n = i18n;
 
 i18n.setLocale = locale => {
   locale = Intl.getCanonicalLocales(locale)[0].split('-')[0];

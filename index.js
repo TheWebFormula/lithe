@@ -1,14 +1,11 @@
+import Route from './src/client/Route.js';
+import Component from './src/client/Component.js';
 import { Signal, Compute, effect } from './src/client/signal.js'
 import { html, setSecurityLevel } from './src/client/html.js'
-import Component from './src/client/Component.js';
-import { routes, enableSPA } from './src/client/router.js';
 import { i18n } from './src/client/i18n.js';
 import { fetcher, createFetcher } from './src/client/fetcher.js';
-import { registerViewTransition } from './src/client/viewTransitions.js';
-
 export {
-  routes,
-  enableSPA,
+  Route,
   Component,
   html,
   Signal,
@@ -18,8 +15,4 @@ export {
   i18n,
   fetcher,
   createFetcher,
-  registerViewTransition
-}
-
-window.html = html;
-window.i18n = i18n;
+};

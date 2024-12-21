@@ -1,7 +1,7 @@
 import { Component, Signal } from '@thewebformula/lithe';
 import htmlTemplate from './page.html';
 
-export default class extends Component {
+class TemplatesPage extends Component {
   static title = 'Templates';
   static htmlTemplate = htmlTemplate;
 
@@ -23,3 +23,4 @@ export default class extends Component {
     this.loopVar.value = [...this.loopVar.value, {value}];
   }
 }
+customElements.define('templates-page', TemplatesPage);

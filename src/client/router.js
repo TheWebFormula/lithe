@@ -1,86 +1,97 @@
-import { runTransition } from './viewTransitions.js';
-
-
-let paths = new Map();
+const excludeLinkRegex = /^mailto:|^tel:|^sms:|:\/\//;
+let routes = new Map();
 let pathLookup = [];
-let notFound;
-let isPreventNavigation = false;
-let routeId = 0;
+let notFoundPage;
+let pageContainer;
 
-// make sure the page starts at 0. For some reason the page can start at 12 or 18 pixels. This causes a small page shift when it resets to 0.
+const spaceRegex = /\s/g;
+const containsVariableOrWildcardRegex = /\/:|\*/g;
+const searchRegexString = '(\\?([^#]*))?';
+const hashRegexString = '(#(.*))?';
+const followedBySlashRegexString = '(?:\/$|$)';
+const routeRegexReplaceRegex = /\/(\*|:)?([^\/\?]+)(\?)?/g;
+const template = document.createElement('template');
+
+
 document.documentElement.scrollTop = 0;
 
-/**
-* @typedef {Object} config
-* @property {Component} component Component class
-* @property {string} path Route path
-* @property {boolean} [notFound] Mark as not found page
-*/
-/**
- * Register routes. This is called automatically
- * @param {config[]} config route configuration
- */
-export function routes(config = [{
-  component,
-  path,
-  notFound,
-  hash
-}]) {
-  for (let i = 0; i < config.length; i += 1) {
-    const item = config[i];
-    if (!item.component || !item.path) throw Error('Routes missing properties: { path, component }');
+export function register(path, component, notFound) {
+  if (routes.has(path)) throw Error('exists');
 
-    if (!paths.has(item.path)) {
-      paths.set(item.path, item);
-      pathLookup.push([item.regex, item.path]);
-      if (item.notFound) notFound = item;
-    }
+  routes.set(path, component);
+  const regex = buildPathRegex(path);
+  pathLookup.push([regex, path]);
+  if (notFound) notFoundPage = [regex, component];
+  if (!pageContainer) pageContainer = document.querySelector('#page-content');
+  if (regex.test(location.pathname)) navigate(component, regex, location, undefined, undefined, true);
+}
+
+
+
+function route(locationObject, back) {
+  let matchKey = pathLookup.find(v => v[0].test(locationObject.pathname));
+  if (!matchKey) matchKey = notFoundPage;
+  if (!matchKey) console.warn(`No page found for path: ${locationObject.pathname}`);
+  const match = routes.get(matchKey[1]);
+  const currentPage = pageContainer.firstElementChild;
+  const samePage = currentPage?.nodeName.toLowerCase() === match;
+
+  if (samePage) {
+    const hashMatches = locationObject.hash === location.hash;
+    const searchMatches = locationObject.search === location.search;
+    if (hashMatches && searchMatches) return;
+    // TODO remove when using navigation api
+    if (!back) window.history.pushState({}, currentPage.constructor.title, `${locationObject.pathname}${locationObject.search}${locationObject.hash}`);
+    if (!hashMatches) window.dispatchEvent(new Event('hashchange'));
+    return;
   }
 
-  window.litheRoutes = paths;
-  if (!window.__isBuilding) route(location, false, true);
+  navigate(match, matchKey[0], locationObject, currentPage, back);
 }
 
+async function navigate(component, pathRegex, locationObject, current, back, initial) {;
+  if (!initial && !back) {
+    document.body.scrollTop = 0;
+    document.documentElement.scrollTop = 0;
+  }
 
-/**
- * Prevents all navigation. Good for auth flow
- * @param {boolean} enabled Enable for SPA
- */
-export function preventNavigation(enabled = true) {
-  isPreventNavigation = !!enabled;
+  if (current) current.remove();
+  template.innerHTML = `<${component}>`;
+  const page = template.content.cloneNode(true).firstElementChild;
+  page._pathRegex = pathRegex;
+  if (!back && !initial) window.history.pushState({}, page.constructor.title, `${locationObject.pathname}${locationObject.search}${locationObject.hash}`);
+  pageContainer.appendChild(page);
+  window.page = page;
+  await customElements.whenDefined(component);
+  page.render();
+
+  queueMicrotask(() => {
+    if (!initial) window.dispatchEvent(new Event('locationchange'));
+    else window.dispatchEvent(new Event('locationchangeinitial'));
+  });
 }
 
+function buildPathRegex(path) {
+  let regexString;
 
-/**
- * TODO replace current spa intercepting with navigation api when broadly available
- * https://developer.mozilla.org/en-US/docs/Web/API/Navigation#specifications
- */
-// let isSpa = false;
-// export function enableSPA() {
-//   if (isSpa) return;
-//   isSpa = true;
+  // if no parameters found in path then use standard regex
+  if (path.match(containsVariableOrWildcardRegex) === null) {
+    // Do not allow hashes on root or and hash links
+    if (path.trim() === '/' || path.includes('#')) regexString = `^${path}$`;
+    regexString = `^${path}${searchRegexString}${hashRegexString}$`;
 
-//   navigation.addEventListener('navigate', event => {
-//     const url = new URL(event.destination.url);
-//     if (
-//       event.navigationType === 'reload' ||
-//       location.origin !== url.origin ||
-//       !event.canIntercept ||
-//       event.hashChange ||
-//       event.downloadRequest ||
-//       event.formData
-//     ) return;
+    // parse parameters in path
+  } else {
+    regexString = `^${path.replace(routeRegexReplaceRegex, (_str, prefix, label, optional = '') => {
+      if (prefix === '*') return `\/(?<${label}>.+)${optional}`;
+      if (prefix === ':') return `\/(?<${label}>[^\/]+)${optional}`;
+      return `\/${label}`;
+    })}${followedBySlashRegexString}`;
+  }
 
+  return new RegExp(regexString.replace(spaceRegex, '(?:[\\s-]|%20)'));
+}
 
-//     event.intercept({
-//       handler() {
-//         route(url);
-//       }
-//     });
-//   });
-// }
-
-const excludeLinkRegex = /^mailto:|^tel:|^sms:|:\/\//;
 
 /** Makes navigation localized for SPA */
 export function enableSPA() {
@@ -90,8 +101,7 @@ export function enableSPA() {
     if (excludeLinkRegex.test(href)) return;
     event.preventDefault();
     const newRoute = !event.target.href ? location.origin + href : event.target.href;
-    // const com = event.composedPath().reverse().slice(4);
-    route(new URL(newRoute), undefined, undefined, event.target);
+    route(new URL(newRoute));
   }, false);
 
   let popPrevented = false;
@@ -105,80 +115,4 @@ export function enableSPA() {
     } else route(new URL(event.currentTarget.location), true);
   });
 }
-
-/**
- * Change route. This is automatically called by href links
- * @param {Object} locationObject route configuration
- * @param {Boolean} [back] Declare back navigation
- * @param {Boolean} [initial] Declare initial navigation
- */
-async function route(locationObject, back = false, initial = false, target) {
-  if (!initial && isPreventNavigation) return;
-  let matchKey = pathLookup.find(v => v[0].test(locationObject.pathname));
-  if (!matchKey) matchKey = [,notFound?.path];
-  if (!matchKey) console.warn(`No page found for path: ${locationObject.pathname}`);
-  let match = paths.get(matchKey[1]);
-
-  // using web components for pages so we need to define it
-  if (!match.component._defined) {
-    match.component = await Promise.resolve(match.component);
-    if (typeof match.component !== 'function') match.component = match.component.default;
-    match.component._isPage = true;
-    // match.component._pagePathRegex = match.regex;
-    customElements.define(`page-${match.hash}`, match.component);
-    match.component._defined = true;
-  }
-
-  if (initial) {
-    const cur = document.querySelector(`page-${match.hash}`);
-    window.page = cur;
-    cur.render();
-  } else {
-    const currentPage = window.page;
-    const samePage = currentPage?.constructor === match.component;
-
-    if (samePage) {
-      const hashMatches = locationObject.hash === location.hash;
-      const searchMatches = locationObject.search === location.search;
-      if (hashMatches && searchMatches) return;
-      // TODO remove when using navigation api
-      if (!back) window.history.pushState({}, currentPage.constructor.title, `${locationObject.pathname}${locationObject.search}${locationObject.hash}`);
-      if (!hashMatches) window.dispatchEvent(new Event('hashchange'));
-      return;
-    }
-    
-    const newContainer = document.querySelector('#page-content');
-    runTransition({
-      newContainer,
-      oldContainer: target,
-      back,
-      routeId: window.history.state?.id
-    }, () => {
-      routeTransition(currentPage, match, locationObject, back, initial);
-    });
-  }
-}
-
-function routeTransition(currentPage, match, locationObject, back, initial) {
-  if (!initial && !back) {
-    document.body.scrollTop = 0;
-    document.documentElement.scrollTop = 0;
-  }
-
-  if (currentPage) {
-    currentPage._internalDisconnectedCallback();
-    currentPage.remove();
-  }
-
-  const nextPage = new match.component();
-  // TODO remove when using navigation api
-  if (!back && !initial) window.history.pushState({ id: routeId++ }, nextPage.constructor.title, `${locationObject.pathname}${locationObject.search}${locationObject.hash}`);
-  window.page = nextPage;
-
-  nextPage.render();
-
-  queueMicrotask(() => {
-    if (!initial) window.dispatchEvent(new Event('locationchange'));
-    else window.dispatchEvent(new Event('locationchangeinitial'));
-  });
-}
+enableSPA();

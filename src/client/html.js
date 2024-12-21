@@ -14,20 +14,36 @@ const signalCommentRegex = new RegExp(signalComment, 'g');
 const twoSpaceRegex = /\s\s/g;
 const attrPlaceholderRegex = new RegExp(attrString, 'g');
 const insideCommentRegex = /<!--(?![.\s\S]*-->)/;
-const dangerousNodes = ['SCRIPT', 'IFRAME', 'NOSCRIPT'];
-const dangerousAttributesLevel2 = ['src', 'href', 'xlink:href'];
-const dangerousAttributesLevel1 = ['onload', 'onerror'];
 const templateCache = new Map();
 const signalCache = new WeakMap();
 const signalsToWatch = new Set();
 const securityLevels = [0, 1, 2];
 let securityLevel = 1;
+const securityLevelMeta = document.querySelector('meta[name=lisecuritylevel]');
+if (securityLevelMeta) setSecurityLevel(parseInt(securityLevelMeta.getAttribute('content')));
 
+let devWarnings = false;
+const devWarningsMeta = document.querySelector('meta[name=lidevwarnings]');
+if (devWarningsMeta) devWarnings = true;
+
+const dangerousNodes = ['SCRIPT', 'IFRAME', 'NOSCRIPT', 'OBJECT', 'APPLET', 'EMBBED', 'FRAMESET'];
+const dangerousAttributesLevel1 = ['onload', 'onerror'];
+let dangerousTagRegex = new RegExp(dangerousNodes.join('|'));
+let dangerousAttributeRegex = new RegExp(dangerousAttributesLevel1.join('|'));
+const dangerousAttributeValueRegex = /javascript:|eval\(|alert|document.cookie|document\[['|"]cookie['|"]\]|&\#\d/gi;
 
 
 export function setSecurityLevel(level = 1) {
   if (!securityLevels.includes(level)) throw Error('Invalid security level. Valid values [0,1,2]')
   securityLevel = level;
+}
+
+export function setDangerousTagRegex(tagNames = []) {
+  dangerousTagRegex = new RegExp(tagNames.map(v => v.toUpperCase()).join('|'));
+}
+
+export function setDangerousAttributes(attributeNames = []) {
+  dangerousAttributeRegex = new RegExp(attributeNames.join('|'));
 }
 
 
@@ -71,6 +87,7 @@ export function html(strings, ...args) {
   if (!templateCache.has(template)) templateCache.set(template, buildTemplateElement(template));
   return prepareTemplateElement(templateCache.get(template), signals, subClonedNodes);
 }
+globalThis.html = html;
 
 function htmlCompute(callback) {
   const compute = new Compute(callback);
@@ -88,41 +105,13 @@ export function watchSignals() {
 
 // called from component
 export function destroySignalCache() {
-  // let signalCacheDestroyCheckList = [];
   templateCache.clear();
 
   for (const sig of signalsToWatch) {
     sig.unwatch(signalChange);
-    // signalCacheDestroyCheckList.push(sig);
   }
   signalsToWatch.clear();
-
-  // isSignalConnected(signalCacheDestroyCheckList);
 }
-
-// This does not seem to be needed. The weak reference seems to handle things
-// function isSignalConnected(signalCacheDestroyCheckList) {
-//   setTimeout(() => {
-//     for (const sig of signalCacheDestroyCheckList) {
-//       let cached = signalCache.get(sig);
-//       for (let i = 0; i < cached.length; i++) {
-//         if (!cached[i][0].isConnected) {
-//           cached[i] = undefined;
-//           cached.splice(i, 1);
-//         }
-//       }
-//       if (cached.length === 0) {
-//         signalCache.delete(sig);
-//         console.log(sig);
-//       }
-//     }
-
-//     signalCacheDestroyCheckList.length = 0;
-//   });
-// }
-
-
-
 
 
 
@@ -301,15 +290,14 @@ function escape(str) {
  * 
  * TODO replace with HTML Sanitizer API when available. Currently still in working spec
  */
-const dangerousAttributeValueRegex = /javascript:|eval\(|alert|document.cookie|document\[['|"]cookie['|"]\]|&\#\d/gi;
 function sanitizeNode(node) {
   let sanitized = false;
 
-  if (dangerousNodes.includes(node.nodeName)) {
+  if (dangerousTagRegex.test(node.nodeName)) {
     if (securityLevel === 0) {
-      if (window.litheDev === true) console.warn(`Template sanitizer (WARNING): Potentially dangerous node NOT removed because of current level (${securityLevel}) "${node.nodeName}"`);
+      if (devWarnings === true) console.warn(`Template sanitizer (WARNING): Potentially dangerous node NOT removed because of current level (${securityLevel}) "${node.nodeName}"`);
     } else {
-      if (window.litheDev === true) console.warn(`Template sanitizer (INFO): A ${node.nodeName} tag was removed because of security level (${securityLevel})`);
+      if (devWarnings === true) console.warn(`Template sanitizer (INFO): A ${node.nodeName} tag was removed because of security level (${securityLevel})`);
       node.remove();
       sanitized = true;
     }
@@ -327,7 +315,7 @@ function sanitizeAttribute(attr) {
   const nameSanitized = sanitizeAttributeName(attr.name, attr.value);
   const valueSanitized = sanitizeAttributeValue(attr.name, attr.value);
   if (nameSanitized || valueSanitized) {
-    if (window.litheDev === true) console.warn(`Template sanitizer (INFO): Attribute removed "${attr.name}: ${attr.value}"`);
+    if (devWarnings === true) console.warn(`Template sanitizer (INFO): Attribute removed "${attr.name}: ${attr.value}"`);
     attr.ownerElement.removeAttribute(attr.name);
     return true;
   }
@@ -338,17 +326,16 @@ function sanitizeAttributeName(name, value) {
   let shouldRemoveLevel2 = false;
   let shouldRemoveLevel1 = false;
 
-  if ((name.startsWith('on') || dangerousAttributesLevel2.includes(name))) shouldRemoveLevel2 = true;
-  if (dangerousAttributesLevel1.includes(name)) shouldRemoveLevel1 = true;
+  if (name.startsWith('on')) shouldRemoveLevel2 = true;
+  if (dangerousAttributeRegex.test(name)) shouldRemoveLevel1 = true;
 
   if (
-    window.litheDev === true &&
+    devWarnings === true &&
     (securityLevel === 1 && shouldRemoveLevel2 && !shouldRemoveLevel1)
-    || (window.litheDev === true && securityLevel === 0 && (!shouldRemoveLevel2 || !shouldRemoveLevel1))
+    || (devWarnings === true && securityLevel === 0 && (!shouldRemoveLevel2 || !shouldRemoveLevel1))
   ) {
     console.warn(`Template sanitizer (WARNING): Potentially dangerous attribute NOT removed because of current level (${securityLevel}) "${name}: ${value}"`);
   }
-
   return (shouldRemoveLevel1 && securityLevel > 0) || (shouldRemoveLevel2 && securityLevel === 2);
 }
 
@@ -356,7 +343,7 @@ const spaceRegex = /\s+/g;
 function sanitizeAttributeValue(name, value) {
   value = value.replace(spaceRegex, '').toLowerCase();
   if (value.match(dangerousAttributeValueRegex) !== null) {
-    if (window.litheDev === true && securityLevel === 0) {
+    if (devWarnings === true && securityLevel === 0) {
       console.warn(`Template sanitizer (WARNING): Potentially dangerous attribute NOT removed because of current level (${securityLevel}) "${name}: ${value}"`);
     } else return true;
   }
