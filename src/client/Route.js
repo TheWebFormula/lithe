@@ -1,7 +1,5 @@
 import { register } from './router.js';
 
-let routes = new Map();
-
 export default class Route extends HTMLElement {
   constructor() {
     super();

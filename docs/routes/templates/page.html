@@ -91,7 +91,7 @@ ${`// page.js
 import { Component } from '@thewebformula/lithe';
 import htmlTemplate from './page.html';
 
-export default class extends Component {
+class PageClass extends Component {
   static title = 'Template html file';
 
   // Load HTML template file
@@ -116,7 +116,8 @@ export default class extends Component {
     if (!value) return;
     this.loopVar.value = [...this.loopVar.value, {value}];
   }
-}`}
+}
+customElements.define('page-component-name', PageClass);`}
           </pre></code-block>
         </mc-card>
       </section>
@@ -146,7 +147,7 @@ ${`// page.js
 import { Component } from '@thewebformula/lithe';
 import htmlTemplate from './page.html';
 
-export default class extends Component {
+class PageClass extends Component {
   static title = 'Template html file';
 
   // Load HTML template file
@@ -155,7 +156,8 @@ export default class extends Component {
   constructor() {
     super();
   }
-}`}
+}
+customElements.define('page-component-name', PageClass);`}
           </pre></code-block>
         
           <div style="margin-top: 42px; margin-bottom: 12px;">
@@ -166,7 +168,7 @@ export default class extends Component {
 ${`// page.js page function
 import { Component, html } from '@thewebformula/lithe';
 
-export default class extends Component {
+class PageClass extends Component {
   static title = 'Template function';
 
   // Load HTML template file
@@ -183,7 +185,8 @@ export default class extends Component {
       <div>Content</div>
     \`;
   }
-}`}
+}
+customElements.define('page-component-name', PageClass);`}
           </pre></code-block>
         </mc-card>
       </section>

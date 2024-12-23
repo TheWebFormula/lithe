@@ -30,7 +30,7 @@ import htmlTemplate from './page.html';
 // imported component
 import './component.js';
 
-export default class extends Component {
+class PageClass extends Component {
   // html page title
   static title = 'Page';
 
@@ -50,7 +50,8 @@ export default class extends Component {
       <custom-button>Click</custom-button>
     `}\`;
   }
-}`}
+}
+customElements.define('page-component-name', PageClass);`}
           </pre></code-block>
         </mc-card>
       </section>

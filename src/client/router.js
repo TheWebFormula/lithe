@@ -11,6 +11,7 @@ const hashRegexString = '(#(.*))?';
 const followedBySlashRegexString = '(?:\/$|$)';
 const routeRegexReplaceRegex = /\/(\*|:)?([^\/\?]+)(\?)?/g;
 const template = document.createElement('template');
+let currentPathRegex;
 
 
 document.documentElement.scrollTop = 0;
@@ -24,6 +25,14 @@ export function register(path, component, notFound) {
   if (notFound) notFoundPage = [regex, component];
   if (!pageContainer) pageContainer = document.querySelector('#page-content');
   if (regex.test(location.pathname)) navigate(component, regex, location, undefined, undefined, true);
+}
+
+export function getSearchParameters() {
+  return Object.fromEntries([...new URLSearchParams(location.search).entries()]);
+}
+
+export function getUrlParameters() {
+  return !currentPathRegex ? {} : location.pathname.match(currentPathRegex)?.groups || {};
 }
 
 
@@ -50,19 +59,31 @@ function route(locationObject, back) {
 }
 
 async function navigate(component, pathRegex, locationObject, current, back, initial) {;
+  currentPathRegex = pathRegex;
   if (!initial && !back) {
     document.body.scrollTop = 0;
     document.documentElement.scrollTop = 0;
   }
 
   if (current) current.remove();
+
+  // add page component to dom
   template.innerHTML = `<${component}>`;
   const page = template.content.cloneNode(true).firstElementChild;
-  page._pathRegex = pathRegex;
-  if (!back && !initial) window.history.pushState({}, page.constructor.title, `${locationObject.pathname}${locationObject.search}${locationObject.hash}`);
   pageContainer.appendChild(page);
-  window.page = page;
+
+  // wait for component to be defined then configure it as a page
   await customElements.whenDefined(component);
+  page.constructor._isPage = true;
+
+  if (!back && !initial) window.history.pushState({}, page.constructor.title, `${locationObject.pathname}${locationObject.search}${locationObject.hash}`);
+  
+  // set page title
+  const title = document.documentElement.querySelector('title');
+  title.textContent = page.constructor.title;
+
+  // make page class globally available and render
+  window.page = page;
   page.render();
 
   queueMicrotask(() => {

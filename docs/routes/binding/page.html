@@ -45,7 +45,7 @@ ${`<!-- Signals automatically update the HTML -->
 ${`import { Component, Signal } from '@thewebformula/lithe';
 import htmlTemplate from './page.html';
 
-export default class extends Component {
+class PageClass extends Component {
   static title = 'Signal';
   static htmlTemplate = htmlTemplate;
   
@@ -59,7 +59,8 @@ export default class extends Component {
     // HTML will automatically update
     this.basicBind.value = 'Updated';
   }
-}`}
+}
+customElements.define('page-component-name', PageClass);`}
           </pre></code-block>
         
           <code-block language="javascript"><pre>
@@ -69,7 +70,7 @@ ${`
 import { Component, Signal, Compute, effect } from '@thewebformula/lithe';
 import htmlTemplate from './page.html';
 
-export default class extends Component {
+class PageClass extends Component {
   static title = 'Signal Compute effect';
   static htmlTemplate = htmlTemplate;
   
@@ -93,7 +94,8 @@ export default class extends Component {
     // dispose effect
     dispose();
   }
-}`}
+}
+customElements.define('page-component-name', PageClass);`}
           </pre></code-block>
         </mc-card>
       </section>
@@ -126,7 +128,7 @@ ${`<!-- Computes automatically update the HTML -->
 ${`import { Component, Signal, Compute } from '@thewebformula/lithe';
 import html from './page.html';
 
-export default class extends Component {
+class PageClass extends Component {
   static title = 'Compute';
   static htmlTemplate = html;
   
@@ -139,7 +141,8 @@ export default class extends Component {
   constructor() {
     super();
   }
-}`}
+}
+customElements.define('page-component-name', PageClass);`}
           </pre></code-block>
         </mc-card>
       </section>
@@ -155,7 +158,7 @@ export default class extends Component {
 ${`import { Component, Signal, effect } from '@thewebformula/lithe';
 import html from './page.html';
 
-export default class extends Component {
+class PageClass extends Component {
   static title = 'Effect';
   static htmlTemplate = html;
   
@@ -176,7 +179,8 @@ export default class extends Component {
     // dispose effect
     dispose();
   }
-}`}
+}
+customElements.define('page-component-name', PageClass);`}
           </pre></code-block>
         </mc-card>
       </section>

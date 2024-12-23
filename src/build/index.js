@@ -5,12 +5,13 @@ import path from 'node:path';
 import { readdir, stat, rm } from 'node:fs/promises';
 import buildRoutes from './buildRoutes.js';
 
+// TODO handle app.css existence checking and index.html injection
 
 const isDev = process.env.NODE_ENV !== 'production';
 export default async function build(config = {
   basedir: 'app',
-  entryPoints: 'app.js',
-  entryPointsCSS: 'app.css',
+  entryPoint: 'app.js',
+  entryPointCSS: 'app.css',
   indexHTML: 'index.html',
   outdir: 'dist',
   minify: true,
@@ -27,8 +28,8 @@ export default async function build(config = {
   onEnd: () => { }
 }) {
   config.basedir = config.basedir || 'app';
-  config.entryPoints = path.join(config.basedir, config.entryPoints || 'app.js');
-  config.entryPointsCSS = path.join(config.basedir, config.entryPointsCSS || 'app.css');
+  config.entryPoint = path.join(config.basedir, config.entryPoint || 'app.js');
+  config.entryPointCSS = path.join(config.basedir, config.entryPointCSS || 'app.css');
   config.indexHTML = path.join(config.basedir, config.indexHTML || 'index.html');
   config.outdir = config.outdir || 'dist';
   config.minify = config.minify !== undefined ? config.minify : isDev ? false : true;
@@ -58,14 +59,14 @@ export default async function build(config = {
       }
 
       build.onEnd(async (results) => {
-        const appOutput = Object.entries(results.metafile.outputs).map(([filename, item]) => [item.entryPoint, filename]).find(v => v[0] === config.entryPoints);
+        const appOutput = Object.entries(results.metafile.outputs).map(([filename, item]) => [item.entryPoint, filename]).find(v => v[0] === config.entryPoint);
         await buildRoutes(config, results.metafile.inputs, appOutput[1]);
         if (typeof config.onEnd === 'function')  await config.onEnd();
       });
     }
   };
 
-  const cssPlugin = !config.entryPointsCSS ? undefined : {
+  const cssPlugin = !config.entryPointCSS ? undefined : {
     name: 'css',
     setup(build) {
       // bundle css file and inline
@@ -79,7 +80,7 @@ export default async function build(config = {
           loader: { '.css': 'css' }
         });
         let contents;
-        if (args.path.endsWith(config.entryPointsCSS)) contents = `
+        if (args.path.endsWith(config.entryPointCSS)) contents = `
           const styles = new CSSStyleSheet();
           styles.replaceSync(\`${contextCss.outputFiles[0].text}\`);
           document.adoptedStyleSheets = [...document.adoptedStyleSheets, styles];`;
@@ -93,7 +94,7 @@ export default async function build(config = {
   };
 
   let ctx = await esbuild.context({
-    entryPoints: [config.entryPoints],
+    entryPoints: [config.entryPoint],
     bundle: true,
     metafile: true,
     outdir: config.outdir,
@@ -166,7 +167,7 @@ async function cleanOutdir(dir) {
 
 
 // let ctx = await esbuild.context({
-//   entryPoints: ['docs/app.js'],
+//   entryPoint: ['docs/app.js'],
 //   bundle: true,
 //   outdir: 'dist',
 //   sourcemap: true,
@@ -238,7 +239,7 @@ async function cleanOutdir(dir) {
 //       build.onLoad({ filter: /\.css$/ }, async args => {
 //         // need to use build instead of transform because transform is not resolving @imports from node modules
 //         const contextCss = await esbuild.build({
-//           entryPoints: [args.path],
+//           entryPoint: [args.path],
 //           bundle: true,
 //           write: false,
 //           minify,

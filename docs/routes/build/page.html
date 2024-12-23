@@ -18,8 +18,12 @@
             <li>Sourcemaps</li>
             <li>Dev server</li>
             <li>live relaoding</li>
-            <li>Gzip content</li>
             <li>File copying</li>
+          </ul>
+          <ul slot="supporting-text">
+            <li><strong>NODE_ENV=production</strong> will minify the code and NOT run the dev server</li>
+            <li><strong>NODE_ENV=other value</strong> will run the dev server</li>
+            <li>You can override the default behavior</li>
           </ul>
         
           <code-block language="javascript"><pre>
@@ -36,17 +40,20 @@ build();
 * Full config options
 */
 build({
-  // folder that contains 'app.js' : Default 'app.js'
+  // folder that contains 'app.js' : Default 'app/'
   basedir: 'app/',
+
+  // main app javascript file : Default 'app.js'
+  entryPoint: 'app.js',
+
+  // main app styles file : Default 'app.css'
+  entryPointCSS: 'app.css',
+
+  // index.html file : Default 'index.html'
+  indexHTML: 'index.html',
 
   // folder that contains 'app.js' : Default 'dist/'
   outdir: 'dist/',
-
-  /**
-  * Default true
-  * Split code using routes for optimal loading
-  */
-  chunks: true,
 
   /**
   * Minify code
@@ -60,14 +67,7 @@ build({
   * Set to 'false' when 'NODE_ENV=production'
   *   otherwise it defaults to 'true'
   */
-  sourcemaps: false,
-
-  /**
-  * Compress code
-  * Set to 'true' when 'NODE_ENV=production'
-  *   otherwise it defaults to 'false'
-  */
-  gzip: true,
+  sourcemap: false,
 
   /**
   * Run dev server
@@ -91,7 +91,7 @@ build({
   * devWarnings
   * Enable console warning
   * only html sanitization currently
-  * otherwise it defaults to 'false'
+  * defaults to 'false'
   */
   devWarnings: false,
 
@@ -103,7 +103,7 @@ build({
   securityLevel: 1,
 
   // supports regex's with wildcards (*, **)
-  copyFiles: [
+  copy: [
     {
       from: 'app/image.jpg',
       to: 'dist/'
@@ -111,14 +111,6 @@ build({
     {
       from: 'app/routes/**/(?!page)*.html',
       to: 'dist/routes'
-    },
-    {
-      from: 'app/code.js',
-      to: 'dist/code.js',
-      transform({ content, outputFileNames }) {
-        // doo work
-        return content;
-      }
     }
   ],
 
@@ -128,65 +120,6 @@ build({
   // callback after bundle
   onEnd: () => {}
 });`}
-          </pre></code-block>
-        
-          <div class="card-content" style="margin-top: 42px; margin-bottom: 12px;">
-            <div style="font-size: 24px;">Native server</div>
-          </div>
-          <code-block language="javascript"><pre>
-${`import { createServer } from 'node:http';
-import { middlewareNode } from '@thewebformula/lithe/middleware';
-
-// same options as above
-const middleware = middlewareNode({
-  basedir: 'docs/',
-  outdir: 'dist/',
-  copyFiles: [
-    { from: 'docs/favicon.ico', to: 'dist/' }
-  ]
-});
-
-createServer(async (req, res) => {
-  const handled = await middleware(req, res);
-  if (handled === true) return;
-  
-  // Do other stuff
-}).listen(3000);`}
-          </pre></code-block>
-        
-          <div class="card-content" style="margin-top: 42px; margin-bottom: 12px;">
-            <div style="font-size: 24px;">Express server</div>
-          </div>
-          <code-block language="javascript"><pre>
-${`import express from 'express';
-import { middlewareExpress } from '@thewebformula/lithe/middleware';
-
-const app = express();
-// same options as above
-app.use(middlewareExpress({
-  basedir: 'docs/',
-  outdir: 'dist/',
-  copyFiles: [
-    { from: 'docs/favicon.ico', to: 'dist/' }
-  ]
-}));
-app.use(express.static('./docs'));
-app.listen(3000);`}
-          </pre></code-block>
-        
-        
-          <div class="card-content" style="margin-top: 42px; margin-bottom: 12px;">
-            <div style="font-size: 24px;">Run commands</div>
-          </div>
-          <code-block language="bash"><pre>
-${`# Development run
-node build.js
-
-# Development run with watch to enable livereload
-node --watch-path=./app build.js
-
-# Production run. minifies, gzips, and writes files
-NODE_ENV=production node build.js`}
           </pre></code-block>
         </mc-card>
       </section>

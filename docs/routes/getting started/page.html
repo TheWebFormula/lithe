@@ -16,7 +16,6 @@
         <li><a href="#appcss">app.css</a></li>
         <li><a href="#pagejs">Page</a></li>
         <li><a href="#build">build</a></li>
-        <!-- <li><a href="#middleware">Server middleware</a></li> -->
       </ul>
     </nav>
 
@@ -36,7 +35,8 @@ npm install @thewebformula/lithe
       <section id="routing" aria-label="Routing">
         <mc-card >
           <h2 slot="headline">Routing</h2>
-          <div slot="supporting-text">@thewebformula/lithe uses directory based routing. All routes go in a 'routes' folder.</div>
+          <div slot="supporting-text">Lithe provides 2 methods for route configurations. Both methods can be used together.</div>
+          <div slot="supporting-text"><a href="/routing">Routing documentation</a></div>
           
           <code-block language="yaml"><pre>
 app/
@@ -99,16 +99,12 @@ ${`<!doctype html>
     <!-- overridden by page titles -->
     <title>Default Title</title>
     
-    <!-- app.js and app.css will automatically be updated to match bundle outputs -->
-    <\link href="app.css" rel="stylesheet">
+    <!-- app.js will automatically be updated to match bundle outputs -->
     <\script src="app.js" type="module"><\/script>
   </head>
   
   <body>
     <!-- page template render into this element -->
-    <page-content></page-content>
-
-    <!-- Alternative using id attribute -->
     <div id="page-content"></div>
   </body>
 </html>`}
@@ -195,16 +191,17 @@ ${`
           <div slot="supporting-text">Required: Automatically uses app.js as entry file for bundling</div>
         
           <code-block language="javascript"><pre>
-${`/* Main app file
-* you can import any code in here
+${`/* app.js
+* Import pages and code
 */
 
 import someModule from './someModule.js';
 
-// routes are automatically loaded`}
+import './routes/index/index.js';
+import './routes/page-two/index.js';`}
         </pre></code-block>
 
-        <div style="margin-top: 42px; margin-bottom: 12px;">
+        <!-- <div style="margin-top: 42px; margin-bottom: 12px;">
           <div style="font-size: 16px;">Prevent navigation allows you to lock down the app for uses like authentication</div>
         </div>
 
@@ -217,22 +214,26 @@ if (!document.cookie.includes('authenticated=true')) {
   preventNavigation(true);
 }`}
           </pre></code-block>
-        </mc-card>
+        </mc-card> -->
       </section>
 
 
       <section id="appcss" aria-label="app.css example">
         <mc-card>
-          <h2 slot="headline">Main application Styles</h2>
-          <div slot="supporting-text">app.css</div>
-          <div slot="supporting-text">Optional: Will bundle and minify into a single file</div>
+          <h2 slot="headline">App Styles</h2>
+          <div slot="supporting-text">You can import them into teh app.js or use the build copy to move them to the build directory</div>
         
-          <code-block language="css"><pre>
-${`@import url('./other.css');
+          <code-block language="javascript"><pre>
+${`// app.js
+import './app.css';
 
-body {
-  background-color: white;
-}`}
+
+// build.js
+build({
+  basedir: 'docs',
+  copy: [ { from: 'app/app.css', to: 'dist/' } ]
+});
+`}
           </pre></code-block>
         </mc-card>
       </section>
@@ -247,7 +248,7 @@ body {
 ${`import { Component, Signal, html } from '@thewebformula/lithe';
 import htmlTemplate from './page.html'; // automatically bundles
 
-export default class extends Component {
+class PageComponent extends Component {
   // html page title
   static title = 'Page';
 
@@ -313,7 +314,10 @@ export default class extends Component {
       <button onclick="page.changeValue()">Change value</button>
     \`;
   }
-}`}
+}
+
+// Define page component
+customElements.define('page-component-name', PageComponent);`}
           </pre></code-block>
         </mc-card>
       </section>
@@ -336,83 +340,6 @@ ${`import build from '@thewebformula/lithe/build';
 */
 build({ basedir: 'app/' });`}
         </pre></code-block>
-
-        <div style="margin-top: 42px; margin-bottom: 12px;">
-          <div style="font-size: 24px;">Run commands</div>
-        </div>
-        <code-block language="javascript"><pre>
-${`# Development run
-node build.js
-
-# Development run with watch to enable livereload
-node --watch-path=./app build.js
-
-# Production run. minifies and gzips
-NODE_ENV=production node build.js`}
-          </pre></code-block>
-        </mc-card>
-      </section>
-
-
-      <!-- <section id="middleware" aria-label="Middleware example">
-        <mc-card>
-          <h2 slot="headline">Serve app</h2>
-          <div slot="supporting-text">server.js</div>
-          <div slot="supporting-text">Handle routing and file serving with middleware. GZIP compression is automatically
-            handled.</div>
-          <a href="/serve">Serve config</a>
-        
-          <div class="card-content" style="margin-top: 42px; margin-bottom: 12px;">
-            <div style="font-size: 24px;">Native server</div>
-          </div>
-          <code-block language="javascript"><pre>
-  ${`import { createServer } from 'node:http';
-  import { middlewareNode } from '@thewebformula/lithe/middleware';
-  
-  const middleware = middlewareNode({
-    basedir: 'docs/',
-    outdir: 'dist/',
-    copyFiles: [
-      { from: 'docs/favicon.ico', to: 'dist/' }
-    ]
-  });
-  
-  createServer(async (req, res) => {
-    const handled = await middleware(req, res);
-    if (handled === true) return;
-    
-    // Do other stuff
-  }).listen(3000);`}
-          </pre></code-block>
-        
-          <div class="card-content" style="margin-top: 42px; margin-bottom: 12px;">
-            <div style="font-size: 24px;">Express server</div>
-          </div>
-          <code-block language="javascript"><pre>
-  ${`import express from 'express';
-  import { middlewareExpress } from '@thewebformula/lithe/middleware';
-  
-  const app = express();
-  app.use(middlewareExpress({
-    basedir: 'docs/',
-    outdir: 'dist/',
-    copyFiles: [
-      { from: 'docs/favicon.ico', to: 'dist/' }
-    ]
-  }));
-  app.use(express.static('./docs'));
-  app.listen(3000);`}
-          </pre></code-block>
-        
-          <div class="card-content" style="margin-top: 42px; margin-bottom: 12px;">
-            <div style="font-size: 24px;">Livereload</div>
-          </div>
-          <code-block language="html"><pre>
-  ${`# Simply use node --watch to enable livereload
-  node --watch-path=./src --watch-path=./docs server.js`}
-          </pre></code-block>
-        </mc-card>
-      </section> -->
     </div>
   </div>
 </article>

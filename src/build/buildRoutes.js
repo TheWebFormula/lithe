@@ -10,12 +10,11 @@ const routeComponentAttrIndividualRegex = /(\w+)="(.+?)"/gm;
 const stripCommentsRegex = /<!--([.\S\s]*?)-->/g
 
 
-export default async function build({ basedir, outdir, entryPoints, indexHTML, devServerLivereload, devWarnings, securityLevel }, inputs, appOutput) {  
+export default async function build({ basedir, outdir, entryPoint, indexHTML, devServerLivereload, devWarnings, securityLevel }, inputs, appOutput) {  
   let routeConfigs = await parseRoutes(basedir, inputs);
   let indexHTMLtemplate = await readFile(indexHTML, 'utf-8');
   let routeComponents = getRouteComponents(indexHTMLtemplate);
-  indexHTMLtemplate = replaceAppJSScriptTag(basedir, entryPoints, outdir, appOutput, indexHTMLtemplate);
-
+  indexHTMLtemplate = replaceAppJSScriptTag(basedir, entryPoint, outdir, appOutput, indexHTMLtemplate);
   let routeComponentHTML = '';
   await Promise.all(routeConfigs.map(async route => {
     const pageComponent = await readFile(path.join(basedir, route.importPath), 'utf-8');
@@ -97,8 +96,8 @@ function getRouteComponents(indexHTMLtemplate) {
   return routeComponents;
 }
 
-function replaceAppJSScriptTag(basedir, entryPoints, outdir, appOutput, indexHTMLtemplate) {
-  const originalAppJS = path.relative(basedir, entryPoints);
+function replaceAppJSScriptTag(basedir, entryPoint, outdir, appOutput, indexHTMLtemplate) {
+  const originalAppJS = path.relative(basedir, entryPoint);
   const outputAppJSName = path.relative(outdir, appOutput);
   const outputAppJSScriptTag = `<script type="module" src="/${outputAppJSName}"></script>`;
   const appScriptTagRegex = new RegExp(`<script[\\s\\S]*src="/${originalAppJS}"[^>]*>\\s*</script>`);
