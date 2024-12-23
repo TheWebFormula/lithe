@@ -100,7 +100,10 @@ ${`<!doctype html>
     <title>Default Title</title>
     
     <!-- app.js will automatically be updated to match bundle outputs -->
-    <\script src="app.js" type="module"><\/script>
+    <\script src="/app.js" type="module"><\/script>
+
+    <!-- If you configure 'entryPointCSS' with build, app.css will automatically be updated to match bundle outputs -->
+    <\link href="/app.css" rel="stylesheet">
   </head>
   
   <body>
@@ -221,20 +224,22 @@ if (!document.cookie.includes('authenticated=true')) {
       <section id="appcss" aria-label="app.css example">
         <mc-card>
           <h2 slot="headline">App Styles</h2>
-          <div slot="supporting-text">You can import them into teh app.js or use the build copy to move them to the build directory</div>
+          <div slot="supporting-text">You can configure an app css file that will be bundled into a single file</div>
         
           <code-block language="javascript"><pre>
-${`// app.js
-import './app.css';
-
-
-// build.js
+${`// build.js
 build({
-  basedir: 'docs',
-  copy: [ { from: 'app/app.css', to: 'dist/' } ]
-});
-`}
+  entryPointCSS: 'app/app.css' // undefined by default
+});`}
           </pre></code-block>
+          <code-block language="html">
+            <pre>
+${`<!-- the link import will be automatically updated to match output filename
+  If you do not add a link tag, once will be added
+-->
+<\link href="/app.css" rel="stylesheet">`}
+          </pre>
+          </code-block>
         </mc-card>
       </section>
 

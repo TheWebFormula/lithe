@@ -10,11 +10,13 @@ const routeComponentAttrIndividualRegex = /(\w+)="(.+?)"/gm;
 const stripCommentsRegex = /<!--([.\S\s]*?)-->/g
 
 
-export default async function build({ basedir, outdir, entryPoint, indexHTML, devServerLivereload, devWarnings, securityLevel }, inputs, appOutput) {  
+export default async function build({ basedir, outdir, entryPoint, entryPointCSS, indexHTML, devServerLivereload, devWarnings, securityLevel }, inputs, appOutputs) {  
   let routeConfigs = await parseRoutes(basedir, inputs);
   let indexHTMLtemplate = await readFile(indexHTML, 'utf-8');
   let routeComponents = getRouteComponents(indexHTMLtemplate);
-  indexHTMLtemplate = replaceAppJSScriptTag(basedir, entryPoint, outdir, appOutput, indexHTMLtemplate);
+
+  indexHTMLtemplate = replaceAppTags(basedir, entryPoint, entryPointCSS, outdir, appOutputs, indexHTMLtemplate);
+
   let routeComponentHTML = '';
   await Promise.all(routeConfigs.map(async route => {
     const pageComponent = await readFile(path.join(basedir, route.importPath), 'utf-8');
@@ -96,12 +98,30 @@ function getRouteComponents(indexHTMLtemplate) {
   return routeComponents;
 }
 
-function replaceAppJSScriptTag(basedir, entryPoint, outdir, appOutput, indexHTMLtemplate) {
+function replaceAppTags(basedir, entryPoint, entryPointCSS, outdir, appOutputs, indexHTMLtemplate) {
   const originalAppJS = path.relative(basedir, entryPoint);
-  const outputAppJSName = path.relative(outdir, appOutput);
+  const originalAppCSS = entryPointCSS ? path.relative(basedir, entryPointCSS) : undefined;
+  let outputAppJSName;
+  let outputAppCSSName;
+  for (const item of appOutputs) {
+    if (item[0] === entryPoint) {
+      outputAppJSName = path.relative(outdir, item[1]);
+    } else if (item[0] === entryPointCSS) {
+      outputAppCSSName = path.relative(outdir, item[1]);
+    }
+  }
+
   const outputAppJSScriptTag = `<script type="module" src="/${outputAppJSName}"></script>`;
   const appScriptTagRegex = new RegExp(`<script[\\s\\S]*src="/${originalAppJS}"[^>]*>\\s*</script>`);
   if (appScriptTagRegex.test(indexHTMLtemplate)) indexHTMLtemplate = indexHTMLtemplate.replace(appScriptTagRegex, outputAppJSScriptTag);
   else indexHTMLtemplate = indexHTMLtemplate.replace(/<\/head>/, `  ${outputAppJSScriptTag}\n</head>`);
+
+  if (outputAppCSSName) {
+    const outputAppCSSLinkTag = `<link rel="stylesheet" href="/${outputAppCSSName}">`;
+    const appLinkTagRegex = new RegExp(`<link\\s+(?:[^>]*?\\s+)?href="/${originalAppCSS}"[^>]*>`);
+    if (appLinkTagRegex.test(indexHTMLtemplate)) indexHTMLtemplate = indexHTMLtemplate.replace(appLinkTagRegex, outputAppCSSLinkTag);
+    else indexHTMLtemplate = indexHTMLtemplate.replace(/<\/head>/, `  ${outputAppCSSLinkTag}\n</head>`);
+  }
+
   return indexHTMLtemplate;
 }

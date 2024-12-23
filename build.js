@@ -1,7 +1,8 @@
 import build from './src/build/index.js';
 
 build({
-  basedir: 'docs',
+  entryPoint: 'docs/app.js',
+  entryPointCSS: 'docs/app.css',
   copy: [
     { from: 'docs/_headers', to: 'dist/' },
     { from: 'docs/robots.txt', to: 'dist/' },

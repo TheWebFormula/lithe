@@ -69,7 +69,19 @@ ${`<!-- component.html -->
         
           <code-block language="javascript"><pre>
 ${`import { Component } from '@thewebformula/lithe';
+
+/** You can import html
+ * html imports as a string
+ */
 import htmlTemplate from './component.html';
+
+/** You can import stylesheets
+ * Stylesheets imports as modules that export CSSStyleSheet
+ * You can add them to the component 'static styleSheets = [styles];'
+ */
+import styles from '../styles.css' assert { type: 'css' };
+
+
 
 class CustomButton extends Component {
   /**
@@ -96,9 +108,9 @@ class CustomButton extends Component {
   /**
     * Pass in styles for shadow root.
     * Can use imported stylesheets: import styles from '../styles.css' assert { type: 'css' };
-    * @type {CSSStyleSheet}
+    * @type {[CSSStyleSheet]}
     */
-  static shadowRootStyleSheets;
+  static styleSheets;
 
 
   /**

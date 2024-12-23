@@ -40,17 +40,18 @@ build();
 * Full config options
 */
 build({
-  // folder that contains 'app.js' : Default 'app/'
-  basedir: 'app/',
+  // App javascript file : Default 'app/app.js'
+  entryPoint: 'app/app.js',
 
-  // main app javascript file : Default 'app.js'
-  entryPoint: 'app.js',
-
-  // main app styles file : Default 'app.css'
-  entryPointCSS: 'app.css',
+  /**
+   * App styles file
+   * If you add a path, the file will be bundled and output as a single .css file
+   * Default: undefined
+   */
+  entryPointCSS: 'app/app.css',
 
   // index.html file : Default 'index.html'
-  indexHTML: 'index.html',
+  indexHTML: 'app/index.html',
 
   // folder that contains 'app.js' : Default 'dist/'
   outdir: 'dist/',

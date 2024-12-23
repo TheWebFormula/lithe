@@ -9,8 +9,6 @@ import '@thewebformula/materially/components/textfield';
 import '@thewebformula/materially/components/pane';
 import '@thewebformula/materially/components/icon';
 
-// TODO
-import './app.css';
 import './code-block.js';
 import './routes/index/index.js';
 import './routes/getting started/index.js';
