@@ -23,7 +23,6 @@ import './routes/routing/index.js';
 import './routes/templates/index.js';
 import './routes/view transitions/index.js';
 import './routes/web component/index.js';
-// import './routes/test[id?]/index.js';
 
 
 if (typeof hljs === 'undefined') {

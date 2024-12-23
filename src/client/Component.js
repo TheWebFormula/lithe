@@ -1,20 +1,75 @@
 import { html, watchSignals, destroySignalCache } from './html.js';
+import { getSearchParameters, getUrlParameters } from './router.js';
 
 
 const dashCaseRegex = /-([a-z])/g;
 const onRegex = /^on/;
 let templates = new Map();
 
+/**
+ * Component class used for pages and web components
+ * @extends HTMLElement
+ */
 export default class Component extends HTMLElement {
+  static _isPage = false;
+  static _html = html;
+
+  /**
+   * Attach up shadow root
+   * @type {Boolean}
+   */
   static useShadowRoot = false;
+
+  /**
+   * Delegate focus for shadowRoot
+   * @type {Boolean}
+   */
   static shadowRootDelegateFocus = false;
 
-  static _html = html;
+  /**
+   * Pass in HTML string. Use for imported .HTML
+   *   Supports template literals: <div>${this.var}</div>
+   * @type {String}
+   */
   static htmlTemplate = '';
+
+  /**
+   * Pass in styles for shadow root.
+   *   Can use imported stylesheets: import styles from '../styles.css' assert { type: 'css' };
+   * @type {CSSStyleSheet}
+   */
   static styleSheets = [];
 
+  /**
+   * Page title
+   * @type {String}
+   */
+  static title;
+
+  /**
+   * @typedef {String} AttributeType
+   * @value '' default handling
+   * @value 'string' Convert to a string. null = ''
+   * @value 'number' Convert to a number. isNaN = ''
+   * @value 'int' Convert to a int. isNaN = ''
+   * @value 'boolean' Convert to a boolean. null = false
+   * @value 'event' Allows code to be executed. Similar to onchange="console.log('test')"
+   */
+  /**
+   * Enhances observedAttributes, allowing you to specify types
+   * @type {Array.<[name:String, AttributeType]>}
+   */
   static get observedAttributesExtended() { return []; };
+
   static get observedAttributes() { return this.observedAttributesExtended.map(a => a[0]); }
+
+  /**
+   * Use with observedAttributesExtended
+   *   This automatically handles type conversions and duplicate calls from setting attributes
+   * @name observedAttributesExtended
+   * @function
+   */
+  // static get observedAttributesExtended() { }
 
   #attributeEvents = new Map();
   #attributesLookup;
@@ -62,24 +117,54 @@ export default class Component extends HTMLElement {
    */
   attributeChangedCallbackExtended(name, oldValue, newValue) { }
 
+  /**
+   * Returns an object with url search parameters
+   * @returns {Object.<string, string>} Object with search parameters
+   */
   get searchParameters() {
-    return Object.fromEntries([...new URLSearchParams(location.search).entries()]);
+    return getSearchParameters();
   }
 
+  /**
+   * Returns an object with url parameters
+   * @returns {Object.<string, string>} Object with url parameters
+   */
   get urlParameters() {
-    return location.pathname.match(this._pathRegex)?.groups;
+    return getUrlParameters();
   }
+
+  connectedCallback() { }
+  disconnectedCallback() { }
+
+  /** Called before render */
+  beforeRender() { }
+
+  /** Called after render */
+  afterRender() { }
+
+  /**
+   * Method that returns a html template string. This is an alternative to use static htmlTemplate
+   *    template() {
+   *       return `<div>${this.var}</div>`;
+   *    }
+   * @name template
+   * @function
+   * @return {String}
+   */
+  template() { }
 
   render() {
     if (!this.#prepared) this.#prepareRender();
 
-    destroySignalCache();
+    this.beforeRender();
+
+    if (this.constructor._isPage) destroySignalCache();
     if (this.constructor.useShadowRoot) this.shadowRoot.appendChild(this.template());
     else this.appendChild(this.template());
-    watchSignals();
-  }
+    if (this.constructor._isPage) watchSignals();
 
-  template() {}
+    this.afterRender();
+  }
 
   #prepareRender() {
     if (!templates.has(this.constructor)) {
