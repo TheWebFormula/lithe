@@ -35,7 +35,7 @@ export default async function build({ basedir, outdir, entryPoint, entryPointCSS
   }
 
   if (devWarnings) indexHTMLtemplate = indexHTMLtemplate.replace(/<head>/, '<head>\n  <meta name="lidevwarnings" content="true">');
-  if (securityLevel) indexHTMLtemplate = indexHTMLtemplate.replace(/<head>/, `<head>\n  <meta name="lisecuritylevel" content="${securityLevel}">`);
+  indexHTMLtemplate = indexHTMLtemplate.replace(/<head>/, `<head>\n  <meta name="lisecuritylevel" content="${securityLevel}">`);
   if (devServerLivereload) {
     indexHTMLtemplate = indexHTMLtemplate.replace(/<\/body>/, "  <script>new EventSource('/esbuild').addEventListener('change', () => location.reload())</script>\n</body>");
   }
@@ -111,15 +111,17 @@ function replaceAppTags(basedir, entryPoint, entryPointCSS, outdir, appOutputs, 
     }
   }
 
-  const outputAppJSScriptTag = `<script type="module" src="/${outputAppJSName}"></script>`;
+  const outputAppJSScriptTag = `<script defer type="module" src="/${outputAppJSName}"></script>`;
   const appScriptTagRegex = new RegExp(`<script[\\s\\S]*src="/${originalAppJS}"[^>]*>\\s*</script>`);
   if (appScriptTagRegex.test(indexHTMLtemplate)) indexHTMLtemplate = indexHTMLtemplate.replace(appScriptTagRegex, outputAppJSScriptTag);
   else indexHTMLtemplate = indexHTMLtemplate.replace(/<\/head>/, `  ${outputAppJSScriptTag}\n</head>`);
 
   if (outputAppCSSName) {
     const outputAppCSSLinkTag = `<link rel="stylesheet" href="/${outputAppCSSName}">`;
-    const appLinkTagRegex = new RegExp(`<link\\s+(?:[^>]*?\\s+)?href="/${originalAppCSS}"[^>]*>`);
-    if (appLinkTagRegex.test(indexHTMLtemplate)) indexHTMLtemplate = indexHTMLtemplate.replace(appLinkTagRegex, outputAppCSSLinkTag);
+    const appLinkTagRegex = new RegExp(`<link\\s+(?:[^>]*?\\s+)?href="/${originalAppCSS}"[^>]*>`, 'g');
+    const matches = indexHTMLtemplate.match(appLinkTagRegex);
+    const stylesheetMatch = matches.find(s => s.includes('rel="stylesheet"'));
+    if (stylesheetMatch) indexHTMLtemplate = indexHTMLtemplate.replace(stylesheetMatch, outputAppCSSLinkTag);
     else indexHTMLtemplate = indexHTMLtemplate.replace(/<\/head>/, `  ${outputAppCSSLinkTag}\n</head>`);
   }
 

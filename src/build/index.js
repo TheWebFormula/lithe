@@ -51,7 +51,7 @@ export default async function build(config = {
   config.devServerLivereload = config.devServerLivereload !== undefined ? config.devServerLivereload : isDev ? true : false;
   config.devWarnings = config.devWarnings !== undefined ? config.devWarnings : isDev ? true : false;
 
-  config.securityLevel = config.securityLevel || 1;
+  config.securityLevel = config.securityLevel === undefined ? 1 : config.securityLevel;
   if (config.securityLevel && ![0, 1, 2].includes(config.securityLevel)) {
     console.warn('Invalid security level value. You cna use [0,1,2]. Defaulting to 1');
     config.securityLevel = 1;
@@ -74,7 +74,7 @@ export default async function build(config = {
           .map(([filename, item]) => [item.entryPoint, filename])
           .filter(v => v[0] === config.entryPoint || v[0] === config.entryPointCSS);
         await buildRoutes(config, results.metafile.inputs, appOutputs);
-        if (typeof config.onEnd === 'function')  await config.onEnd();
+        if (typeof config.onEnd === 'function') await config.onEnd(results);
       });
     }
   };
@@ -118,6 +118,7 @@ export default async function build(config = {
     entryPoints: entryPoints,
     bundle: true,
     metafile: true,
+    format: 'esm',
     outdir: config.outdir,
     minify: config.minify,
     sourcemap: config.sourcemap,
