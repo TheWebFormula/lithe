@@ -1,3 +1,5 @@
+import { runTransition } from './viewTransitions.js';
+
 const excludeLinkRegex = /^mailto:|^tel:|^sms:|:\/\//;
 let routes = new Map();
 let pathLookup = [];
@@ -11,6 +13,7 @@ const hashRegexString = '(#(.*))?';
 const followedBySlashRegexString = '(?:\/$|$)';
 const routeRegexReplaceRegex = /\/(\*|:)?([^\/\?]+)(\?)?/g;
 const template = document.createElement('template');
+let routeId = 0;
 let currentPathRegex;
 
 
@@ -37,7 +40,7 @@ export function getUrlParameters() {
 
 
 
-function route(locationObject, back) {
+function route(locationObject, back, target) {
   let matchKey = pathLookup.find(v => v[0].test(locationObject.pathname));
   if (!matchKey) matchKey = notFoundPage;
   if (!matchKey) console.warn(`No page found for path: ${locationObject.pathname}`);
@@ -55,10 +58,17 @@ function route(locationObject, back) {
     return;
   }
 
-  navigate(match, matchKey[0], locationObject, currentPage, back);
+  runTransition({
+    newContainer: pageContainer,
+    oldContainer: target,
+    back,
+    routeId: window.history.state?.id
+  }, () => {
+    navigate(match, matchKey[0], locationObject, currentPage, back);
+  });
 }
 
-async function navigate(component, pathRegex, locationObject, current, back, initial) {;
+async function navigate(component, pathRegex, locationObject, current, back, initial, target) {;
   currentPathRegex = pathRegex;
   if (!initial && !back) {
     document.body.scrollTop = 0;
@@ -76,7 +86,7 @@ async function navigate(component, pathRegex, locationObject, current, back, ini
   await customElements.whenDefined(component);
   page.constructor._isPage = true;
 
-  if (!back && !initial) window.history.pushState({}, page.constructor.title, `${locationObject.pathname}${locationObject.search}${locationObject.hash}`);
+  if (!back && !initial) window.history.pushState({ id: routeId++ }, page.constructor.title, `${locationObject.pathname}${locationObject.search}${locationObject.hash}`);
   
   // set page title
   const title = document.documentElement.querySelector('title');
@@ -122,7 +132,7 @@ export function enableSPA() {
     if (excludeLinkRegex.test(href)) return;
     event.preventDefault();
     const newRoute = !event.target.href ? location.origin + href : event.target.href;
-    route(new URL(newRoute));
+    route(new URL(newRoute), false, event.target);
   }, false);
 
   let popPrevented = false;
