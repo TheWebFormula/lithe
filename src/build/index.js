@@ -2,10 +2,9 @@ import * as esbuild from 'esbuild';
 import { copy } from 'esbuild-plugin-copy';
 import http from 'node:http';
 import path from 'node:path';
-import { readdir, stat, rm } from 'node:fs/promises';
+import { readdir, stat, rm, access, mkdir } from 'node:fs/promises';
 import buildRoutes from './buildRoutes.js';
 
-// TODO auto create dist/ ??
 
 
 const isDev = process.env.NODE_ENV !== 'production';
@@ -57,6 +56,13 @@ export default async function build(config = {
   if (config.securityLevel && ![0, 1, 2].includes(config.securityLevel)) {
     console.warn('Invalid security level value. You cna use [0,1,2]. Defaulting to 1');
     config.securityLevel = 1;
+  }
+
+  // create output dir
+  try {
+    await access(config.outdir);
+  } catch {
+    await mkdir(config.outdir);
   }
 
   await cleanOutdir(config.outdir);
