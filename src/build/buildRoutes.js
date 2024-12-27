@@ -106,7 +106,7 @@ function replaceAppTags(basedir, entryPoint, entryPointCSS, outdir, appOutputs, 
   for (const item of appOutputs) {
     if (item[0] === entryPoint) {
       outputAppJSName = path.relative(outdir, item[1]);
-    } else if (item[0] === entryPointCSS) {
+    } else if (entryPointCSS && item[0] === entryPointCSS) {
       outputAppCSSName = path.relative(outdir, item[1]);
     }
   }
@@ -115,11 +115,11 @@ function replaceAppTags(basedir, entryPoint, entryPointCSS, outdir, appOutputs, 
   const appScriptTagRegex = new RegExp(`<script[\\s\\S]*src="/${originalAppJS}"[^>]*>\\s*</script>`);
   if (appScriptTagRegex.test(indexHTMLtemplate)) indexHTMLtemplate = indexHTMLtemplate.replace(appScriptTagRegex, outputAppJSScriptTag);
   else indexHTMLtemplate = indexHTMLtemplate.replace(/<\/head>/, `  ${outputAppJSScriptTag}\n</head>`);
-
+  
   if (outputAppCSSName) {
     const outputAppCSSLinkTag = `<link rel="stylesheet" href="/${outputAppCSSName}">`;
     const appLinkTagRegex = new RegExp(`<link\\s+(?:[^>]*?\\s+)?href="/${originalAppCSS}"[^>]*>`, 'g');
-    const matches = indexHTMLtemplate.match(appLinkTagRegex);
+    const matches = indexHTMLtemplate.match(appLinkTagRegex) || [];
     const stylesheetMatch = matches.find(s => s.includes('rel="stylesheet"'));
     if (stylesheetMatch) indexHTMLtemplate = indexHTMLtemplate.replace(stylesheetMatch, outputAppCSSLinkTag);
     else indexHTMLtemplate = indexHTMLtemplate.replace(/<\/head>/, `  ${outputAppCSSLinkTag}\n</head>`);

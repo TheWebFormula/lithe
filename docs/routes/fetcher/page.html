@@ -1,7 +1,7 @@
 <article>
   <header>
     <h1>Fetcher</h1>
-    <div class="page-subheader mc-font-title-medium">Extension on fetch that includes interceptors</div>
+    <div class="page-subheader mc-font-title-medium">Fetch wrapper that adds instance config and interceptors</div>
   </header>
 
   <div class="article-main" style="justify-content: flex-end;">
@@ -13,71 +13,39 @@
           <h2 slot="headline">Fetcher</h2>
         
           <code-block language="javascript"><pre>
-${`import { fetcher, createFetcher } from '@thewebformula/lithe';
+${`import { Fetcher } from '@thewebformula/lithe';
+
+// Create instance with base config
+const instance = new Fetcher(
+  baseUrl: 'www.site.com',
+  { Authorization: 'Bearer token' },
+  credentials: 'include'
+);
 
 
-/** Main fetcher */
-
-// interceptors
-fetcher('/get', { interceptors: {
-  // called on 401
-  auth(config) {
-    config.headers.Authorization = 'Bearer token';
-    return config;
-  },
-  before(config) {
-    // modify config
-    return config;
-  }
-});
-
-
-/** Example: JWT refresh access token on 401 */
-fetcher('/get', { interceptors: {
-  async auth(config) {
-    const refreshResponse = await fetcher('/refreshToken', {
-      headers: { Authorization: 'Bearer refresh_token' }
-    });
-    config.headers.Authorization = await refreshResponse.text();
-    return config;
-  }
-});
-
-
-
-/** Fetcher instance */
-
-// global config for all instance requests
-const fetcherInstance = createFetcher({
-  baseUrl: '',
-  headers: {
-    Authorization: 'Bearer token'
-  },
-  interceptors: {
-    auth(config) {
-      config.headers.Authorization = 'Bearer token';
-      return config;
-    },
-    before(config) {
-      // modify config
-      return config;
+// Example JWT refresh token interceptor
+instance.addResponseInterceptor(
+  // callback
+  async () => {
+    try {
+      const token = await getAccessToken(); // get new token
+      instance.headers.set('Authorization', \`Bearer \${token}\`); // set header on instance (all requests)
+      return true; // return true to retry the request
+    } catch (e) {
+      console.log(e);
+      return false; // return false to end request
     }
-  }
-});
-
-fetcherInstance('/get');
-
-// request specific interceptors using an instance
-fetcherInstance('/get', {}, interceptors: {
-  auth(config) {
-    config.headers.Authorization = 'Bearer token';
-    return config;
   },
-  before(config) {
-    config.headers.Authorization = 'Bearer token';
-    return config;
+
+  // filter: allows you to control if the callback get called
+  response => {
+    return response.status === 401;
   }
-});`}
+);
+
+
+// Make request
+const response = await instance.fetch('/path');`}
           </pre></code-block>
         </mc-card>
       </section>

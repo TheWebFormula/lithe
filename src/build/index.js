@@ -5,11 +5,13 @@ import path from 'node:path';
 import { readdir, stat, rm } from 'node:fs/promises';
 import buildRoutes from './buildRoutes.js';
 
+// TODO auto create dist/ ??
+
 
 const isDev = process.env.NODE_ENV !== 'production';
 export default async function build(config = {
   entryPoint: 'app/app.js',
-  entryPointCSS: 'app/app.css',
+  entryPointCSS: '',
   indexHTML: 'app/index.html',
   outdir: 'dist',
   minify: true,
