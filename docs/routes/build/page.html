@@ -19,6 +19,7 @@
             <li>Dev server</li>
             <li>live relaoding</li>
             <li>File copying</li>
+            <li>ENV vars</li>
           </ul>
           <ul slot="supporting-text">
             <li><strong>NODE_ENV=production</strong> will minify the code and NOT run the dev server</li>
@@ -114,6 +115,11 @@ build({
       to: 'dist/routes'
     }
   ],
+
+  // inject env vars to build
+  define: {
+    'process.env.SOME_VAR': process.env.SOME_VAR
+  },
 
   // callback before bundle
   onStart: () => {},
