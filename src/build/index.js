@@ -24,7 +24,8 @@ export default async function build(config = {
   devWarnings: true,
   securityLevel: 1,
   onStart: () => { },
-  onEnd: () => { }
+  onEnd: () => { },
+  define: {}
 }) {
   config.entryPoint = config.entryPoint || 'app/app.js';
   config.outdir = config.outdir || 'dist';
@@ -134,6 +135,7 @@ export default async function build(config = {
     loader: {
       '.html': 'text'
     },
+    define: config.define,
     plugins: [
       buildPlugin,
       cssPlugin,

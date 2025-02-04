@@ -103,7 +103,7 @@ export class Fetcher {
 
     if (!config.credentials) config.credentials = this.credentials;
 
-    const isJson = (!config.headers?.['Content-Type'] && typeof config?.body === 'object');
+    const isJson = (!config.headers?.['Content-Type'] && config?.body.constructor === Object);
     if (isJson) {
       config.headers.set('Content-Type', 'application/json');
       config.body = JSON.stringify(config.body);
