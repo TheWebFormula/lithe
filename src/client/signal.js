@@ -8,6 +8,18 @@ let epoch = 0;
 let idCounter = 0;
 let activeConsumer;
 
+
+
+// Proxies the .value property to return the source signal or a compute for object properties
+let handleHTML = false;
+export function beginHTMLHandler() {
+  handleHTML = true;
+}
+export function endHTMLHandler() {
+  handleHTML = false;
+}
+
+
 class Base {
   #id = idCounter++;
   #dirty = false;
@@ -22,11 +34,63 @@ class Base {
   #notifyWatchers_bound = this.#notifyWatchers.bind(this);
 
 
+  // get value is a chain of callbacks because we need to trigger the original signal to subscribe to the consumer
+  createProxy(value, getValue) {
+    const that = this;
+    return new Proxy(value, {
+      get: function (_target, prop) {
+        // recursive proxies for nested objects
+        if (value[prop] !== null && typeof value[prop] === 'object' && !Array.isArray(value[prop])) {
+          return that.createProxy(value[prop], () => getValue()[prop]);
+        }
+
+        // return value if is array. Arrays need to be wrapped in computes already
+        if (Array.isArray(value[prop])) return value[prop];
+        return new Compute(() => {
+          // handles case where nested object does not exist
+          try {
+            return getValue()[prop];
+          } catch (e) {
+            return undefined;
+          }
+        });
+      },
+      set: function (target, prop, value) {
+        return Reflect.set(...arguments);
+      }
+    });
+  }
+
   get id() {
     return this.#id;
   }
-
+  
   get value() {
+    if (activeConsumer) this.subscribe(activeConsumer);
+    if (this.#value === ERRORED) throw this.#error;
+
+    // Used when rendering html templates
+    // Proxies the .value property to return the source signal or a compute for object properties
+    if (handleHTML) {
+      // create proxy for objects
+      if (this.#value !== null && typeof this.#value === 'object' && !Array.isArray(this.#value)) {
+        return this.createProxy(this.#value, () => this.valueProxy);
+
+        // return array so methods like .map() can be used. Arrays need to be wrapped in computes already
+      } else if (Array.isArray(this.#value)) {
+        return this.#value;
+      
+      // return the signal for everything else
+      } else {
+        return this;
+      }
+    }
+
+    return this.#value;
+  }
+
+  // used in html handler proxy. We cannot capture the active consumer in value with the proxy
+  get valueProxy() {
     if (activeConsumer) this.subscribe(activeConsumer);
     if (this.#value === ERRORED) throw this.#error;
     return this.#value;
@@ -151,6 +215,7 @@ class Base {
     this.#watchers.delete(callback);
   }
 }
+
 
 export class Signal extends Base {
   constructor(value) {

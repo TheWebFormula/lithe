@@ -1,5 +1,6 @@
 import { html, watchSignals, destroySignalCache } from './html.js';
 import { getSearchParameters, getUrlParameters } from './router.js';
+import { beginHTMLHandler, endHTMLHandler } from './signal.js';
 
 
 const dashCaseRegex = /-([a-z])/g;
@@ -158,10 +159,17 @@ export default class Component extends HTMLElement {
 
     this.beforeRender();
 
-    if (this.constructor._isPage) destroySignalCache();
+    if (this.constructor._isPage) {
+      destroySignalCache();
+      this.style.display = 'contents';
+      beginHTMLHandler();
+    }
     if (this.constructor.useShadowRoot) this.shadowRoot.appendChild(this.template());
     else this.appendChild(this.template());
-    if (this.constructor._isPage) watchSignals();
+    if (this.constructor._isPage) {
+      endHTMLHandler();
+      watchSignals();
+    }
 
     this.afterRender();
   }
