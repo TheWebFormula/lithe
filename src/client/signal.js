@@ -59,6 +59,12 @@ class SignalNode {
     return this.#value;
   }
 
+  get valueNonTemplating() {
+    if (activeConsumer) this.subscribe(activeConsumer);
+    if (this.#value === ERRORED) throw this.#error;
+    return this.#value;
+  }
+
 
   __makeDirty() {
     this.#version++;

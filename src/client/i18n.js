@@ -24,13 +24,13 @@ export function i18n(key, ...variables) {
     return message.replace(valueRegex, function (_, varIndex, formatterName, formatterVarIndex) {
       if (varIndex) {
         const variable = variables[parseInt(varIndex) - 1];
-        if (isSignal(variable)) return variable.valueProxy;
+        if (isSignal(variable)) return variable.valueNonTemplating;
         return variable
       }
       if (formatterName && formatterVarIndex) {
         const formatMethod = translations.get(currentLocal).formatters[formatterName].method;
         const variable = variables[parseInt(formatterVarIndex) - 1];
-        if (isSignal(variable)) return formatMethod(variable.valueProxy);
+        if (isSignal(variable)) return formatMethod(variable.valueNonTemplating);
         return formatMethod(variable);
       }
       return '';
@@ -74,7 +74,7 @@ i18n.format = (formatterName, value) => {
       return '';
     }
 
-    if (isSignal(value)) return formatter.method(value.valueProxy);
+    if (isSignal(value)) return formatter.method(value.valueNonTemplating);
     return formatter.method(value);
   })
   signals.add(compute);
