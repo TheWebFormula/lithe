@@ -9,6 +9,7 @@
       <h2>Links</h2>
       <ul class="links">
         <li><a href="#signal">Signal</a></li>
+        <li><a href="#object">Signal object</a></li>
         <li><a href="#compute">Compute</a></li>
         <li><a href="#effect">Effect</a></li>
       </ul>
@@ -20,25 +21,28 @@
         <mc-card>
           <h2 slot="headline">Signal</h2>
           <div slot="supporting-text">A signal is a wrapper around a value that can notify interested consumers when that value changes</div>
-        
-          <mc-textfield class="mc-raise-label" style="margin-top: 24px;" label="Type something" value="${page.basicBind}"
-            oninput="page.basicBind.value = this.value">
-          </mc-textfield>
-        
-          <div style="margin-bottom: 12px; margin-left: 16px;">Value: ${page.basicBind}</div>
-        
-          <mc-button onclick="page.updateValue()">Set value to Updated</mc-button>
+          
+          <div style="display: flex; align-items: center;">
+            <mc-textfield class="mc-raise-label" style="margin-top: 24px;" label="Type something" value="${page.basicBind.value}"
+              oninput="page.basicBind.value = this.value">
+            </mc-textfield>
+            
+            <div style="margin-left: 16px;">
+              <div style="margin-left: 16px;">Value: ${page.basicBind.value}</div>
+              <mc-button onclick="page.updateValue()">Set value to Updated</mc-button>
+            </div>
+          </div>
         
           <code-block language="html"><pre>
 ${`<!-- Signals automatically update the HTML -->
 
 <mc-textfield
   label="Type something"
-  value="\${page.basicBind}"
+  value="\${page.basicBind.value}"
   oninput="page.basicBind.value = this.value"
 ></mc-textfield>
 
-<div>Value: \${page.basicBind}</div>
+<div>Value: \${page.basicBind.value}</div>
 <mc-button onclick="page.updateValue()">Set value to Updated</mc-button>`}
           </pre></code-block>
           <code-block language="javascript"><pre>
@@ -94,6 +98,89 @@ class PageClass extends Component {
     // dispose effect
     dispose();
   }
+}
+customElements.define('page-component-name', PageClass);`}
+          </pre></code-block>
+        </mc-card>
+      </section>
+
+
+
+      <section id="object" aria-label="Signal object example">
+        <mc-card>
+          <h2 slot="headline">Signal object</h2>
+          <div slot="supporting-text">A signal that works with deeply nested objects</div>
+
+            <table>
+              <thead>
+                <tr>
+                  <th>Property</th>
+                  <th>Value</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>obj.one</td>
+                  <td>${page.obj.value.one}</td>
+                </tr>
+                <tr>
+                  <td>obj.nested</td>
+                  <td>${JSON.stringify(page.obj.value.nested, null, 2)}</td>
+                </tr>
+                <tr>
+                  <td>obj.nested.two</td>
+                  <td>${page.obj.value.nested.two}</td>
+                </tr>
+                <tr>
+                  <td>obj.count</td>
+                  <td>${page.obj.value.count}</td>
+                </tr>
+              </tbody>
+            </table>
+
+          <div style="margin: 12px 0;">
+            <mc-button onclick="page.obj.value.count += 1">Increment count</mc-button>
+          </div>
+        
+          <code-block language="html"><pre>
+${`<table>
+  <thead>
+    <tr>
+      <th>Property</th>
+      <th>Value</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>obj.one</td>
+      <td>\${page.obj.value.one}</td></tr>
+    <tr>
+      <td>obj.nested</td>
+      <td>\${JSON.stringify(page.obj.value.nested, null, 2)}</td></tr>
+    <tr>
+      <td>obj.nested.two</td>
+      <td>\${page.obj.value.nested.two}</td></tr>
+    <tr>
+      <td>obj.count</td>
+      <td>\${page.obj.value.count}</td></tr></tbody></table>
+
+<mc-button onclick="page.obj.value.count += 1">Increment count</mc-button>`}
+          </pre></code-block>
+          <code-block language="javascript"><pre>
+${`import { Component, SignalObject } from '@thewebformula/lithe';
+import htmlTemplate from './page.html';
+
+class PageClass extends Component {
+  static title = 'Signal object';
+  static htmlTemplate = htmlTemplate;
+  
+  obj = new SignalObject({
+    one: 'one',
+    count: 1,
+    nested: {
+      two: 'two'
+    }
+  });
+  
+  constructor() { super(); }
 }
 customElements.define('page-component-name', PageClass);`}
           </pre></code-block>

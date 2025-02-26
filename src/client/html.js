@@ -123,7 +123,7 @@ function signalChange(signal) {
     if (item[0].nodeType === Node.ATTRIBUTE_NODE) {
       let i = 0;
       item[0].value = item[1].replace(attrString, function () {
-        return item[2][i++].untrackValue;
+        return item[2][i++].valueUntracked;
       });
 
     } else if (signal[HTMLCOMPUTE] === true) {
@@ -131,13 +131,13 @@ function signalChange(signal) {
         node.remove();
       }
       item[1] = [];
-      for (const frag of [].concat(signal.untrackValue)) {
+      for (const frag of [].concat(signal.valueUntracked)) {
         item[1].push(...frag.childNodes);
         item[0].parentElement.insertBefore(frag, item[0]);
       }
 
     } else {
-      item[0].textContent = signal.untrackValue;
+      item[0].textContent = signal.valueUntracked;
     }
   }
 }
@@ -205,7 +205,7 @@ function prepareTemplateElement(templateElement, args, subClonedNodes) {
           case htmlComputeString:
             const compute = args.pop();
             const activeNodes = [];
-            for (const frag of [].concat(compute.untrackValue)) {
+            for (const frag of [].concat(compute.valueUntracked)) {
               activeNodes.push(...frag.childNodes);
               node.parentElement.insertBefore(frag, node);
             }
@@ -214,7 +214,7 @@ function prepareTemplateElement(templateElement, args, subClonedNodes) {
 
           case signalString:
             const signal = args.pop();
-            node.textContent = signal.untrackValue;
+            node.textContent = signal.valueUntracked;
             signalCache.get(signal).push([node]);
             break;
         }
@@ -237,7 +237,7 @@ function prepareTemplateElement(templateElement, args, subClonedNodes) {
               expressions.push(arg)
               if (isSignal(arg)) {
                 signals.add(arg);
-                return arg.untrackValue;
+                return arg.valueUntracked;
               }
               return arg;
             });

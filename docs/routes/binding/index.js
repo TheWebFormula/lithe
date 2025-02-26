@@ -1,4 +1,4 @@
-import { Component, Signal, Compute } from '@thewebformula/lithe';
+import { Component, Signal, Compute, SignalObject } from '@thewebformula/lithe';
 import htmlTemplate from './page.html';
 
 
@@ -11,8 +11,13 @@ class SignalsAndBindingPage extends Component {
   numberTimesTwo = new Compute(() => {
     return this.number.value * 2;
   });
-  one = new Signal('one');
-  two = new Signal('two');
+  obj = new SignalObject({
+    one: 'one',
+    count: 1,
+    nested: {
+      two: 'two'
+    }
+  });
 
 
   constructor() {

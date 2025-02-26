@@ -1,32 +1,26 @@
+const SIGNAL_NODE = Symbol('SIGNAL_NODE');
 const SIGNAL = Symbol('SIGNAL');
+const SIGNAL_OBJECT = Symbol('SIGNAL_OBJECT');
 const COMPUTE = Symbol('COMPUTE');
 const ERRORED = Symbol('ERRORED');
-const queue = new Set();
-const signalChangeIds = new Set();
-let queueRunning = false;
+
 let epoch = 0;
 let idCounter = 0;
+let queue = new Set();
+let queueRunning = false;
+let isTemplating = false;
 let activeConsumer;
 
 
-
-// Proxies the .value property to return the source signal or a compute for object properties
-let handleHTML = false;
-export function beginHTMLHandler() {
-  handleHTML = true;
-}
-export function endHTMLHandler() {
-  handleHTML = false;
-}
-
-
-class Base {
+class SignalNode {
+  [SIGNAL_NODE] = true;
   #id = idCounter++;
   #dirty = false;
   #version = 0;
   #lastCleanEpoch = 0;
-  #value;
   #error;
+  #value;
+
   #consumers = [];
   #producers = [];
   #producerVersions = [];
@@ -34,64 +28,21 @@ class Base {
   #notifyWatchers_bound = this.#notifyWatchers.bind(this);
 
 
-  // get value is a chain of callbacks because we need to trigger the original signal to subscribe to the consumer
-  createProxy(value, getValue) {
-    const that = this;
-    return new Proxy(value, {
-      get: function (_target, prop) {
-        // recursive proxies for nested objects
-        if (value[prop] !== null && typeof value[prop] === 'object' && !Array.isArray(value[prop])) {
-          return that.createProxy(value[prop], () => getValue()[prop]);
-        }
+  get id() { return this.#id; }
+  get version() { return this.#version; }
 
-        // return value if is array. Arrays need to be wrapped in computes already
-        if (Array.isArray(value[prop])) return value[prop];
-        return new Compute(() => {
-          // handles case where nested object does not exist
-          try {
-            return getValue()[prop];
-          } catch (e) {
-            return undefined;
-          }
-        });
-      },
-      set: function (target, prop, value) {
-        return Reflect.set(...arguments);
-      }
-    });
-  }
+  get dirty() { return this.#dirty; }
+  set dirty(value) { this.#dirty = value; }
 
-  get id() {
-    return this.#id;
-  }
-  
+  get lastCleanEpoch() { return this.#lastCleanEpoch; }
+  set lastCleanEpoch(value) { this.#lastCleanEpoch = value; }
+
+  get error() { return this.#error; }
+  set error(value) { this.#error = value; }
+
   get value() {
     if (activeConsumer) this.subscribe(activeConsumer);
-    if (this.#value === ERRORED) throw this.#error;
-
-    // Used when rendering html templates
-    // Proxies the .value property to return the source signal or a compute for object properties
-    if (handleHTML) {
-      // create proxy for objects
-      if (this.#value !== null && typeof this.#value === 'object' && !Array.isArray(this.#value)) {
-        return this.createProxy(this.#value, () => this.valueProxy);
-
-        // return array so methods like .map() can be used. Arrays need to be wrapped in computes already
-      } else if (Array.isArray(this.#value)) {
-        return this.#value;
-      
-      // return the signal for everything else
-      } else {
-        return this;
-      }
-    }
-
-    return this.#value;
-  }
-
-  // used in html handler proxy. We cannot capture the active consumer in value with the proxy
-  get valueProxy() {
-    if (activeConsumer) this.subscribe(activeConsumer);
+    if (isTemplating && !Array.isArray(this.valueUntracked)) return this;
     if (this.#value === ERRORED) throw this.#error;
     return this.#value;
   }
@@ -101,41 +52,20 @@ class Base {
     this.#version++;
     epoch++;
     this.notify();
-    signalChangeIds.add(this.id);
   }
 
-  get untrackValue() {
+  get valueUntracked() {
     if (this.#value === ERRORED) throw this.#error;
     return this.#value;
   }
 
-  get version() {
-    return this.#version;
+
+  __makeDirty() {
+    this.#version++;
+    epoch++;
+    this.notify();
   }
 
-  get dirty() {
-    return this.#dirty;
-  }
-
-  set dirty(value) {
-    this.#dirty = value;
-  }
-
-  get lastCleanEpoch() {
-    return this.#lastCleanEpoch;
-  }
-
-  set lastCleanEpoch(value) {
-    this.#lastCleanEpoch = value;
-  }
-
-  get error() {
-    return this.#error;
-  }
-
-  set error(value) {
-    this.#error = value;
-  }
 
   subscribe(node) {
     if (this.#producers.includes(node) || node === this) return;
@@ -176,28 +106,8 @@ class Base {
     addToQueue(this.#notifyWatchers_bound);
   }
 
-  #notifyWatchers() {
-    for (const watcher of this.#watchers) {
-      watcher(this);
-    }
-  }
-
-
-  dispose() {
-    let i;
-    for (i = 0; i < this.#producers.length; i++) {
-      this.#producers[i].unsubscribe(this);
-    }
-
-    for (i = 0; i < this.#consumers.length; i++) {
-      this.#consumers[i].unsubscribe(this);
-    }
-
-    this.#watchers.clear();
-  }
-
   updateDirty() {
-    if (this[SIGNAL] || (!this.#dirty && this.#lastCleanEpoch === epoch)) return;
+    if (!this[COMPUTE] || (!this.#dirty && this.#lastCleanEpoch === epoch)) return;
 
     for (let i = 0; i < this.#producers.length; i++) {
       if (this.#producers[i].version !== this.#producerVersions[i]) {
@@ -207,6 +117,22 @@ class Base {
     }
   }
 
+  dispose() {
+    let i;
+    for (i = 0; i < this.#producers.length; i++) {
+      this.#producers[i].unsubscribe(this);
+    }
+    this.#producers.length = 0;
+
+    for (i = 0; i < this.#consumers.length; i++) {
+      this.#consumers[i].unsubscribe(this);
+    }
+    this.#consumers.length = 0;
+
+    this.#watchers.clear();
+  }
+
+
   watch(callback) {
     this.#watchers.add(callback);
   }
@@ -214,13 +140,31 @@ class Base {
   unwatch(callback) {
     this.#watchers.delete(callback);
   }
+
+
+  #notifyWatchers() {
+    for (const watcher of this.#watchers) {
+      watcher(this);
+    }
+  }
 }
 
 
-export class Signal extends Base {
+
+export function beginTemplating() {
+  isTemplating = true;
+}
+
+export function endTemplating() {
+  isTemplating = false;
+}
+
+
+export class Signal extends SignalNode {
+  [SIGNAL] = true;
+
   constructor(value) {
     super();
-    this[SIGNAL] = true;
     super.value = value;
   }
 
@@ -229,22 +173,85 @@ export class Signal extends Base {
   set dirty(_) { }
   set lastCleanEpoch(_) { }
 
-  get value() {
-    return super.value;
-  }
+  get value() { return super.value; }
   set value(value) {
     if (super.value === value) return;
     super.value = value;
   }
 }
 
-export class Compute extends Base {
+
+export class SignalObject extends SignalNode {
+  [SIGNAL_OBJECT] = true;
+
+  #valueProxy;
+
+  constructor(value) {
+    super();
+    super.value = value;
+    this.#valueProxy = this.#createProxy(value);
+  }
+
+  // block
+  set error(_) { }
+  set dirty(_) { }
+  set lastCleanEpoch(_) { }
+
+
+  get value() {
+    if (activeConsumer) this.subscribe(activeConsumer);
+    return this.#valueProxy;
+  }
+  set value(value) {
+    if (super.value === value) return;
+    super.value = value;
+  }
+
+  #makeDirty() {
+    super.__makeDirty();
+  }
+
+  // get value is a chain of callbacks because we need to trigger the original signal to subscribe to the consumer
+  #createProxy(value) {
+    const self = this;
+    
+    return new Proxy(value, {
+      get(target, prop) {
+        if (prop === SIGNAL_NODE) return true;
+
+        let val = target[prop];
+        if (typeof val === 'object' && val !== null) return self.#createProxy(val);
+        else if (Array.isArray(value[prop])) return value[prop];
+        else if (isTemplating) return new Compute(() => {
+          try {
+            if (activeConsumer) self.subscribe(activeConsumer);
+            return target[prop];
+          } catch (e) {
+            return undefined;
+          }
+        });
+        return val;
+      },
+      set(target, prop, value, receiver) {
+        const result = Reflect.set(target, prop, value, receiver);
+        self.#makeDirty();
+        return result;
+      },
+      deleteProperty(target, prop) {
+        const result = Reflect.deleteProperty(target, prop);
+        return result;
+      }
+    });
+  }
+}
+
+
+export class Compute extends SignalNode {
+  [COMPUTE] = true;
   #callback;
 
   constructor(callback) {
     super();
-
-    this[COMPUTE] = true;
     this.#callback = callback;
     this.#recompute();
     if (super.error) throw super.error;
@@ -256,13 +263,8 @@ export class Compute extends Base {
   set dirty(_) { }
   set lastCleanEpoch(_) { }
 
-  get value() {
-    return super.value;
-  }
-
-  get dirty() {
-    return super.dirty;
-  }
+  get value() { return super.value; }
+  get dirty() { return super.dirty; }
 
   updateValueVersion(force = false) {
     if (force) super.dirty = true;
@@ -295,18 +297,6 @@ export class Compute extends Base {
   }
 }
 
-export function effect(callback) {
-  const instance = new Effect(callback);
-  return function dispose() {
-    instance.dispose();
-  };
-}
-
-export function isSignal(node) {
-  return node instanceof Base;
-}
-
-
 
 class Effect extends Compute {
   #execute_bound = this.#execute.bind(this);
@@ -325,6 +315,18 @@ class Effect extends Compute {
     super.updateValueVersion();
   }
 }
+export function effect(callback) {
+  const instance = new Effect(callback);
+  return function dispose() {
+    instance.dispose();
+  };
+}
+
+
+export function isSignal(node) {
+  return node[SIGNAL_NODE] === true;
+}
+
 
 
 function setActiveConsumer(consumer) {
@@ -354,11 +356,6 @@ function runQueue() {
       callback();
     }
     queue.clear();
-
-    if (signalChangeIds.size > 0) {
-      signalChangeIds.clear();
-    }
-
     queueRunning = false;
   });
 }
