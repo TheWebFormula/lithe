@@ -210,6 +210,7 @@ export class SignalObject extends SignalNode {
   }
   set value(value) {
     if (super.value === value) return;
+    this.#valueProxy = this.#createProxy(value);
     super.value = value;
   }
 
