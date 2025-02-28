@@ -226,9 +226,12 @@ export class SignalObject extends SignalNode {
       get(target, prop) {
         if (prop === SIGNAL_NODE) return true;
 
-        let val = target[prop];
-        if (typeof val === 'object' && val !== null) return self.#createProxy(target[prop], [...path, prop]);
-        else if (Array.isArray(value[prop])) return value[prop];
+        let obj = path.reduce((acc, key) => {
+          return acc && acc[key] ? acc[key] : null;
+        }, self.valueUntracked);
+        let val = obj[prop];
+        if (typeof val === 'object' && val !== null && !Array.isArray(val)) return self.#createProxy(obj[prop], [...path, prop]);
+        else if (Array.isArray(obj[prop])) return obj[prop];
         else if (isTemplating) return new Compute(() => {
           try {
             if (activeConsumer) self.subscribe(activeConsumer);
@@ -335,7 +338,7 @@ export function effect(callback) {
 
 
 export function isSignal(node) {
-  return node[SIGNAL_NODE] === true;
+  return node !== undefined && node[SIGNAL_NODE] === true;
 }
 
 
