@@ -124,10 +124,6 @@ customElements.define('page-component-name', PageClass);`}
                   <td>${page.obj.value.one}</td>
                 </tr>
                 <tr>
-                  <td>obj.nested</td>
-                  <td>${JSON.stringify(page.obj.value.nested, null, 2)}</td>
-                </tr>
-                <tr>
                   <td>obj.nested.two</td>
                   <td>${page.obj.value.nested.two}</td>
                 </tr>
@@ -193,11 +189,11 @@ customElements.define('page-component-name', PageClass);`}
           <h2 slot="headline">Compute</h2>
           <div slot="supporting-text">Compute provides a way to interact with multiple signals to provide a single value</div>
         
-          <mc-textfield b class="mc-raise-label" type="number" style="margin-top: 24px;" label="Type something" value="${page.number}"
+          <mc-textfield b class="mc-raise-label" type="number" style="margin-top: 24px;" label="Type something" value="${page.number.value}"
             oninput="page.number.value = this.value">
           </mc-textfield>
         
-          <div b style="margin-bottom: 12px; margin-left: 16px;">Value <span style="font-size: 12px; font-weight: bold;">(Input x 2)</span>: ${page.numberTimesTwo}</div>
+          <div b style="margin-bottom: 12px; margin-left: 16px;">Value <span style="font-size: 12px; font-weight: bold;">(Input x 2)</span>: ${page.numberTimesTwo.value}</div>
         
           <code-block language="html"><pre>
 ${`<!-- Computes automatically update the HTML -->
@@ -205,11 +201,11 @@ ${`<!-- Computes automatically update the HTML -->
 <mc-textfield
   type="number"
   label="Type something"
-  value="\${page.number}"
+  value="\${page.number.value}"
   oninput="page.number.value = this.value">
 </mc-textfield>
 
-<div>Value (Input x 2): \${page.numberTimesTwo}</div>`}
+<div>Value (Input x 2): \${page.numberTimesTwo.value}</div>`}
           </pre></code-block>
           <code-block language="javascript"><pre>
 ${`import { Component, Signal, Compute } from '@thewebformula/lithe';

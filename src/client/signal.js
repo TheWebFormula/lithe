@@ -218,7 +218,8 @@ export class SignalObject extends SignalNode {
   }
 
   // get value is a chain of callbacks because we need to trigger the original signal to subscribe to the consumer
-  #createProxy(value) {
+  // path = array of properties for nested object access
+  #createProxy(value, path = []) {
     const self = this;
     
     return new Proxy(value, {
@@ -226,12 +227,16 @@ export class SignalObject extends SignalNode {
         if (prop === SIGNAL_NODE) return true;
 
         let val = target[prop];
-        if (typeof val === 'object' && val !== null) return self.#createProxy(val);
+        if (typeof val === 'object' && val !== null) return self.#createProxy(target[prop], [...path, prop]);
         else if (Array.isArray(value[prop])) return value[prop];
         else if (isTemplating) return new Compute(() => {
           try {
             if (activeConsumer) self.subscribe(activeConsumer);
-            return target[prop];
+            // get target starting from root. This will allow for nested objects to be overwritten
+            let obj = path.reduce((acc, key) => {
+              return acc && acc[key] ? acc[key] : null;
+            }, self.valueUntracked);
+            return obj[prop];
           } catch (e) {
             return undefined;
           }
