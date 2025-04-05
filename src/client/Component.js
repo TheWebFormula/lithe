@@ -134,6 +134,12 @@ export default class Component extends HTMLElement {
     return getUrlParameters();
   }
 
+  /**
+   * Called when url changes for current page
+   * This helps when a page uses optional parameters: /page[id?]
+   * */
+  urlChange() {}
+
   connectedCallback() { }
   disconnectedCallback() { }
 
@@ -202,7 +208,8 @@ export default class Component extends HTMLElement {
       case 'string':
         return value || '';
       case 'event':
-        return !value ? null : () => new Function('page', value).call(this, this);
+        const that = this.constructor._isPage ? this : page || this;
+        return !value ? null : () => new Function('page', value).call(that, that);
       default:
         return value;
     }

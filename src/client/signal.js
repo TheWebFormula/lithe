@@ -203,6 +203,8 @@ export class SignalObject extends SignalNode {
   set dirty(_) { }
   set lastCleanEpoch(_) { }
 
+  get error() { return super.error; }
+
 
   get value() {
     if (activeConsumer) this.subscribe(activeConsumer);
@@ -278,6 +280,8 @@ export class Compute extends SignalNode {
   set dirty(_) { }
   set lastCleanEpoch(_) { }
 
+  get error() { return super.error; }
+
   get value() { return super.value; }
   get dirty() { return super.dirty; }
 
@@ -298,8 +302,9 @@ export class Compute extends SignalNode {
     let newValue;
     let changed = false;
     try {
+      super.error = undefined;
       newValue = this.#callback();
-      changed = super.value !== newValue;
+      changed = super.dirty || super.value !== newValue;
     } catch (e) {
       super.value = ERRORED;
       super.error = e;
@@ -339,9 +344,8 @@ export function effect(callback) {
 
 
 export function isSignal(node) {
-  return node !== undefined && node[SIGNAL_NODE] === true;
+  return typeof node === 'object' && node !== null && node[SIGNAL_NODE] === true;
 }
-
 
 
 function setActiveConsumer(consumer) {

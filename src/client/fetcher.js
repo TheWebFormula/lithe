@@ -103,7 +103,7 @@ export class Fetcher {
 
     if (!config.credentials) config.credentials = this.credentials;
 
-    const isJson = (!config.headers?.['Content-Type'] && config?.body.constructor === Object);
+    const isJson = (!config.headers?.['Content-Type'] && config?.body?.constructor === Object);
     if (isJson) {
       config.headers.set('Content-Type', 'application/json');
       config.body = JSON.stringify(config.body);
@@ -119,6 +119,9 @@ export class Fetcher {
           config.headers = new Headers(originalHeaders);
           for (const header of this.headers.entries()) {
             config.headers.set(header[0], header[1]);
+          }
+          if (isJson) {
+            config.headers.set('Content-Type', 'application/json');
           }
           response = await fetch(combinedURL, config);
         }

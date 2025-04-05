@@ -47,14 +47,17 @@ function route(locationObject, back, target) {
   const match = routes.get(matchKey[1]);
   const currentPage = pageContainer.firstElementChild;
   const samePage = currentPage?.nodeName.toLowerCase() === match;
-
   if (samePage) {
     const hashMatches = locationObject.hash === location.hash;
     const searchMatches = locationObject.search === location.search;
-    if (hashMatches && searchMatches) return;
-    // TODO remove when using navigation api
-    if (!back) window.history.pushState({}, currentPage.constructor.title, `${locationObject.pathname}${locationObject.search}${locationObject.hash}`);
-    if (!hashMatches) window.dispatchEvent(new Event('hashchange'));
+    const pathMatch = locationObject.pathname === location.pathname;
+
+    if (!hashMatches || !searchMatches || !pathMatch) {
+      // TODO remove when using navigation api
+      if (!back) window.history.pushState({}, currentPage.constructor.title, `${locationObject.pathname}${locationObject.search}${locationObject.hash}`);
+      if (!hashMatches) window.dispatchEvent(new Event('hashchange'));
+    }
+    currentPage.urlChange();
     return;
   }
 
@@ -115,7 +118,7 @@ function buildPathRegex(path) {
   } else {
     regexString = `^${path.replace(routeRegexReplaceRegex, (_str, prefix, label, optional = '') => {
       if (prefix === '*') return `\/(?<${label}>.+)${optional}`;
-      if (prefix === ':') return `\/(?<${label}>[^\/]+)${optional}`;
+      if (prefix === ':') return `\/?(?<${label}>[^\/]+)${optional}`;
       return `\/${label}`;
     })}${followedBySlashRegexString}`;
   }

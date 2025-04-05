@@ -130,12 +130,16 @@ function signalChange(signal) {
       for (const node of item[1]) {
         node.remove();
       }
-      item[1] = [];
-      for (const frag of [].concat(signal.valueUntracked)) {
-        item[1].push(...frag.childNodes);
-        item[0].parentElement.insertBefore(frag, item[0]);
-      }
 
+      item[1] = [];
+      if (signal.error) {
+        console.error(signal.error);
+      } else {
+        for (const frag of [].concat(signal.valueUntracked)) {
+          item[1].push(...frag.childNodes);
+          item[0].parentElement.insertBefore(frag, item[0]);
+        }
+      }
     } else {
       item[0].textContent = signal.valueUntracked;
     }
@@ -267,7 +271,6 @@ function prepareTemplateElement(templateElement, args, subClonedNodes) {
         toRemove = undefined;
     }
   }
-
   return clonedNode;
 }
 
