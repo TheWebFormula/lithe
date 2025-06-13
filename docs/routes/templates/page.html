@@ -34,11 +34,11 @@
           <div style="margin: 42px 0px;">
             <div class="mc-font-title-large" style="margin-bottom: 8px;">Dynamically computing HTML</div>
             <mc-switch checked="${page.showFirst}" onchange="page.showFirst.value = this.checked" label-right="Switch HTML"></mc-switch>
-            ${html(() => (
-            page.showFirst.value ?
-            html`<div>First</div>` :
-            html`<div>Second</div>`
-            ))}
+            ${html(() => {
+              return page.showFirst.value ?
+                html`<div>First</div>` :
+                html`<div>Second</div>`;
+            })}
           </div>
         
           <div style="margin: 42px 0px;">
