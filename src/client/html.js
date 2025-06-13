@@ -30,7 +30,10 @@ let componentSigRef = new Map();
 let removeObserver = new MutationObserver((mutations) => {
   for (const mutation of mutations) {
     if (mutation.type === 'childList' && mutation.removedNodes.length > 0) {
-      if (mutation.removedNodes.length) cleanupComponents();
+      if (mutation.removedNodes.length) cleanup();
+      // for (let node of mutation.removedNodes) {
+      //   destroy(node);
+      // }
     }
   }
 });
@@ -38,7 +41,7 @@ let removeObserver = new MutationObserver((mutations) => {
 export function activateComponent(component) {
   if (currentComponent === component) return;
 
-  if (componentSigRef.has(component)) cleanupComponents();
+  if (componentSigRef.has(component)) destroy(component);
   componentSigRef.set(component, new Set());
   refCount += 1;
 
@@ -56,35 +59,34 @@ export function activateComponent(component) {
 
 export function deactivateComponent() {
   currentComponent = undefined;
-  cleanupComponents()
   endTemplating();
+  cleanup();
 }
 
 export function cleanupComponents() {
-  let i = 0;
   for (let comp of componentSigRef) {
     if (!comp[0].isConnected || comp[1].size === 0) {
       destroy(comp[0]);
-      i += 1;
     }
   }
 
-  refCount -= i;
-  if (refCount < 0) {
-    console.log('refCount less than 0', refCount);
-    refCount = 0;
-  }
-  if (refCount === 0) disconnectObserver();
+  disconnectObserver();
 }
 
 function destroy(component) {
+  if (!componentSigRef.has(component)) return;
+
   for (let sig of componentSigRef.get(component)) {
     if (signalNodeRef.has(sig.id)) {
       for (let node of signalNodeRef.get(sig.id)) {
         if (attrExpressionRef.has(node)) attrExpressionRef.delete(node);
       }
-      signalNodeRef.get(sig.id)?.clear();
-      signalNodeRef.delete(sig.id);
+
+      signalNodeRef.get(sig.id).delete(component);
+      if (signalNodeRef.get(sig.id).size === 0) {
+        signalNodeRef.delete(sig.id);
+        signalCache.delete(sig);
+      }
     }
 
     if (compActiveNodesRef.has(sig.id)) {
@@ -94,7 +96,6 @@ function destroy(component) {
   }
   componentSigRef.get(component).clear();
   componentSigRef.delete(component);
-  signalCache.clear();
 }
 
 
@@ -289,6 +290,16 @@ function disconnectObserver() {
       isObserving = false;
     }
     observerCheckRunning = false;
+  });
+}
+
+let cleanupRunning = false;
+function cleanup() {
+  if (cleanupRunning) return;
+  cleanupRunning = true;
+  queueMicrotask(() => {
+    cleanupComponents();
+    cleanupRunning = false;
   });
 }
 
