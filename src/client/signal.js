@@ -3,6 +3,7 @@ const SIGNAL = Symbol('SIGNAL');
 const SIGNAL_OBJECT = Symbol('SIGNAL_OBJECT');
 const COMPUTE = Symbol('COMPUTE');
 const ERRORED = Symbol('ERRORED');
+const HTMLCOMPUTE = Symbol('HTMLCOMPUTE');
 
 let epoch = 0;
 let idCounter = 0;
@@ -10,6 +11,20 @@ let queue = new Set();
 let queueRunning = false;
 let isTemplating = false;
 let activeConsumer;
+
+
+
+export {
+  HTMLCOMPUTE
+}
+
+export function beginTemplating() {
+  isTemplating = true;
+}
+
+export function endTemplating() {
+  isTemplating = false;
+}
 
 
 class SignalNode {
@@ -27,7 +42,6 @@ class SignalNode {
   #watchers = new Set();
   #notifyWatchers_bound = this.#notifyWatchers.bind(this);
 
-
   get id() { return this.#id; }
   get version() { return this.#version; }
 
@@ -42,7 +56,10 @@ class SignalNode {
 
   get value() {
     if (activeConsumer) this.subscribe(activeConsumer);
+
+    // return the instance of the signal for templating. This is needed for the template tag function to recognize it as a signal
     if (isTemplating && !Array.isArray(this.valueUntracked)) return this;
+
     if (this.#value === ERRORED) throw this.#error;
     return this.#value;
   }
@@ -156,16 +173,6 @@ class SignalNode {
 }
 
 
-
-export function beginTemplating() {
-  isTemplating = true;
-}
-
-export function endTemplating() {
-  isTemplating = false;
-}
-
-
 export class Signal extends SignalNode {
   [SIGNAL] = true;
 
@@ -233,8 +240,11 @@ export class SignalObject extends SignalNode {
           return acc && acc[key] ? acc[key] : null;
         }, self.valueUntracked);
         let val = obj[prop];
-        if (typeof val === 'object' && val !== null && !Array.isArray(val)) return self.#createProxy(obj[prop], [...path, prop]);
-        else if (Array.isArray(obj[prop])) return obj[prop];
+        
+        // with array methods
+        if (Array.isArray(obj) && typeof val === 'function') return target[prop].bind(target);
+        else if (typeof val === 'object' && val !== null) return self.#createProxy(obj[prop], [...path, prop]);
+
         else if (isTemplating) return new Compute(() => {
           try {
             if (activeConsumer) self.subscribe(activeConsumer);
@@ -267,10 +277,17 @@ export class Compute extends SignalNode {
   [COMPUTE] = true;
   #callback;
 
-  constructor(callback) {
+  constructor(callback, htmlCompute = false) {
     super();
+    if (htmlCompute) this[HTMLCOMPUTE] = true;
     this.#callback = callback;
+
+    // we want to return the actual value instead of the signal when running an html compute
+    const wasTemplating = isTemplating;
+    if (htmlCompute) isTemplating = false;
     this.#recompute();
+    if (wasTemplating) isTemplating = true;
+    
     if (super.error) throw super.error;
   }
 

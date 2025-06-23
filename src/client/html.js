@@ -1,155 +1,157 @@
-import { isSignal, Compute } from './signal.js';
+import { isSignal, Compute, beginTemplating, endTemplating, HTMLCOMPUTE } from './signal.js';
+import { sanitizeNode } from './sanitize.js';
 
-const HTMLCOMPUTE = Symbol('HTMLCOMPUTE');
-const htmlComputeString = '#htmlcompute#';
-const htmlComputeComment = `<!--${htmlComputeString}-->`;
-const attrString = '###';
-const signalString = '#signal#';
-const signalComment = `<!--${signalString}-->`;
-const subTemplateString = '#template#';
-const subTemplateComment = `<!--${subTemplateString}-->`;
-const tagRegex = new RegExp(`<\\w+([^<>]*${signalComment}[^<\\/>]*)+\\/?>`, 'g');
-const attrRegex = new RegExp(`(?:(\\s+[^\\s\\/>"=]+)\\s*=\\s*"([\\w\\s]*${signalComment}[\\w\\s]*)")|(\\s*${signalComment}\\s*)`, 'g');
-const signalCommentRegex = new RegExp(signalComment, 'g');
-const twoSpaceRegex = /\s\s/g;
-const attrPlaceholderRegex = new RegExp(attrString, 'g');
+
+// const HTMLCOMPUTE = Symbol('HTMLCOMPUTE');
 const insideCommentRegex = /<!--(?![.\s\S]*-->)/;
-const templateCache = new Map();
-const signalCache = new WeakMap();
-const signalsToWatch = new Set();
-const securityLevels = [0, 1, 2];
-let securityLevel = 1;
-const securityLevelMeta = document.querySelector('meta[name=lisecuritylevel]');
-if (securityLevelMeta) setSecurityLevel(parseInt(securityLevelMeta.getAttribute('content')));
-
-let devWarnings = false;
-const devWarningsMeta = document.querySelector('meta[name=lidevwarnings]');
-if (devWarningsMeta) devWarnings = true;
-
-const dangerousNodes = ['SCRIPT', 'IFRAME', 'NOSCRIPT', 'OBJECT', 'APPLET', 'EMBBED', 'FRAMESET'];
-const dangerousAttributesLevel1 = ['onload', 'onerror'];
-let dangerousTagRegex = new RegExp(dangerousNodes.join('|'));
-let dangerousAttributeRegex = new RegExp(dangerousAttributesLevel1.join('|'));
-const dangerousAttributeValueRegex = /javascript:|eval\(|alert|document.cookie|document\[['|"]cookie['|"]\]|&\#\d/gi;
+const twoSpaceRegex = /\s\s/g;
+const attrString = '###';
+const attrPlaceholderRegex = new RegExp(attrString, 'g');
+const computeCommentPrefix = 'lcomp_';
+const subTemplateCommentPrefix = 'lsubtemp_';
+const signalCommentPrefix = 'lsig_';
+const signalCommentRegexValue = '<!--lsig_\\d+-->';
+const signalCommentRegex = new RegExp(signalCommentRegexValue, 'g');
+const tagRegex = new RegExp(`<\\w+([^<>]*${signalCommentRegexValue}[^<\\/>]*)+\\/?>`, 'g');
+const attrRegex = new RegExp(`(?:(\\s+[^\\s\\/>"=]+)\\s*=\\s*"([\\w\\s]*${signalCommentRegexValue}[\\w\\s]*)")|(\\s*${signalCommentRegexValue}\\s*)`, 'g');
 
 
-export function setSecurityLevel(level = 1) {
-  if (!securityLevels.includes(level)) throw Error('Invalid security level. Valid values [0,1,2]')
-  securityLevel = level;
+let isObserving = false;
+let currentComponent;
+let signalCache = new Map();
+let signalsToWatch = new Set();
+let refCount = 0;
+let signalNodeRef = new Map();
+let compActiveNodesRef = new Map();
+let attrExpressionRef = new Map();
+let componentSigRef = new Map();
+
+
+let removeObserver = new MutationObserver((mutations) => {
+  for (const mutation of mutations) {
+    if (mutation.type === 'childList' && mutation.removedNodes.length > 0) {
+      if (mutation.removedNodes.length) cleanup();
+      // for (let node of mutation.removedNodes) {
+      //   destroy(node);
+      // }
+    }
+  }
+});
+
+export function activateComponent(component) {
+  if (currentComponent === component) return;
+
+  if (componentSigRef.has(component)) destroy(component);
+  componentSigRef.set(component, new Set());
+  refCount += 1;
+
+  if (!isObserving) {
+    removeObserver.observe(document.body, {
+      childList: true,
+      subtree: true
+    });
+    isObserving = true;
+  }
+
+  currentComponent = component;
+  beginTemplating();
 }
 
-export function setDangerousTagRegex(tagNames = []) {
-  dangerousTagRegex = new RegExp(tagNames.map(v => v.toUpperCase()).join('|'));
+export function deactivateComponent() {
+  currentComponent = undefined;
+  endTemplating();
+  cleanup();
 }
 
-export function setDangerousAttributes(attributeNames = []) {
-  dangerousAttributeRegex = new RegExp(attributeNames.join('|'));
+export function cleanupComponents() {
+  for (let comp of componentSigRef) {
+    if (!comp[0].isConnected || comp[1].size === 0) {
+      destroy(comp[0]);
+    }
+  }
+
+  disconnectObserver();
+}
+
+function destroy(component) {
+  if (!componentSigRef.has(component)) return;
+
+  for (let sig of componentSigRef.get(component)) {
+    if (signalNodeRef.has(sig.id)) {
+      for (let node of signalNodeRef.get(sig.id)) {
+        if (attrExpressionRef.has(node)) attrExpressionRef.delete(node);
+      }
+
+      signalNodeRef.get(sig.id).delete(component);
+      if (signalNodeRef.get(sig.id).size === 0) {
+        signalNodeRef.delete(sig.id);
+        signalCache.delete(sig);
+      }
+    }
+
+    if (compActiveNodesRef.has(sig.id)) {
+      compActiveNodesRef.get(sig.id)?.clear();
+      compActiveNodesRef.delete(sig.id);
+    }
+  }
+  componentSigRef.get(component).clear();
+  componentSigRef.delete(component);
 }
 
 
 export function html(strings, ...args) {
-  if (typeof strings === 'function') return htmlCompute(strings);
+  if (typeof strings === 'function') return new Compute(strings, true);
+
   args.reverse();
 
-  const signals = [];
+  let arg;
+  let signals = [];
   const subClonedNodes = [];
   let template = '';
   let i = 0;
   for (; i < strings.length - 1; i++) {
     template = template + strings[i];
-    const arg = args.pop();
+    arg = args.pop();
 
     // replace commented out expression
     if (template.match(insideCommentRegex)) {
       template += '\${commented expression}';
-
-
     } else if (isSignal(arg)) {
       signals.push(arg);
-      if (!signalCache.has(arg)) {
-        signalCache.set(arg, []);
+
+      if (!signalCache.has(arg.id)) {
+        componentSigRef.get(currentComponent).add(arg);
+
+        signalCache.set(arg.id, arg);
         signalsToWatch.add(arg);
       }
 
-      if (arg[HTMLCOMPUTE] === true) template += htmlComputeComment;
-      else template += signalComment;
-
-
+      if (arg[HTMLCOMPUTE] === true) template += `<!--${computeCommentPrefix}${arg.id}-->`;
+      else template += `<!--${signalCommentPrefix}${arg.id}-->`;
     } else if (Array.isArray(arg) ? arg[0] instanceof DocumentFragment : arg instanceof DocumentFragment) {
       subClonedNodes.push([].concat(arg));
-      template += subTemplateComment;
+      template += `<!--${subTemplateCommentPrefix}-->`;
     } else {
       template += escape(arg);
     }
   }
   template += strings[i];
 
-  if (!templateCache.has(template)) templateCache.set(template, buildTemplateElement(template));
-  return prepareTemplateElement(templateCache.get(template), signals, subClonedNodes);
+  queueMicrotask(() => watch());
+  return buildTemplateElement(template, signals, subClonedNodes);
 }
 globalThis.html = html;
 
-function htmlCompute(callback) {
-  const compute = new Compute(callback);
-  compute[HTMLCOMPUTE] = true;
-  return compute;
-}
-
-export function watchSignals() {
-  queueMicrotask(() => {
-    for (const sig of signalsToWatch) {
-      sig.watch(signalChange);
-    }
-  });
-}
-
-// called from component
-export function destroySignalCache() {
-  templateCache.clear();
-
-  for (const sig of signalsToWatch) {
-    sig.unwatch(signalChange);
-  }
-  signalsToWatch.clear();
-}
 
 
-
-function signalChange(signal) {
-  const signalItems = signalCache.get(signal);
-  if (!signalItems) return;
-
-  for (const item of signalItems) {
-    if (item[0].nodeType === Node.ATTRIBUTE_NODE) {
-      let i = 0;
-      item[0].value = item[1].replace(attrString, function () {
-        return item[2][i++].valueUntracked;
-      });
-
-    } else if (signal[HTMLCOMPUTE] === true) {
-      for (const node of item[1]) {
-        node.remove();
-      }
-
-      item[1] = [];
-      if (signal.error) {
-        console.error(signal.error);
-      } else {
-        for (const frag of [].concat(signal.valueUntracked)) {
-          item[1].push(...frag.childNodes);
-          item[0].parentElement.insertBefore(frag, item[0]);
-        }
-      }
-    } else {
-      item[0].textContent = signal.valueUntracked;
-    }
-  }
-}
-
-function buildTemplateElement(template) {
+function buildTemplateElement(template, args, subClonedNodes) {
+  args.reverse();
+  subClonedNodes.reverse();
   template = adjustTemplateForAttributes(template);
+
   const templateElement = document.createElement('template');
   templateElement.innerHTML = template;
+
   const nodes = document.createNodeIterator(
     templateElement.content,
     NodeFilter.SHOW_ALL
@@ -158,104 +160,74 @@ function buildTemplateElement(template) {
   let node = nodes.nextNode();
   while (node = nodes.nextNode()) {
     switch (node.nodeType) {
+      // swap out placeholder for textNode to hold sig value
+      case Node.COMMENT_NODE:
+        if (node.data.startsWith(signalCommentPrefix)) {
+          let sig = args.pop();
+          if (!signalNodeRef.has(sig.id)) signalNodeRef.set(sig.id, new Set());
+          const textNode = document.createTextNode(sig.valueUntracked);
+          node.parentElement.replaceChild(textNode, node);
+          signalNodeRef.get(sig.id).add(textNode);
+          
+        } else if (node.data === subTemplateCommentPrefix) {
+          for (const frag of subClonedNodes.pop()) {
+            node.parentElement.insertBefore(frag, node);
+          }
+
+        } else if (node.data.startsWith(computeCommentPrefix)) {
+          let compute = args.pop();
+          if (!signalNodeRef.has(compute.id)) signalNodeRef.set(compute.id, new Set());
+          if (!compActiveNodesRef.has(compute.id)) compActiveNodesRef.set(compute.id, new Set()); 
+          for (const frag of [].concat(compute.valueUntracked)) {
+            for (let child of frag.childNodes) {
+              compActiveNodesRef.get(compute.id).add(child);
+            }
+            node.parentElement.insertBefore(frag, node);
+          }
+          signalNodeRef.get(compute.id).add(node);
+        }
+        break;
+
       case Node.ELEMENT_NODE:
         sanitizeNode(node);
-        break;
 
-      case Node.COMMENT_NODE:
-        if (node.data === signalString) {
-          const textNode = document.createTextNode(signalString);
-          node.parentElement.replaceChild(textNode, node);
-        }
-        break;
-    }
-  }
-
-  return templateElement;
-}
-
-function adjustTemplateForAttributes(template) {
-  return template.replace(tagRegex, function (all) {
-    let attrNameCounter = 0; // ensures unique attr names <div ${page.disabled ? 'disabled' : ''}
-    return all
-      .replace(attrRegex, function (attr, _name, _value, expr) {
-        if (expr) return attr.replace(signalCommentRegex, attrString + attrNameCounter++)
-        return attr.replace(signalCommentRegex, attrString);
-      }).replace(twoSpaceRegex, ' ');
-  });
-}
-
-function prepareTemplateElement(templateElement, args, subClonedNodes) {
-  args.reverse();
-  subClonedNodes.reverse();
-  const clonedNode = templateElement.content.cloneNode(true);
-  const nodes = document.createNodeIterator(
-    clonedNode,
-    NodeFilter.SHOW_ALL
-  );
-
-  let node = nodes.nextNode(); // first element is body. We do not want this
-  while (node = nodes.nextNode()) {
-    switch (node.nodeType) {
-      case Node.COMMENT_NODE:
-      case Node.TEXT_NODE:
-        switch (node.textContent) {
-          case subTemplateString:
-            for (const frag of subClonedNodes.pop()) {
-              node.parentElement.insertBefore(frag, node);
-            }
-            break;
-
-          case htmlComputeString:
-            const compute = args.pop();
-            const activeNodes = [];
-            for (const frag of [].concat(compute.valueUntracked)) {
-              activeNodes.push(...frag.childNodes);
-              node.parentElement.insertBefore(frag, node);
-            }
-            signalCache.get(compute).push([node, activeNodes]);
-            break;
-
-          case signalString:
-            const signal = args.pop();
-            node.textContent = signal.valueUntracked;
-            signalCache.get(signal).push([node]);
-            break;
-        }
-        break;
-
-      case Node.ELEMENT_NODE:
         let toRemove = []
         let toAdd = []
         let i = 0;
-
         for (; i < node.attributes.length; i++) {
-          const attr = node.attributes[i];
+          let attr = node.attributes[i];
           if (attr.value.includes(attrString)) {
-            const signals = new Set();
-            const expressions = [];
-            const templateValue = attr.value;
+            let signals = new Set();
+            let expressions = [];
+            let templateValue = attr.value;
 
             attr.value = templateValue.replace(attrPlaceholderRegex, function () {
-              const arg = args.pop();
-              expressions.push(arg)
+              let arg = args.pop();
               if (isSignal(arg)) {
                 signals.add(arg);
+                expressions.push(arg.id);
                 return arg.valueUntracked;
               }
+
+              expressions.push(arg);
               return arg;
             });
 
+
+            if (!attrExpressionRef.has(attr)) attrExpressionRef.set(attr, []);
             for (const sig of signals) {
-              signalCache.get(sig).push([attr, templateValue, expressions]);
+              if (!signalNodeRef.has(sig.id)) signalNodeRef.set(sig.id, new Set());
+              if (!signalNodeRef.get(sig.id).has(attr)) signalNodeRef.get(sig.id).add(attr);
+              attrExpressionRef.get(attr).push([sig.id, templateValue, expressions]);
             }
             signals.clear();
+            signals = undefined;
 
 
             // handle expression attr <div ${this.var}>
             // TODO handle signals?
           } else if (attr.name.includes(attrString)) {
-            const expressionValue = args.pop();
+            let expressionValue = args.pop();
             toAdd.push(document.createAttribute(expressionValue));
             toRemove.push(node.attributes[i]);
           }
@@ -269,87 +241,99 @@ function prepareTemplateElement(templateElement, args, subClonedNodes) {
 
         toAdd = undefined;
         toRemove = undefined;
+        break;
     }
   }
-  return clonedNode;
+  
+  return templateElement.content;
 }
 
 
+function adjustTemplateForAttributes(template) {
+  return template.replace(tagRegex, function (all) {
+    let attrNameCounter = 0; // ensures unique attr names <div ${page.disabled ? 'disabled' : ''}
+    return all
+      .replace(attrRegex, function (attr, _name, _value, expr) {
+        if (expr) return attr.replace(signalCommentRegex, attrString + attrNameCounter++)
+        return attr.replace(signalCommentRegex, attrString);
+      }).replace(twoSpaceRegex, ' ');
+  });
+}
 
-/**
- * Escaped content not wrapped in html template tag ${`anything`}
- *   The sanitizeNode method will handle xss
- */
 const escapeElement = document.createElement('p');
 function escape(str) {
   escapeElement.textContent = str;
   return escapeElement.innerHTML;
 }
 
+let watchRunning = false;
+function watch() {
+  if (watchRunning) return;
+  watchRunning = true;
+  queueMicrotask(() => {
+    for (const sig of signalsToWatch) {
+      sig.watch(signalChange);
+    }
+    signalsToWatch.clear();
+    watchRunning = false;
+  });
+}
 
-/**
- * Provide basic protection from XSS
- *   This is meant as a safety net. This should not be relied on to prevent attacks.
- * 
- * TODO replace with HTML Sanitizer API when available. Currently still in working spec
- */
-function sanitizeNode(node) {
-  let sanitized = false;
 
-  if (dangerousTagRegex.test(node.nodeName)) {
-    if (securityLevel === 0) {
-      if (devWarnings === true) console.warn(`Template sanitizer (WARNING): Potentially dangerous node NOT removed because of current level (${securityLevel}) "${node.nodeName}"`);
+let observerCheckRunning = false;
+function disconnectObserver() {
+  if (observerCheckRunning) return;
+  observerCheckRunning = true;
+  queueMicrotask(() => {
+    if (componentSigRef.size === 0) {
+      removeObserver.disconnect();
+      isObserving = false;
+    }
+    observerCheckRunning = false;
+  });
+}
+
+let cleanupRunning = false;
+function cleanup() {
+  if (cleanupRunning) return;
+  cleanupRunning = true;
+  queueMicrotask(() => {
+    cleanupComponents();
+    cleanupRunning = false;
+  });
+}
+
+
+function signalChange(signal) {
+  let nodes = signalNodeRef.get(signal.id);
+  if (!nodes) return;
+
+  for (let node of nodes) {
+    if (node.nodeType === Node.ATTRIBUTE_NODE) {
+      let i = 0;
+      let expressions = attrExpressionRef.get(node).find(v => v[0] === signal.id);
+      node.value = expressions[1].replace(attrString, function () {
+        return signalCache.get(expressions[2][i++]).valueUntracked;
+      });
+
+    } else if (signal[HTMLCOMPUTE] === true) {
+      for (let node of compActiveNodesRef.get(signal.id)) {
+        node.remove();
+      }
+
+      compActiveNodesRef.get(signal.id).clear();
+      if (signal.error) {
+        console.error(signal.error);
+      } else {
+        for (let frag of [].concat(signal.valueUntracked)) {
+          for (let child of frag.childNodes) {
+            compActiveNodesRef.get(signal.id).add(child);
+          }
+          node.parentElement.insertBefore(frag, node);
+        }
+      }
     } else {
-      if (devWarnings === true) console.warn(`Template sanitizer (INFO): A ${node.nodeName} tag was removed because of security level (${securityLevel})`);
-      node.remove();
-      sanitized = true;
+      node.textContent = signal.valueUntracked;
     }
   }
-
-  const attributes = node.attributes;
-  for (const attr of attributes) {
-    if (sanitizeAttribute(attr) === true) sanitized = true;
-  }
-
-  return sanitized;
-}
-
-function sanitizeAttribute(attr) {
-  const nameSanitized = sanitizeAttributeName(attr.name, attr.value);
-  const valueSanitized = sanitizeAttributeValue(attr.name, attr.value);
-  if (nameSanitized || valueSanitized) {
-    if (devWarnings === true) console.warn(`Template sanitizer (INFO): Attribute removed "${attr.name}: ${attr.value}"`);
-    attr.ownerElement.removeAttribute(attr.name);
-    return true;
-  }
-  return false;
-}
-
-function sanitizeAttributeName(name, value) {
-  let shouldRemoveLevel2 = false;
-  let shouldRemoveLevel1 = false;
-
-  if (name.startsWith('on')) shouldRemoveLevel2 = true;
-  if (dangerousAttributeRegex.test(name)) shouldRemoveLevel1 = true;
-
-  if (
-    devWarnings === true &&
-    (securityLevel === 1 && shouldRemoveLevel2 && !shouldRemoveLevel1)
-    || (devWarnings === true && securityLevel === 0 && (!shouldRemoveLevel2 || !shouldRemoveLevel1))
-  ) {
-    console.warn(`Template sanitizer (WARNING): Potentially dangerous attribute NOT removed because of current level (${securityLevel}) "${name}: ${value}"`);
-  }
-  return (shouldRemoveLevel1 && securityLevel > 0) || (shouldRemoveLevel2 && securityLevel === 2);
-}
-
-const spaceRegex = /\s+/g;
-function sanitizeAttributeValue(name, value) {
-  value = value.replace(spaceRegex, '').toLowerCase();
-  if (value.match(dangerousAttributeValueRegex) !== null) {
-    if (devWarnings === true && securityLevel === 0) {
-      console.warn(`Template sanitizer (WARNING): Potentially dangerous attribute NOT removed because of current level (${securityLevel}) "${name}: ${value}"`);
-    } else return true;
-  }
-
-  return false;
 }
