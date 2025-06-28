@@ -23,13 +23,17 @@ const viewTransitions = {
         [
           {
             transform: `translate(${targetBounds.x - containerBounds.x}px, ${targetBounds.y - containerBounds.y - scrollTop}px)`,
-            height: `${targetBounds.height}px`,
-            width: `${targetBounds.width}px`
+            clipPath: `rect(0px ${targetBounds.width}px ${targetBounds.height}px 0px round var(--mc-shape-large, 0))`,
+            opacity: 0
+          },
+          {
+            opacity: 1,
+            offset: 0.12
           },
           {
             transform: `translate(0px, 0px)`,
-            height: `${container.offsetHeight}px`,
-            width: `${container.offsetWidth}px`,
+            clipPath: `rect(0px ${container.offsetWidth}px ${container.offsetHeight}px 0px round 0px)`,
+            opacity: 1
           }
         ],
         {
@@ -55,22 +59,27 @@ const viewTransitions = {
       };
     },
     animate(container, { containerBounds, targetBounds, scrollTop }) {
+      const targetY = targetBounds.y - containerBounds.y - scrollTop;
+      const keyframeOffsetTargetY = targetY * 0.05;
       document.documentElement.animate(
         [
           {
             transform: `translate(0px, 0px)`,
-            height: `${containerBounds.height}px`,
-            width: `${containerBounds.width}px`,
+            clipPath: `rect(0px ${container.offsetWidth}px ${container.offsetHeight}px 0px round 0px)`,
+            opacity: 1
           },
           {
-            height: `${targetBounds.height}px`,
-            width: `${targetBounds.width}px`,
-            offset: 0.8
+            transform: `translate(0px, ${keyframeOffsetTargetY}px)`,
+            offset: 0.3
+          },
+          {
+            opacity: 1,
+            offset: 0.88
           },
           {
             transform: `translate(${targetBounds.x - containerBounds.x}px, ${targetBounds.y - containerBounds.y - scrollTop}px)`,
-            height: `${targetBounds.height}px`,
-            width: `${targetBounds.width}px`
+            clipPath: `rect(0px ${targetBounds.width}px ${targetBounds.height}px 0px round var(--mc-shape-large, 0))`,
+            opacity: 0
           }
         ],
         {
@@ -145,6 +154,7 @@ export async function runTransition({ oldContainer, newContainer, back, routeId 
   }
 
   newContainer.style.viewTransitionName = transitionName;
+  newContainer.firstElementChild.style.viewTransitionName = `${transitionName}-child`;
   const transition = document.startViewTransition(renderCallback);
   await transition.ready;
   if (transitionItem?.animate) transitionItem.animate(newContainer, setupData);
@@ -219,9 +229,6 @@ function initiateCSS() {
     width: auto;
     overflow: hidden;
     mix-blend-mode: normal;
-    animation: page-fade-in-with-box-shadow;
-    animation-duration: 400ms;
-    animation-timing-function: cubic-bezier(0.2, 0, 0, 1);
   }
 
   ::view-transition-old(expand-from-element-back) {
@@ -230,9 +237,6 @@ function initiateCSS() {
     overflow: hidden;
     mix-blend-mode: normal;
     z-index: 1;
-    animation: page-fade-out-with-box-shadow;
-    animation-duration: 240ms;
-    animation-timing-function: cubic-bezier(0.3, 0, 1, 1);
   }
 
   ::view-transition-old(slide-left),
@@ -246,43 +250,6 @@ function initiateCSS() {
     }
     100% {
       opacity: 1;
-    }
-  }
-
-  @keyframes page-fade-in-with-box-shadow {
-    0% {
-      opacity: 0;
-      box-shadow: 0px 1px 2px 0px rgba(0,0,0,0.3),
-        0px 1px 3px 1px rgba(0,0,0,0.15);
-    }
-    20% {
-      opacity: 1;
-    }
-    60% {
-      box-shadow: 0px 1px 2px 0px rgba(0,0,0,0.3),
-        0px 1px 3px 1px rgba(0,0,0,0.15);
-    }
-    100% {
-      box-shadow: none;
-    }
-  }
-
-  @keyframes page-fade-out-with-box-shadow {
-    0% {
-      opacity: 1;
-      box-shadow: 0px 1px 2px 0px rgba(0,0,0,0.3),
-        0px 1px 3px 1px rgba(0,0,0,0.15);
-    }
-    20% {
-      opacity: 1;
-    }
-    90% {
-      opacity: 0;
-      box-shadow: 0px 1px 2px 0px rgba(0,0,0,0.3),
-        0px 1px 3px 1px rgba(0,0,0,0.15);
-    }
-    100% {
-      opacity: 0;
     }
   }
 
