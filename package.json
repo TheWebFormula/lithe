@@ -1,6 +1,6 @@
 {
   "name": "@thewebformula/lithe",
-  "version": "0.18.1",
+  "version": "0.19.0",
   "description": "A lithe framework for the web",
   "type": "module",
   "main": "index.js",
@@ -29,7 +29,7 @@
   },
   "homepage": "https://github.com/TheWebFormula/lithe#readme",
   "dependencies": {
-    "esbuild": "^0.25.5",
+    "esbuild": "^0.27.0",
     "esbuild-plugin-copy": "^2.1.1"
   },
   "devDependencies": {
