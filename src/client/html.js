@@ -1,270 +1,311 @@
-import { isSignal, Compute, beginTemplating, endTemplating, HTMLCOMPUTE } from './signal.js';
-import { sanitizeNode } from './sanitize.js';
+import { isSignal, isSignalObject, Compute, beginTemplating, endTemplating, HTMLCOMPUTE } from './signal.js';
 
-
-// const HTMLCOMPUTE = Symbol('HTMLCOMPUTE');
-const insideCommentRegex = /<!--(?![.\s\S]*-->)/;
-const twoSpaceRegex = /\s\s/g;
-const attrString = '###';
-const attrPlaceholderRegex = new RegExp(attrString, 'g');
-const computeCommentPrefix = 'lcomp_';
-const subTemplateCommentPrefix = 'lsubtemp_';
-const signalCommentPrefix = 'lsig_';
-const signalCommentRegexValue = '<!--lsig_\\d+-->';
-const signalCommentRegex = new RegExp(signalCommentRegexValue, 'g');
-const tagRegex = new RegExp(`<\\w+([^<>]*${signalCommentRegexValue}[^<\\/>]*)+\\/?>`, 'g');
-const attrRegex = new RegExp(`(?:(\\s+[^\\s\\/>"=]+)\\s*=\\s*"([\\w\\s]*${signalCommentRegexValue}[\\w\\s]*)")|(\\s*${signalCommentRegexValue}\\s*)`, 'g');
-
-
-let isObserving = false;
-let currentComponent;
-let signalCache = new Map();
+const expressionStr = '{_ex_}';
+let templateCache = new Map();
+let signalNodeRefs = new WeakMap();
+let attributeAndCommentData = new WeakMap();
+let signalNodeAttrBuilderRef = new WeakMap();
 let signalsToWatch = new Set();
-let refCount = 0;
-let signalNodeRef = new Map();
-let compActiveNodesRef = new Map();
-let attrExpressionRef = new Map();
-let componentSigRef = new Map();
+let computedHTMLSignalRefs = new WeakMap();
 
 
-let removeObserver = new MutationObserver((mutations) => {
-  for (const mutation of mutations) {
-    if (mutation.type === 'childList' && mutation.removedNodes.length > 0) {
-      if (mutation.removedNodes.length) cleanup();
-      // for (let node of mutation.removedNodes) {
-      //   destroy(node);
-      // }
-    }
-  }
-});
 
 export function activateComponent(component) {
-  if (currentComponent === component) return;
-
-  if (componentSigRef.has(component)) destroy(component);
-  componentSigRef.set(component, new Set());
-  refCount += 1;
-
-  if (!isObserving) {
-    removeObserver.observe(document.body, {
-      childList: true,
-      subtree: true
-    });
-    isObserving = true;
-  }
-
-  currentComponent = component;
   beginTemplating();
 }
 
 export function deactivateComponent() {
-  currentComponent = undefined;
   endTemplating();
-  cleanup();
-}
-
-export function cleanupComponents() {
-  for (let comp of componentSigRef) {
-    if (!comp[0].isConnected || comp[1].size === 0) {
-      destroy(comp[0]);
-    }
-  }
-
-  disconnectObserver();
-}
-
-function destroy(component) {
-  if (!componentSigRef.has(component)) return;
-
-  for (let sig of componentSigRef.get(component)) {
-    if (signalNodeRef.has(sig.id)) {
-      for (let node of signalNodeRef.get(sig.id)) {
-        if (attrExpressionRef.has(node)) attrExpressionRef.delete(node);
-      }
-
-      signalNodeRef.get(sig.id).delete(component);
-      if (signalNodeRef.get(sig.id).size === 0) {
-        signalNodeRef.delete(sig.id);
-        signalCache.delete(sig);
-      }
-    }
-
-    if (compActiveNodesRef.has(sig.id)) {
-      compActiveNodesRef.get(sig.id)?.clear();
-      compActiveNodesRef.delete(sig.id);
-    }
-  }
-  componentSigRef.get(component).clear();
-  componentSigRef.delete(component);
 }
 
 
-export function html(strings, ...args) {
+export function html(strings, ...values) {
+  // if a function is used then handle under compute. <div>${html(() => this.isLoading.value ? 'Loading...' : '')}</div>
   if (typeof strings === 'function') return new Compute(strings, true);
 
-  args.reverse();
+  let joined = strings.join(expressionStr);
+  let template = templateCache.get(joined);
 
-  let arg;
-  let signals = [];
-  const subClonedNodes = [];
-  let template = '';
-  let i = 0;
-  for (; i < strings.length - 1; i++) {
-    template = template + strings[i];
-    arg = args.pop();
+  // preprocess template (breaking up text into nodes) and cache it
+  if (!template) {
+    template = document.createElement('template');
+    template.innerHTML = joined;
+    buildTemplate(template);
+    templateCache.set(joined, template);
+  }
 
-    // replace commented out expression
-    if (template.match(insideCommentRegex)) {
-      template += '\${commented expression}';
-    } else if (isSignal(arg)) {
-      signals.push(arg);
+  // inject values into template clone
+  const fragment = document.importNode(template.content, true);
+  const walker = document.createTreeWalker(fragment, NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT | NodeFilter.SHOW_COMMENT);
+  let valuesIndex = 0;
+  while (walker.nextNode()) {
+    const node = walker.currentNode;
 
-      if (!signalCache.has(arg.id)) {
-        componentSigRef.get(currentComponent).add(arg);
+    if (node.nodeType === Node.ELEMENT_NODE) { // handle attribute nodes
+      if (!node.hasAttributes()) continue;
 
-        signalCache.set(arg.id, arg);
-        signalsToWatch.add(arg);
+      const attributes = node.attributes;
+      for (let i = 0; i < attributes.length; i++) {
+        const attribute = attributes.item(i);
+
+        // full attribute match <div ${html(() => this.sig.value ? 'hidden' : '')} ></div>
+        if (attribute.name === expressionStr) {
+          // create template to pre render attribute string for copying
+          let attrTemplate = document.createElement('template');
+
+          // track signal references
+          if (isSignal(values[valuesIndex])) {
+            if (!signalNodeRefs.has(values[valuesIndex])) {
+              signalNodeRefs.set(values[valuesIndex], []);
+              signalsToWatch.add(values[valuesIndex]);
+            }
+            signalNodeRefs.get(values[valuesIndex]).push(new WeakRef(node));
+
+            // render attributes into template and track for updates
+            attrTemplate.innerHTML = `<ex ${values[valuesIndex].valueUntracked} ></ex>`;
+            if (!signalNodeAttrBuilderRef.has(node)) signalNodeAttrBuilderRef.set(node, []);
+            signalNodeAttrBuilderRef.get(node).push(attrTemplate);
+
+            // set initial attributes
+            buildAttrsAndMerge(node, attrTemplate, values[valuesIndex].valueUntracked);
+
+          // directly add non signals since they do not change
+          } else {
+            attrTemplate.innerHTML = `<ex ${values[valuesIndex]} ></ex>`;
+            for (let attr of attrTemplate.content.firstElementChild.attributes) {
+              node.setAttribute(attr.name, attr.value);
+            }
+          }
+          
+          attrTemplate = undefined;
+          valuesIndex += 1;
+          continue;
+        }
+
+        // check for expressions in attribute values
+        const attributeStrings = attribute.value.split(expressionStr);
+        if (attributeStrings.length <= 1) continue;
+
+        let items = [];
+        let j = 0;
+        for (; j < attributeStrings.length - 1; j += 1) {
+          // add static part
+          items.push(attributeStrings[j]);
+
+          // add expression part
+          items.push(values[valuesIndex]);
+
+          // track and handle signal references
+          if (isSignal(values[valuesIndex])) {
+
+            /* TODO Can i solve this another way?
+             * this is a hack to allow grabbing the entire SignalObject from value
+             *   Case we are handling
+             *      <div style="${this.styleObjSig}"></div>
+             *   Not needed for direct property access
+             *      <div style="color: ${this.styleObjSig.color}"></div>
+             */
+            if (isSignalObject(values[valuesIndex])) {
+              if (!signalNodeRefs.has(values[valuesIndex].__signal)) {
+                signalNodeRefs.set(values[valuesIndex].__signal, []);
+                signalsToWatch.add(values[valuesIndex].__signal);
+              }
+              signalNodeRefs.get(values[valuesIndex].__signal).push(new WeakRef(attribute));
+            } else {
+              if (!signalNodeRefs.has(values[valuesIndex])) {
+                signalNodeRefs.set(values[valuesIndex], []);
+                signalsToWatch.add(values[valuesIndex]);
+              }
+              signalNodeRefs.get(values[valuesIndex]).push(new WeakRef(attribute));
+            }
+          }
+
+          valuesIndex += 1;
+        }
+
+        // add last static part
+        items.push(attributeStrings[j]);
+
+        // track attribute data for updates
+        attributeAndCommentData.set(attribute, items);
+        // set initial value
+        attribute.value = buildAttrAndCommentValue(items, attribute.nodeName);
       }
+    
+    // regular text
+    } else if (node.nodeType === Node.TEXT_NODE && node.textContent === expressionStr) {
 
-      if (arg[HTMLCOMPUTE] === true) template += `<!--${computeCommentPrefix}${arg.id}-->`;
-      else template += `<!--${signalCommentPrefix}${arg.id}-->`;
-    } else if (Array.isArray(arg) ? arg[0] instanceof DocumentFragment : arg instanceof DocumentFragment) {
-      subClonedNodes.push([].concat(arg));
-      template += `<!--${subTemplateCommentPrefix}-->`;
-    } else {
-      template += escape(arg);
+      // track and handle signal references
+      if (isSignal(values[valuesIndex])) {
+        if (!signalNodeRefs.has(values[valuesIndex])) {
+          signalNodeRefs.set(values[valuesIndex], []);
+          signalsToWatch.add(values[valuesIndex]);
+        }
+        signalNodeRefs.get(values[valuesIndex]).push(new WeakRef(node));
+        
+
+        /* Is a html compute tag that returns html
+         *   <div>${html(() => html'<span>test</span>')}</div>
+         *.  <div>${html(() => [1, 2].map(v => html'<span>${v}</span>'))}</div>
+         */
+        if (
+          values[valuesIndex][HTMLCOMPUTE]
+          && (
+            values[valuesIndex].valueUntracked instanceof DocumentFragment
+            || Array.isArray(values[valuesIndex].valueUntracked)
+          )
+        ) {
+          // remove placeholder expressionStr
+          node.textContent = '';
+
+          // set initial value
+          buildComputeHTML(values[valuesIndex], node);
+
+        } else {
+          // handle non html signals
+          node.textContent = values[valuesIndex].valueUntracked;
+        }
+      
+      // handle non signal values 
+      } else node.textContent = values[valuesIndex];
+
+      valuesIndex += 1;
+
+    // handle comments: similar to attribute values. You can use expressions inside comments
+    } else if (node.nodeType === Node.COMMENT_NODE && node.textContent.includes(expressionStr)) {
+      const strings = node.textContent.split(expressionStr);
+      if (strings.length <= 1) continue;
+
+      let items = [];
+      let i = 0;
+      for (; i < strings.length - 1; i += 1) {
+        // add static part
+        items.push(strings[i]);
+
+        // add expression part
+        items.push(values[valuesIndex]);
+
+        //track signals
+        if (isSignal(values[valuesIndex])) {
+          if (!signalNodeRefs.has(values[valuesIndex])) {
+            signalNodeRefs.set(values[valuesIndex], []);
+            signalsToWatch.add(values[valuesIndex]);
+          }
+          signalNodeRefs.get(values[valuesIndex]).push(new WeakRef(node));
+        }
+        valuesIndex += 1;
+      }
+      // add last static part
+      items.push(strings[i]);
+
+      // track comment data for updates
+      attributeAndCommentData.set(node, items);
+
+      // set initial value
+      node.textContent = buildAttrAndCommentValue(items);
     }
   }
-  template += strings[i];
 
   queueMicrotask(() => watch());
-  return buildTemplateElement(template, signals, subClonedNodes);
+  return fragment;
 }
 globalThis.html = html;
 
 
+// break up text into separate nodes for static and expression parts
+function buildTemplate(template) {
+  const walker = document.createTreeWalker(template.content, NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT);
+  while (walker.nextNode()) {
+    const node = walker.currentNode;
+    if (node.nodeType === Node.TEXT_NODE) {
+      const nodeText = node.nodeValue.split(expressionStr);
+      if (nodeText.length <= 1) continue;
 
-function buildTemplateElement(template, args, subClonedNodes) {
-  args.reverse();
-  subClonedNodes.reverse();
-  template = adjustTemplateForAttributes(template);
+      // include last string part in node, this means creating 1 less text node
+      node.textContent = nodeText[nodeText.length - 1];
 
-  const templateElement = document.createElement('template');
-  templateElement.innerHTML = template;
+      // insert value parts from expressions
+      for (let i = 0; i < nodeText.length - 1; i++) {
+        // inset static text
+        if (nodeText[i] !== '') node.parentNode.insertBefore(new Text(nodeText[i]), node);
 
-  const nodes = document.createNodeIterator(
-    templateElement.content,
-    NodeFilter.SHOW_ALL
-  );
-
-  let node = nodes.nextNode();
-  while (node = nodes.nextNode()) {
-    switch (node.nodeType) {
-      // swap out placeholder for textNode to hold sig value
-      case Node.COMMENT_NODE:
-        if (node.data.startsWith(signalCommentPrefix)) {
-          let sig = args.pop();
-          if (!signalNodeRef.has(sig.id)) signalNodeRef.set(sig.id, new Set());
-          const textNode = document.createTextNode(sig.valueUntracked);
-          node.parentElement.replaceChild(textNode, node);
-          signalNodeRef.get(sig.id).add(textNode);
-          
-        } else if (node.data === subTemplateCommentPrefix) {
-          for (const frag of subClonedNodes.pop()) {
-            node.parentElement.insertBefore(frag, node);
-          }
-
-        } else if (node.data.startsWith(computeCommentPrefix)) {
-          let compute = args.pop();
-          if (!signalNodeRef.has(compute.id)) signalNodeRef.set(compute.id, new Set());
-          if (!compActiveNodesRef.has(compute.id)) compActiveNodesRef.set(compute.id, new Set()); 
-          for (const frag of [].concat(compute.valueUntracked)) {
-            for (let child of frag.childNodes) {
-              compActiveNodesRef.get(compute.id).add(child);
-            }
-            node.parentElement.insertBefore(frag, node);
-          }
-          signalNodeRef.get(compute.id).add(node);
-        }
-        break;
-
-      case Node.ELEMENT_NODE:
-        sanitizeNode(node);
-
-        let toRemove = []
-        let toAdd = []
-        let i = 0;
-        for (; i < node.attributes.length; i++) {
-          let attr = node.attributes[i];
-          if (attr.value.includes(attrString)) {
-            let signals = new Set();
-            let expressions = [];
-            let templateValue = attr.value;
-
-            attr.value = templateValue.replace(attrPlaceholderRegex, function () {
-              let arg = args.pop();
-              if (isSignal(arg)) {
-                signals.add(arg);
-                expressions.push(arg.id);
-                return arg.valueUntracked;
-              }
-
-              expressions.push(arg);
-              return arg;
-            });
-
-
-            if (!attrExpressionRef.has(attr)) attrExpressionRef.set(attr, []);
-            for (const sig of signals) {
-              if (!signalNodeRef.has(sig.id)) signalNodeRef.set(sig.id, new Set());
-              if (!signalNodeRef.get(sig.id).has(attr)) signalNodeRef.get(sig.id).add(attr);
-              attrExpressionRef.get(attr).push([sig.id, templateValue, expressions]);
-            }
-            signals.clear();
-            signals = undefined;
-
-
-            // handle expression attr <div ${this.var}>
-            // TODO handle signals?
-          } else if (attr.name.includes(attrString)) {
-            let expressionValue = args.pop();
-            toAdd.push(document.createAttribute(expressionValue));
-            toRemove.push(node.attributes[i]);
-          }
-        }
-
-        // Add and remove after to prevent node attributes from being modified on parse
-        for (i = 0; i < toAdd.length; i++) {
-          node.setAttributeNode(toAdd[i]);
-          node.removeAttributeNode(toRemove[i]);
-        }
-
-        toAdd = undefined;
-        toRemove = undefined;
-        break;
+        // insert expression text placeholder
+        node.parentNode.insertBefore(new Text(expressionStr), node);
+      }
     }
   }
+}
+
+let capitalizedRegex = /[A-Z]/g;
+function buildAttrAndCommentValue(items, attrName) {
   
-  return templateElement.content;
+  // handle style object
+  if (attrName === 'style') {
+    let obj = items
+      .map(item => isSignal(item) ? item.valueUntracked : item)
+      .find(item => typeof item === 'object' && item !== null);
+    if (obj) {
+      return Object.entries(obj).map(([key, value]) => {
+        const dashKey = key.replace(capitalizedRegex, (match) => `-${match.toLowerCase()}`);
+        return `${dashKey}: ${value};`;
+      }).join(' ');
+    }
+  }
+
+  let result = '';
+  for (let i = 0; i < items.length; i += 1) {
+    const item = items[i];
+    if (isSignal(item)) result += item.valueUntracked;
+    else result += item;
+  }
+  return result;
 }
 
+function buildAttrsAndMerge(node, template, signalValue) {
+  // capture the current attributes before overwriting
+  let existingAttrs = [];
+  let templateAttrs = template.content.firstElementChild.attributes;
+  for (let attr of templateAttrs) {
+    existingAttrs.push(attr.name);
+  }
+  templateAttrs = undefined;
 
-function adjustTemplateForAttributes(template) {
-  return template.replace(tagRegex, function (all) {
-    let attrNameCounter = 0; // ensures unique attr names <div ${page.disabled ? 'disabled' : ''}
-    return all
-      .replace(attrRegex, function (attr, _name, _value, expr) {
-        if (expr) return attr.replace(signalCommentRegex, attrString + attrNameCounter++)
-        return attr.replace(signalCommentRegex, attrString);
-      }).replace(twoSpaceRegex, ' ');
-  });
+  // overwrite / add attributes
+  template.innerHTML = `<ex ${signalValue} ></ex>`;
+  const newAttrs = template.content.firstElementChild.attributes;
+  for (let attr of newAttrs) {
+    node.setAttribute(attr.name, attr.value);
+  }
+
+  // remove any attributes that are no longer present
+  for (let attrName of existingAttrs) {
+    if (!newAttrs.getNamedItem(attrName)) {
+      node.removeAttribute(attrName);
+    }
+  }
 }
 
-const escapeElement = document.createElement('p');
-function escape(str) {
-  escapeElement.textContent = str;
-  return escapeElement.innerHTML;
+function buildComputeHTML(signal, node) {
+  if (computedHTMLSignalRefs.has(signal)) {
+    for (let nodeRef of computedHTMLSignalRefs.get(signal)) {
+      let node = nodeRef.deref();
+      if (node) node.remove();
+    }
+    computedHTMLSignalRefs.get(signal).length = 0;
+  } else computedHTMLSignalRefs.set(signal, []);
+
+  if (signal.error) {
+    console.error(signal.error);
+  } else {
+    for (let frag of [].concat(signal.valueUntracked)) {
+      for (let child of frag.childNodes) {
+        computedHTMLSignalRefs.get(signal).push(new WeakRef(child));
+      }
+      node.parentElement.insertBefore(frag, node);
+    }
+  }
 }
+
 
 let watchRunning = false;
 function watch() {
@@ -272,7 +313,8 @@ function watch() {
   watchRunning = true;
   queueMicrotask(() => {
     for (const sig of signalsToWatch) {
-      sig.watch(signalChange);
+      if (sig.watch) sig.watch(signalChange);
+      else console.warn('signal has no watch method', sig);
     }
     signalsToWatch.clear();
     watchRunning = false;
@@ -280,59 +322,40 @@ function watch() {
 }
 
 
-let observerCheckRunning = false;
-function disconnectObserver() {
-  if (observerCheckRunning) return;
-  observerCheckRunning = true;
-  queueMicrotask(() => {
-    if (componentSigRef.size === 0) {
-      removeObserver.disconnect();
-      isObserving = false;
-    }
-    observerCheckRunning = false;
-  });
-}
-
-let cleanupRunning = false;
-function cleanup() {
-  if (cleanupRunning) return;
-  cleanupRunning = true;
-  queueMicrotask(() => {
-    cleanupComponents();
-    cleanupRunning = false;
-  });
-}
-
-
 function signalChange(signal) {
-  let nodes = signalNodeRef.get(signal.id);
+  let nodes = signalNodeRefs.get(signal);
   if (!nodes) return;
+  if (nodes.length === 0) {
+    signalNodeRefs.delete(signal);
+    return;
+  }
 
-  for (let node of nodes) {
-    if (node.nodeType === Node.ATTRIBUTE_NODE) {
-      let i = 0;
-      let expressions = attrExpressionRef.get(node).find(v => v[0] === signal.id);
-      node.value = expressions[1].replace(attrString, function () {
-        return signalCache.get(expressions[2][i++]).valueUntracked;
-      });
+  for (let i = 0; i < nodes.length; i++) {
+    let node = nodes[i].deref();
+    if (!node) {
+      nodes.splice(i, 1);
+      i -= 1;
+      continue;
+    }
+    
+    if (node.nodeType === Node.ATTRIBUTE_NODE) { // attribute values
+      let attrData = attributeAndCommentData.get(node);
+      node.value = buildAttrAndCommentValue(attrData, node.nodeName);
 
-    } else if (signal[HTMLCOMPUTE] === true) {
-      for (let node of compActiveNodesRef.get(signal.id)) {
-        node.remove();
+    } else if (node.nodeType === Node.ELEMENT_NODE) { // attribute nodes
+      let attrTemplates = signalNodeAttrBuilderRef.get(node);
+      for (let attrTemplate of attrTemplates) {
+        buildAttrsAndMerge(node, attrTemplate, signal.valueUntracked);
       }
 
-      compActiveNodesRef.get(signal.id).clear();
-      if (signal.error) {
-        console.error(signal.error);
-      } else {
-        for (let frag of [].concat(signal.valueUntracked)) {
-          for (let child of frag.childNodes) {
-            compActiveNodesRef.get(signal.id).add(child);
-          }
-          node.parentElement.insertBefore(frag, node);
-        }
-      }
-    } else {
+    } else if (node.nodeType === Node.COMMENT_NODE) {
+      let commentText = attributeAndCommentData.get(node);
+      node.textContent = buildAttrAndCommentValue(commentText);
+
+    }else if (signal[HTMLCOMPUTE] === true) {
+      buildComputeHTML(signal, node);
+      
+    } else { // text nodes
       node.textContent = signal.valueUntracked;
     }
   }

@@ -49,7 +49,7 @@ i18n.setLocale = locale => {
     currentLocal = locale;
     currentTranslations = translations.get(currentLocal);
     for (const signal of signals) {
-      signal.updateValueVersion(true);
+      signal.updateValueVersionForce();
     }
   }
 }

@@ -83,10 +83,10 @@ class SignalNode {
   }
 
 
-  __makeDirty() {
+  __makeDirty(path) {
     this.#version++;
     epoch++;
-    this.notify();
+    this.notify(path);
   }
 
 
@@ -121,9 +121,9 @@ class SignalNode {
     }
   }
 
-  notify() {
+  notify(path) {
     for (const consumer of this.#consumers) {
-      consumer.updateValueVersion();
+      consumer.updateValueVersion(path);
     }
 
     addToQueue(this.#notifyWatchers_bound);
@@ -198,10 +198,12 @@ export class SignalObject extends SignalNode {
   [SIGNAL_OBJECT] = true;
 
   #valueProxy;
+  #track = false;
 
-  constructor(value) {
+  constructor(value, track = false) {
     super();
     super.value = value;
+    this.#track = track;
     this.#valueProxy = this.#createProxy(value);
   }
 
@@ -223,8 +225,8 @@ export class SignalObject extends SignalNode {
     super.value = value;
   }
 
-  #makeDirty() {
-    super.__makeDirty();
+  #makeDirty(path) {
+    super.__makeDirty(path);
   }
 
   // get value is a chain of callbacks because we need to trigger the original signal to subscribe to the consumer
@@ -233,39 +235,81 @@ export class SignalObject extends SignalNode {
     const self = this;
     
     return new Proxy(value, {
-      get(target, prop) {
+      apply(target, thisArg, argumentsList) {
+        return Reflect.apply(target, thisArg, argumentsList)
+      },
+
+      get(target, prop, receiver) {
         if (prop === SIGNAL_NODE) return true;
+        if (prop === SIGNAL_OBJECT) return true;
+        if (prop === '__signal') return self;
+        if (prop === 'valueUntracked') return self.valueUntracked;
 
         let obj = path.reduce((acc, key) => {
           return acc && acc[key] ? acc[key] : null;
         }, self.valueUntracked);
         let val = obj[prop];
-        
-        // with array methods
-        if (Array.isArray(obj) && typeof val === 'function') return target[prop].bind(target);
-        else if (typeof val === 'object' && val !== null) return self.#createProxy(obj[prop], [...path, prop]);
 
-        else if (isTemplating) return new Compute(() => {
-          try {
-            if (activeConsumer) self.subscribe(activeConsumer);
-            // get target starting from root. This will allow for nested objects to be overwritten
-            let obj = path.reduce((acc, key) => {
-              return acc && acc[key] ? acc[key] : null;
-            }, self.valueUntracked);
-            return obj[prop];
-          } catch (e) {
-            return undefined;
-          }
-        });
+        // with array methods
+        if (Array.isArray(obj) && typeof val === 'function') {
+        // if (typeof target[prop] === 'function' && Array.prototype.hasOwnProperty(prop)) {
+          return Reflect.get(target, prop, receiver);
+          // if (prop === 'push') {
+          //   console.log('push');
+          //   // Return a custom function that wraps the original push method
+          //   return function (...args) {
+          //     console.log('Intercepted push operation:', args);
+          //     // Call the original push method on the target array
+          //     return Reflect.apply(target[prop], target, args);
+          //   };
+          // }
+          // if (prop === 'find') {
+          //   console.log(`Accessing property: ${prop}`);
+          //   return Reflect.get(target, prop, receiver);
+          // }
+          // return target[prop].bind(target);
+        } else if (typeof val === 'object' && val !== null) return self.#createProxy(obj[prop], [...path, prop]);
+        else if (isTemplating) {
+          return new Compute(() => {
+            try {
+              if (activeConsumer) self.subscribe(activeConsumer);
+              // get target starting from root. This will allow for nested objects to be overwritten
+              let obj = path.reduce((acc, key) => {
+                return acc && acc[key] ? acc[key] : null;
+              }, self.valueUntracked);
+              return obj[prop];
+            } catch (e) {
+              return undefined;
+            }
+          });
+        }
+
         return val;
       },
       set(target, prop, value, receiver) {
+        let canTrack = self.#track ? !Array.prototype.hasOwnProperty(prop) : false;
+        let op;
+        let index;
+        let isIndex;
+        if (canTrack) {
+          index = Number(prop);
+          isIndex = Number.isInteger(index);
+          if (isIndex) op = target.length <= index ? '__add' : '__replace';
+        }
+
         const result = Reflect.set(target, prop, value, receiver);
-        self.#makeDirty();
+        if (canTrack) {
+          let changePath = [...path, prop];
+          if (isIndex) {
+            changePath.push(op);
+          }
+          self.#makeDirty(changePath);
+        } else self.#makeDirty();
         return result;
       },
       deleteProperty(target, prop) {
         const result = Reflect.deleteProperty(target, prop);
+        self.#makeDirty([...path, prop, '__remove']);
         return result;
       }
     });
@@ -302,25 +346,29 @@ export class Compute extends SignalNode {
   get value() { return super.value; }
   get dirty() { return super.dirty; }
 
-  updateValueVersion(force = false) {
-    if (force) super.dirty = true;
+  updateValueVersion(path) {
     this.updateDirty();
     if (super.dirty) {
       // TODO can i move the recompute to the read?
-      this.#recompute();
+      this.#recompute(path);
       super.dirty = false;
       super.lastCleanEpoch = epoch;
     }
   }
 
-  #recompute() {
+  updateValueVersionForce() {
+    super.dirty = true;
+    this.updateValueVersion();
+  }
+
+  #recompute(path) {
     const previousConsumer = beginConsumerCompute(this);
 
     let newValue;
     let changed = false;
     try {
       super.error = undefined;
-      newValue = this.#callback();
+      newValue = this.#callback(path);
       changed = super.dirty || super.value !== newValue;
     } catch (e) {
       super.value = ERRORED;
@@ -343,13 +391,13 @@ class Effect extends Compute {
   }
 
   // interrupt running effect callback till microtask runs
-  updateValueVersion() {
+  updateValueVersion(path) {
     this.updateDirty();
-    if (super.dirty) addToQueue(this.#execute_bound);
+    if (super.dirty) addToQueue(this.#execute_bound, path);
   }
 
-  #execute() {
-    super.updateValueVersion();
+  #execute(path) {
+    super.updateValueVersion(path);
   }
 }
 export function effect(callback) {
@@ -362,6 +410,10 @@ export function effect(callback) {
 
 export function isSignal(node) {
   return typeof node === 'object' && node !== null && node[SIGNAL_NODE] === true;
+}
+
+export function isSignalObject(node) {
+  return typeof node === 'object' && node !== null && node[SIGNAL_OBJECT] === true;
 }
 
 
@@ -379,7 +431,13 @@ function afterConsumerCompute(previousConsumer) {
   setActiveConsumer(previousConsumer);
 }
 
-function addToQueue(callback) {
+let changes = new Map();
+function addToQueue(callback, path) {
+  if (path) {
+    if (!changes.has(callback)) changes.set(callback, []);
+    changes.get(callback).push(path);
+  }
+  
   queue.add(callback);
   runQueue();
 }
@@ -389,7 +447,9 @@ function runQueue() {
   queueRunning = true;
   queueMicrotask(() => {
     for (const callback of queue) {
-      callback();
+      let _changes = changes.get(callback);
+      callback(_changes);
+      if (_changes) changes.delete(callback);
     }
     queue.clear();
     queueRunning = false;
