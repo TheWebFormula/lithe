@@ -47,11 +47,15 @@
             <mc-button onclick="page.addValue(valueinput.value);" style="margin-top: 8px;">Add value</mc-button>
             ${html(() => page.loopVar.value.map(item => html`<div>Value: ${item.value}</div>`))}
           </div>
+          
         
           <!--
-                HTML comments work on expressions
-                ${`commented out ${page.plainText}`}
-              -->
+            HTML comments can be used on expressions
+            (inspect this doc to find the comment with values)
+
+            commented out ${page.plainText}
+            commented out ${page.signalVar.value}
+          -->
         
           <code-block language="html"><pre>
 ${`<!-- page.html -->
@@ -83,7 +87,10 @@ ${`<!-- page.html -->
 
 <!--
   HTML comments can be used on expressions
-  \${\`commented out \${page.plainText}\`}
+  (inspect this doc to find the comment with values)
+
+  commented out \${page.plainText}
+  commented out \${page.signalVar.value}
 -->`}
           </pre></code-block>
           <code-block language="javascript"><pre>
