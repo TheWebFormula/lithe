@@ -9,6 +9,8 @@
       <ul class="links">
         <li><a href="#expressions">Expressions and bindings</a></li>
         <li><a href="#templates">Template HTML</a></li>
+        <li><a href="#attributes">Dynamic attribute values</a></li>
+        <li><a href="#style-object">Style attribute objects</a></li>
       </ul>
     </nav>
 
@@ -195,6 +197,75 @@ class PageClass extends Component {
 }
 customElements.define('page-component-name', PageClass);`}
           </pre></code-block>
+        </mc-card>
+      </section>
+
+
+
+      <section id="attributes" aria-label="Dynamic attribute values">
+        <mc-card>
+          <h2 slot="headline">Dynamic attribute values</h2>
+          <div slot="supporting-text">You can use Signals to dynamically set attributes</div>
+      
+          <div style="margin-top: 42px; margin-bottom: -8px;">
+            <div style="margin: 42px 0px;">
+              <div class="mc-font-title-large" style="margin-bottom: 8px;">Dynamically set attribute values</div>
+              <mc-switch checked onchange="page.setDisplay(this.checked)" label-right="hide / show"></mc-switch>
+              <div style="height: 18px;">
+                <div style="display: ${this.display.value}">Hit the switch to hide</div>
+              </div>
+            </div>
+
+            <div style="margin: 42px 0px;">
+              <div class="mc-font-title-large" style="margin-bottom: 8px;">Mark input as required</div>
+              <mc-switch checked onchange="page.required.value = this.checked; setTimeout(() => document.querySelector('#required-input').reportValidity(), 100)" label-right="required"></mc-switch>
+              <div style="height: 60px;">
+                <mc-textfield id="required-input" type="text" error-text="required" ${html(() => this.required.value ? 'required' : '')} ></mc-textfield>
+              </div>
+            </div>
+          </div>
+
+          <code-block language="html">
+            <pre>
+${`<!-- inject values into attributes -->
+<div style="display: \${this.display.value}">Hit the switch to hide</div>
+
+<!-- Dynamically add / remove attributes -->
+<mc-textfield type="text" error-text="required" \${html(()=> this.required.value ? 'required' : '')} ></mc-textfield>`}
+            </pre>
+          </code-block>
+        </mc-card>
+      </section>
+
+
+      <section id="style-object" aria-label="Style attribute objects">
+        <mc-card>
+          <h2 slot="headline">Style attribute objects</h2>
+          <div slot="supporting-text">You can use an object to define an elements styles</div>
+      
+          <div style="margin-top: 42px; margin-bottom: -8px;">
+            <div style="margin: 42px 0px;">
+              <div class="mc-font-title-large" style="margin-bottom: 8px;">Dynamically set attribute values</div>
+              <div style="${{
+                color: 'white',
+                backgroundColor: '#3f51b5',
+                padding: '12px',
+                borderRadius: '4px'
+              }}">Styled using an object on the style attribute</div>
+            </div>
+          </div>
+      
+          <code-block language="html">
+            <pre>
+${`<!-- Use an object for an elements style -->
+<div style="\${{
+  color: 'white',
+  backgroundColor: '#3f51b5',
+  padding: '12px',
+  borderRadius: '4px'
+}}">Styled by object</div>`}
+                  </pre>
+          </code-block>
         </mc-card>
       </section>
     </div>

@@ -13,6 +13,8 @@ class TemplatesPage extends Component {
     { value: 'Three' }
   ]);
   showFirst = new Signal(true);
+  display = new Signal('block');
+  required = new Signal(true);
 
   constructor() {
     super();
@@ -21,6 +23,14 @@ class TemplatesPage extends Component {
   addValue(value) {
     if (!value) return;
     this.loopVar.value = [...this.loopVar.value, {value}];
+  }
+
+  setDisplay(checked) {
+    this.display.value = checked ? 'block' : 'none';
+  }
+
+  afterRender() {
+    document.querySelector('#required-input').reportValidity()
   }
 }
 customElements.define('templates-page', TemplatesPage);
