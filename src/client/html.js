@@ -10,7 +10,7 @@ let computedHTMLSignalRefs = new WeakMap();
 
 
 
-export function activateComponent(component) {
+export function activateComponent() {
   beginTemplating();
 }
 

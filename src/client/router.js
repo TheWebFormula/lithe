@@ -72,6 +72,10 @@ function route(locationObject, back, target) {
 }
 
 async function navigate(component, pathRegex, locationObject, current, back, initial, target) {;
+  if (!pageContainer) {
+    throw Error('No page container found. Make sure to add an element with the id "page-content" to your HTML');
+  }
+
   currentPathRegex = pathRegex;
   if (!initial && !back) {
     document.body.scrollTop = 0;

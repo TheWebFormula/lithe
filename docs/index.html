@@ -15,21 +15,21 @@
   <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
   <link rel="manifest" href="/manifest.json">
-  <link rel="stylesheet"
-    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=menu">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=menu">
 
 
   <title>Lithe</title>
-  <link rel="stylesheet" href="/app.css">
-  <script type="module" src="/app.js"></script>
-  <script id="hljsscript" src="/highlight-11.10.0.js" async></script>
+  <link
+    rel="preload"
+    as="style"
+    onload="this.onload=null;this.rel='stylesheet'"
+    href="/app.css" />
+  <script type="module" src="/app.js" defer></script>
+  <script id="hljsscript" src="/highlight-11.10.0.js" defer></script>
 
   <style>
     body {
       font-family: Arial;
-    }
-
-    body {
       visibility: hidden;
     }
   </style>

@@ -166,7 +166,7 @@ export default class Component extends HTMLElement {
 
     if (this.constructor._isPage) this.style.display = 'contents';
 
-    activateComponent(this);
+    activateComponent();
     try {
       if (this.constructor.useShadowRoot) this.shadowRoot.appendChild(this.template());
       else this.appendChild(this.template());
