@@ -111,18 +111,14 @@ function replaceAppTags(basedir, entryPoint, entryPointCSS, outdir, appOutputs, 
     }
   }
 
-  const outputAppJSScriptTag = `<script defer type="module" src="/${outputAppJSName}"></script>`;
-  const appScriptTagRegex = new RegExp(`<script[\\s\\S]*src="/${originalAppJS}"[^>]*>\\s*</script>`);
-  if (appScriptTagRegex.test(indexHTMLtemplate)) indexHTMLtemplate = indexHTMLtemplate.replace(appScriptTagRegex, outputAppJSScriptTag);
-  else indexHTMLtemplate = indexHTMLtemplate.replace(/<\/head>/, `  ${outputAppJSScriptTag}\n</head>`);
+  const appScriptTagRegex = new RegExp(`\\bsrc\\s*=\\s*["']/${originalAppJS}["']`, 'g');
+  if (appScriptTagRegex.test(indexHTMLtemplate)) indexHTMLtemplate = indexHTMLtemplate.replace(appScriptTagRegex, `src="/${outputAppJSName}"`);
+  else indexHTMLtemplate = indexHTMLtemplate.replace(/<\/head>/, `  <script defer type="module" src="/${outputAppJSName}"></script>\n</head>`);
   
   if (outputAppCSSName) {
-    const outputAppCSSLinkTag = `<link rel="stylesheet" href="/${outputAppCSSName}">`;
-    const appLinkTagRegex = new RegExp(`<link\\s+(?:[^>]*?\\s+)?href="/${originalAppCSS}"[^>]*>`, 'g');
-    const matches = indexHTMLtemplate.match(appLinkTagRegex) || [];
-    const stylesheetMatch = matches.find(s => s.includes('rel="stylesheet"'));
-    if (stylesheetMatch) indexHTMLtemplate = indexHTMLtemplate.replace(stylesheetMatch, outputAppCSSLinkTag);
-    else indexHTMLtemplate = indexHTMLtemplate.replace(/<\/head>/, `  ${outputAppCSSLinkTag}\n</head>`);
+    const appLinkTagRegex = new RegExp(`\\bhref\\s*=\\s*["']/${originalAppCSS}["']`, 'g');
+    if (appLinkTagRegex.test(indexHTMLtemplate)) indexHTMLtemplate = indexHTMLtemplate.replace(appLinkTagRegex, `href="/${outputAppCSSName}"`);
+    else indexHTMLtemplate = indexHTMLtemplate.replace(/<\/head>/, `  <link rel="stylesheet" href="/${outputAppCSSName}">\n</head>`);
   }
 
   return indexHTMLtemplate;
