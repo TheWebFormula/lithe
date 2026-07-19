@@ -21,18 +21,18 @@
         <mc-card>
           <h2 slot="headline">Signal</h2>
           <div slot="supporting-text">A signal is a wrapper around a value that can notify interested consumers when that value changes</div>
-          
+
           <div style="display: flex; align-items: center;">
             <mc-textfield class="mc-raise-label" style="margin-top: 24px;" label="Type something" value="${page.basicBind.value}"
               oninput="page.basicBind.value = this.value">
             </mc-textfield>
-            
+
             <div style="margin-left: 16px;">
               <div style="margin-left: 16px;">Value: ${page.basicBind.value}</div>
               <mc-button onclick="page.updateValue()">Set value to Updated</mc-button>
             </div>
           </div>
-        
+
           <code-block language="html"><pre>
 ${`<!-- Signals automatically update the HTML -->
 
@@ -52,9 +52,9 @@ import htmlTemplate from './page.html';
 class PageClass extends Component {
   static title = 'Signal';
   static htmlTemplate = htmlTemplate;
-  
+
   basicBind = new Signal('');
-  
+
   constructor() {
     super();
   }
@@ -66,24 +66,24 @@ class PageClass extends Component {
 }
 customElements.define('page-component-name', PageClass);`}
           </pre></code-block>
-        
+
           <code-block language="javascript"><pre>
 ${`
 // quick example of using Signal, Compute, and effect
-  
+
 import { Component, Signal, Compute, effect } from '@thewebformula/lithe';
 import htmlTemplate from './page.html';
 
 class PageClass extends Component {
   static title = 'Signal Compute effect';
   static htmlTemplate = htmlTemplate;
-  
+
   one = new Signal(1);
   // Compute will run when first created
   two = new Compute(() => {
     return this.one.value * 2;
   });
-  
+
   constructor() {
     super();
 
@@ -137,7 +137,7 @@ customElements.define('page-component-name', PageClass);`}
           <div style="margin: 12px 0;">
             <mc-button onclick="page.obj.value.count += 1">Increment count</mc-button>
           </div>
-        
+
           <code-block language="html"><pre>
 ${`<table>
   <thead>
@@ -167,7 +167,7 @@ import htmlTemplate from './page.html';
 class PageClass extends Component {
   static title = 'Signal object';
   static htmlTemplate = htmlTemplate;
-  
+
   obj = new SignalObject({
     one: 'one',
     count: 1,
@@ -175,7 +175,7 @@ class PageClass extends Component {
       two: 'two'
     }
   });
-  
+
   constructor() { super(); }
 }
 customElements.define('page-component-name', PageClass);`}
@@ -188,13 +188,13 @@ customElements.define('page-component-name', PageClass);`}
         <mc-card>
           <h2 slot="headline">Compute</h2>
           <div slot="supporting-text">Compute provides a way to interact with multiple signals to provide a single value</div>
-        
+
           <mc-textfield b class="mc-raise-label" type="number" style="margin-top: 24px;" label="Type something" value="${page.number.value}"
             oninput="page.number.value = this.value">
           </mc-textfield>
-        
+
           <div b style="margin-bottom: 12px; margin-left: 16px;">Value <span style="font-size: 12px; font-weight: bold;">(Input x 2)</span>: ${page.numberTimesTwo.value}</div>
-        
+
           <code-block language="html"><pre>
 ${`<!-- Computes automatically update the HTML -->
 
@@ -214,13 +214,13 @@ import html from './page.html';
 class PageClass extends Component {
   static title = 'Compute';
   static htmlTemplate = html;
-  
+
   number = new Signal(1);
   // Compute will run when first created
   numberTimesTwo = new Compute(() => {
     return this.number.value * 2;
   });
-  
+
   constructor() {
     super();
   }
@@ -236,7 +236,7 @@ customElements.define('page-component-name', PageClass);`}
           <h2 slot="headline">Effect</h2>
           <div slot="supporting-text">Effects allows you to run code based on any changes for signals or computes it contains. The difference between effect and compute
             is that effects do not return values.</div>
-        
+
           <code-block language="javascript"><pre>
 ${`import { Component, Signal, effect } from '@thewebformula/lithe';
 import html from './page.html';
@@ -244,10 +244,10 @@ import html from './page.html';
 class PageClass extends Component {
   static title = 'Effect';
   static htmlTemplate = html;
-  
+
   one = new Signal(1);
   two = new Signal(2);
-  
+
   constructor() {
     super();
 
