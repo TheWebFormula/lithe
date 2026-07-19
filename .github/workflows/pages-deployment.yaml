@@ -19,7 +19,7 @@ jobs:
           node-version: '24.x'
 
       - name: Install dependencies
-        run: npm install --include=dev
+        run: npm install
 
       - name: Upload node_modules for local inspection
         uses: actions/upload-artifact@v7
