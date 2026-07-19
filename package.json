@@ -35,6 +35,7 @@
   },
   "devDependencies": {
     "@thewebformula/lithe": "file:./",
-    "@thewebformula/materially": "^0.9.6"
+    "@thewebformula/materially": "^0.9.6",
+    "highlight.js": "^11.11.1"
   }
 }
