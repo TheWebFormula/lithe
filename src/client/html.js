@@ -1,4 +1,6 @@
 import { isSignal, isSignalObject, Compute, beginTemplating, endTemplating, HTMLCOMPUTE } from './signal.js';
+import { policyHTML } from './policy.js';
+
 
 const expressionStr = '{_ex_}';
 let templateCache = new Map();
@@ -7,7 +9,6 @@ let attributeAndCommentData = new WeakMap();
 let signalNodeAttrBuilderRef = new WeakMap();
 let signalsToWatch = new Set();
 let computedHTMLSignalRefs = new WeakMap();
-
 
 
 export function activateComponent() {
@@ -29,7 +30,7 @@ export function html(strings, ...values) {
   // preprocess template (breaking up text into nodes) and cache it
   if (!template) {
     template = document.createElement('template');
-    template.innerHTML = joined;
+    template.innerHTML = policyHTML.createHTML(joined);
     buildTemplate(template);
     templateCache.set(joined, template);
   }
@@ -76,7 +77,7 @@ export function html(strings, ...values) {
               node.setAttribute(attr.name, attr.value);
             }
           }
-          
+
           attrTemplate = undefined;
           valuesIndex += 1;
           continue;
@@ -131,7 +132,7 @@ export function html(strings, ...values) {
         // set initial value
         attribute.value = buildAttrAndCommentValue(items, attribute.nodeName);
       }
-    
+
     // regular text
     } else if (node.nodeType === Node.TEXT_NODE && node.textContent === expressionStr) {
 
@@ -142,7 +143,7 @@ export function html(strings, ...values) {
           signalsToWatch.add(values[valuesIndex]);
         }
         signalNodeRefs.get(values[valuesIndex]).push(new WeakRef(node));
-        
+
 
         /* Is a html compute tag that returns html
          *   <div>${html(() => html'<span>test</span>')}</div>
@@ -165,8 +166,8 @@ export function html(strings, ...values) {
           // handle non html signals
           node.textContent = values[valuesIndex].valueUntracked;
         }
-      
-      // handle non signal values 
+
+      // handle non signal values
       } else node.textContent = values[valuesIndex];
 
       valuesIndex += 1;
@@ -238,7 +239,7 @@ function buildTemplate(template) {
 
 let capitalizedRegex = /[A-Z]/g;
 function buildAttrAndCommentValue(items, attrName) {
-  
+
   // handle style object
   if (attrName === 'style') {
     let obj = items
@@ -337,7 +338,7 @@ function signalChange(signal) {
       i -= 1;
       continue;
     }
-    
+
     if (node.nodeType === Node.ATTRIBUTE_NODE) { // attribute values
       let attrData = attributeAndCommentData.get(node);
       node.value = buildAttrAndCommentValue(attrData, node.nodeName);
@@ -354,7 +355,7 @@ function signalChange(signal) {
 
     }else if (signal[HTMLCOMPUTE] === true) {
       buildComputeHTML(signal, node);
-      
+
     } else { // text nodes
       node.textContent = signal.valueUntracked;
     }

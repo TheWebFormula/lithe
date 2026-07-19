@@ -5,6 +5,7 @@ import { html } from './src/client/html.js';
 import { setSecurityLevel } from './src/client/sanitize.js';
 import { i18n } from './src/client/i18n.js';
 import { Fetcher } from './src/client/fetcher.js';
+import { policyHTML } from './src/client/policy.js';
 
 export {
   Route,
@@ -16,5 +17,6 @@ export {
   effect,
   setSecurityLevel,
   i18n,
-  Fetcher
+  Fetcher,
+  policyHTML
 };

@@ -121,6 +121,7 @@ export async function runTransition({ oldContainer, newContainer, back, routeId 
     const viewTransitionBackMeta = document.querySelector('[name=view-transition-back]');
     viewTransitionNameGlobalBack = viewTransitionBackMeta?.content || false;
   }
+
   if (!document.startViewTransition || isReducedMotion) {
     renderCallback();
     return;
@@ -158,9 +159,8 @@ export async function runTransition({ oldContainer, newContainer, back, routeId 
   const transition = document.startViewTransition(renderCallback);
   await transition.ready;
   if (transitionItem?.animate) transitionItem.animate(newContainer, setupData);
-  transition.finished.then(() => {
-    newContainer.style.viewTransitionName = '';
-  });
+  await transition.finished;
+  newContainer.style.viewTransitionName = '';
 }
 
 function initiateCSS() {

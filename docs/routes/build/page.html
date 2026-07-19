@@ -11,8 +11,7 @@
       <section id="build" aria-label="Build">
         <mc-card>
           <h2 slot="headline">Build app</h2>
-          <div slot="supporting-text">No need for webpack or other bundlers. ESbuild is packed in and pre configured. Builds are
-            also optimized based on route entry points.</div>
+          <div slot="supporting-text">No need for webpack or other bundlers. ESbuild is packed in and pre configured</div>
           <ul slot="supporting-text">
             <li>Minification</li>
             <li>Sourcemaps</li>
@@ -20,21 +19,35 @@
             <li>live relaoding</li>
             <li>File copying</li>
             <li>ENV vars</li>
+            <li>Compression</li>
+            <li>CSP html meta tag (Content-Security-Policy)</li>
           </ul>
           <ul slot="supporting-text">
-            <li><strong>NODE_ENV=production</strong> will minify the code and NOT run the dev server</li>
-            <li><strong>NODE_ENV=other value</strong> will run the dev server</li>
-            <li>You can override the default behavior</li>
+            <li><strong>NODE_ENV=production</strong> Automatically adjusts build settings for production</li>
+            <li><strong>NODE_ENV=other_value</strong> Automatically adjusts build settings for development</li>
           </ul>
-        
+
           <code-block language="javascript"><pre>
 ${`import build from '@thewebformula/lithe/build';
 
 /**
-* Basic
 * If using 'app/' as root folder then no config needed
 */
 build();
+
+/**
+* Common usage
+*/
+build({
+  entryPoint: 'docs/app.js',
+  entryPointCSS: 'docs/app.css',
+  copy: [
+    { from: 'docs/_headers', to: 'dist/' },
+    { from: 'docs/robots.txt', to: 'dist/' },
+    { from: 'docs/sitemap.xml', to: 'dist/' },
+    { from: 'docs/favicon.ico', to: 'dist/' }
+  ]
+});
 
 
 /**
@@ -51,7 +64,7 @@ build({
    */
   entryPointCSS: 'app/app.css',
 
-  // index.html file : Default 'index.html'
+  // index.html file : Default '[entryPoint root folder]/index.html'
   indexHTML: 'app/index.html',
 
   // folder that contains 'app.js' : Default 'dist/'
@@ -61,6 +74,7 @@ build({
   * Minify code
   * Set to 'true' when 'NODE_ENV=production'
   *   otherwise it defaults to 'false'
+  * Recommend: do not set
   */
   minify: true,
 
@@ -68,26 +82,80 @@ build({
   * Create source maps
   * Set to 'false' when 'NODE_ENV=production'
   *   otherwise it defaults to 'true'
+  * * Recommend: do not set
   */
   sourcemap: false,
+
+  /**
+  * Compress files with Brotli or Gzip
+  * Defaults to false
+  * If compression is enabled, the dev server will serve the compressed files
+  */
+  compression: false,
+  compressionConfig: {
+    type: 'brd',
+    level: 19
+  },
+
+  // inject env vars to build
+  define: {
+    'process.env.SOME_VAR': process.env.SOME_VAR
+  },
+
+  // supports regex's with wildcards (*, **)
+  copy: [
+    {
+      from: 'app/image.jpg',
+      to: 'dist/'
+    },
+    {
+      from: 'app/routes/**/(?!page)*.html',
+      to: 'dist/routes'
+    }
+  ],
 
   /**
   * Run dev server
   * Set to 'false' when 'NODE_ENV=production'
   * otherwise it defaults to 'true'
+  * Recommend: do not set unless you need to change ports
   */
-  devServer: true,
+  devServer: {
+    /* We recommend not setting enable
+     * If not set then it will be controlled by the NODE_ENV variable
+     *   NODE_ENV=production will not run the dev server
+     *   NODE_ENV=other value will run the dev server
+     * if this is set then it will run even if NODE_ENV=production
+     */
+    enable: true,
+
+    livereload: true,
+    host: 'localhost',
+    port: 3000,
+    cacheHeaders: false,
+    
+    // SSL options for local https
+    keyfile: '/tmp/ssl/dev.local.key',
+    certfile: '/tmp/ssl/dev.local.crt',
+
+    cors: {
+      origin: 'https://localhost'
+    }
+  },
 
   /**
-  * Livereload
-  * Simply use watch to enable 'node --watch build.js'
-  * Set to 'false' when 'NODE_ENV=production'
-  * otherwise it defaults to 'true'
+  * Content security policy settings
+  * This will inject a meta tag into the index.html file with the specified settings
+  * defaults to 'false'
   */
-  devServerLiveReload: true,
-  
-  devServerPort: 3000,
-  
+  csp: {
+    enable: false,
+    requireTrustedTypes: false,
+    // There is a built in li-html policy that will auto inject
+    trustedTypes: [],
+    styleSrc: [self, "https://fonts.googleapis.com"],
+    fontSrc: [self, "https://fonts.gstatic.com"]
+  },
 
   /**
   * devWarnings
@@ -103,23 +171,6 @@ build({
   * Default: 1
   */
   securityLevel: 1,
-
-  // supports regex's with wildcards (*, **)
-  copy: [
-    {
-      from: 'app/image.jpg',
-      to: 'dist/'
-    },
-    {
-      from: 'app/routes/**/(?!page)*.html',
-      to: 'dist/routes'
-    }
-  ],
-
-  // inject env vars to build
-  define: {
-    'process.env.SOME_VAR': process.env.SOME_VAR
-  },
 
   // callback before bundle
   onStart: () => {},

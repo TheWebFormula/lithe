@@ -1,4 +1,5 @@
 import build from './src/build/index.js';
+import fs from 'node:fs';
 
 build({
   entryPoint: 'docs/app.js',
@@ -9,8 +10,14 @@ build({
     { from: 'docs/sitemap.xml', to: 'dist/' },
     { from: 'docs/favicon.ico', to: 'dist/' },
     { from: 'docs/icons/*', to: 'dist/icons/' },
-    { from: 'docs/manifest.json', to: 'dist/' },
-    { from: 'docs/highlight-11.10.0.js', to: 'dist/' }
+    { from: 'docs/manifest.json', to: 'dist/' }
   ],
-  securityLevel: 1
+  // csp: {
+  //   enable: true,
+  //   requireTrustedTypes: true,
+  //   requireTrustedTypes: [],
+  //   styleSrc: ['self', "https://fonts.googleapis.com"],
+  //   fontSrc: ['self', "https://fonts.gstatic.com"],
+  // },
+  // securityLevel: 1
 });

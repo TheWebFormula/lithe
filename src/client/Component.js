@@ -4,7 +4,6 @@ import { html, activateComponent, deactivateComponent } from './html.js';
 
 const dashCaseRegex = /-([a-z])/g;
 const onRegex = /^on/;
-let templates = new Map();
 
 /**
  * Component class used for pages and web components
@@ -172,7 +171,7 @@ export default class Component extends HTMLElement {
       else this.appendChild(this.template());
     } catch (e) {
       console.error(e);
-      console.error('There was an error processing the template for', this.constructor.name, templates.get(this.constructor));
+      console.error('There was an error processing the template for', this.constructor.name);
     }
     deactivateComponent();
 
@@ -180,17 +179,11 @@ export default class Component extends HTMLElement {
   }
 
   #prepareRender() {
-    if (!templates.has(this.constructor)) {
-      const templateString = this.constructor.htmlTemplate || this.template.toString().replace(/^[^`'"]*/, '').replace(/[^`'"]*$/, '').slice(1, -1);
-      templates.set(this.constructor, new Function('page', `return page.constructor._html\`${templateString}\`;`));
-    }
-    
     if (this.constructor.useShadowRoot && this.constructor.styleSheets[0] instanceof CSSStyleSheet) {
       this.shadowRoot.adoptedStyleSheets = this.constructor.styleSheets;
     }
 
-    // scope template function
-    this.template = () => templates.get(this.constructor).call(this, this);
+    if (typeof this.constructor.htmlTemplate === 'function') this.template = () => this.constructor.htmlTemplate(this);
     this.#prepared = true;
   }
 

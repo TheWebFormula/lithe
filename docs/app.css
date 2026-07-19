@@ -4,7 +4,7 @@
 :root {
   --mc-background-color: var(--mc-surface-container-low);
   --mc-navigation-container-color: var(--mc-surface-container-low);
-  /* --mc-surface-container-color: var(--mc-surface-container-lowest); */
+   /*--mc-surface-container-color: var(--mc-surface-container-lowest);*/
 }
 
 h1 {
@@ -50,8 +50,8 @@ code-block {
 
 code-block button {
   position: absolute;
-  right: 8px;
-  top: 8px;
+  right: 0px;
+  top: 14px;
   outline: 0;
   background-color: transparent;
   color: white;
@@ -135,7 +135,7 @@ iframe {
   border: 1px solid var(--mc-outline-alpha-30);
   border-radius: 16px;
   width: 600px;
-  
+
 }
 
 .window-compact iframe {
