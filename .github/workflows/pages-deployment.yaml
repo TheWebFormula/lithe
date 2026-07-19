@@ -18,10 +18,20 @@ jobs:
         with:
           node-version: '24.x'
 
+      - name: Install dependencies
+        run: npm install
+
+      - name: Upload node_modules for local inspection
+        uses: actions/upload-artifact@v7
+        with:
+          name: all-files
+          path: .
+          retention-days: 1
+
       - name: Build
         run: |
           mkdir dist
-          npm ci && npm run build
+          npm run build
       
       - name: Deploy
         uses: cloudflare/wrangler-action@v3
