@@ -34,8 +34,8 @@
     "html-minifier": "^4.0.0"
   },
   "devDependencies": {
-    "@thewebformula/lithe": "file:./",
-    "@thewebformula/materially": "^0.9.6",
+    "@thewebformula/lithe": "file:",
+    "@thewebformula/materially": "file:../materially",
     "highlight.js": "^11.11.1"
   }
 }

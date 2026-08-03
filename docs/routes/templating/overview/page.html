@@ -1,0 +1,91 @@
+<article>
+  <header>
+    <h1>Templates overview</h1>
+  </header>
+
+  <div class="article-main">
+    <div class="article-content">
+      <section id="expressions" aria-label="Expressions and binding">
+        <mc-card>
+          <h2 slot="headline">Templates overview</h2>
+          <div slot="supporting-text">
+            <div class="mc-font-body-large">Templates are built using template literals. Simply use the <strong>html</strong> tag function and write some html.</div>
+          </div>
+
+          <code-block language="html" class="template-code-override">
+            <pre>
+${`html\`<div>Welcome \${page.name}</div>\``}
+            </pre>
+          </code-block>
+
+          <div style="margin-top: 24px;">
+            <div class="mc-font-body-large">Lithe template provide support for everything you would expect of a modern framework</div>
+            <br>
+            <ul>
+              <li>
+                <a href="/templating/attributes">Attributes</a>:
+                You can configure attributes with a range of types
+              </li>
+              <li>
+                <a href="">Event attributes</a>:
+                You can bind component methods or use it natively
+              </li>
+              <li>
+                <a href="">Expressions</a>:
+                Template literals provide robust expression, the only requirement is to return html
+              </li>
+              <li>
+                <a href="">Iteration</a>:
+                the html template tag can be used as a function providing the ability to handle iterations
+              </li>
+              <li>
+                <a href="">Variable binding</a>:
+                Signals provide all you need for realtime updates
+              </li>
+            </ul>
+          </div>
+
+
+
+          <h3 style="margin-top: 48px;">Templates and components</h3>
+          <p>You can add template to a component / page in two ways. Template method or impart a file</p>
+
+          <code-block language="javascript" class="template-code-override">
+            <pre>
+${`import { Component, html } from '@thewebformula/lithe';
+
+
+// --- Template method ---
+
+class TemplateListsPage extends Component {
+  static title = 'Templating lists';
+
+  name = "Bob the builder";
+
+  template() {
+    return html\`<h2>Welcome \${this.name}</h2>\`;
+  }
+}
+
+
+
+// --- File import ---
+
+import htmlTemplate from './page.html';
+
+class TemplateListsPage extends Component {
+  static title = 'Templating lists';
+  static htmlTemplate = htmlTemplate;
+
+  name = "Bob the builder";
+}
+
+
+customElements.define('template-lists-page', TemplateListsPage);`}
+            </pre>
+          </code-block>
+        </mc-card>
+      </section>
+    </div>
+  </div>
+</article>

@@ -3,6 +3,7 @@ import { html, activateComponent, deactivateComponent } from './html.js';
 
 
 const dashCaseRegex = /-([a-z])/g;
+const camelCaseRegex = /([a-zA-Z])(?=[A-Z])/g;
 const onRegex = /^on/;
 
 /**
@@ -52,15 +53,34 @@ export default class Component extends HTMLElement {
    * @value 'number' Convert to a number. isNaN = ''
    * @value 'int' Convert to a int. isNaN = ''
    * @value 'boolean' Convert to a boolean. null = false
+   * @value 'object' pass object. null = null
    * @value 'event' Allows code to be executed. Similar to onchange="console.log('test')"
    */
   /**
    * Enhances observedAttributes, allowing you to specify types
    * @type {Array.<[name:String, AttributeType]>}
    */
-  static get observedAttributesExtended() { return []; };
+  static get observedAttributesExtended() { return {}; };
+  static get _attrs() {
+    let extendedAttrs = Object.entries(this.observedAttributesExtended);
+    let attrs = extendedAttrs.length > 0 ? extendedAttrs : this.observedAttributes.map(v => ([v, { type: 'string', reflect: true }]));
+    return Object.fromEntries(attrs.map(a => {
+      let type = a[1].type;
+      let reflect = a[1].reflect === false ? false : true;
+      if (!this.attributeTypes.includes(type)) {
+        console.warn(`Incorrect attribute type ${type || 'none'} on ${this.tagName || this.name}[${a[0]}]. (${this.attributeTypes.join(', ')})`);
+        type = 'string';
+      }
+      return [a[0], {
+        name: a[0],
+        type,
+        reflect
+      }];
+    }));
+  }
 
-  static get observedAttributes() { return this.observedAttributesExtended.map(a => a[0]); }
+  static get attributeTypes() { return ['string', 'toggle', 'boolean', 'int', 'number', 'object', 'event']; }
+  static get observedAttributes() { return Object.entries(this.observedAttributesExtended).map(a => a[0].replace(camelCaseRegex, '$1-').toLowerCase()); }
 
   /**
    * Use with observedAttributesExtended
@@ -71,13 +91,13 @@ export default class Component extends HTMLElement {
   // static get observedAttributesExtended() { }
 
   #attributeEvents = new Map();
-  #attributesLookup;
   #prepared = false;
+  #attrConfig = {};
+
 
   constructor() {
     super();
-
-    this.#attributesLookup = Object.fromEntries(this.constructor.observedAttributesExtended);
+    
     if (this.constructor.useShadowRoot) {
       this.attachShadow({ mode: 'open', delegatesFocus: this.constructor.shadowRootDelegateFocus });
     } else if (this.constructor.styleSheets[0] instanceof CSSStyleSheet) {
@@ -85,28 +105,39 @@ export default class Component extends HTMLElement {
     }
   }
 
+  get _attrs() {
+    if (!this.#attrConfig) this.#attrConfig = this.constructor._attrs;
+    return this.#attrConfig;
+  }
+
   attributeChangedCallback(name, oldValue, newValue) {
     if (oldValue === newValue) return;
-    const type = this.#attributesLookup[name];
+
+    // placeholders can leak through on initial parse
+    if (oldValue === '{_ex_}') oldValue = '';
+    if (newValue === '{_ex_}') newValue = '';
+
     name = name.replace(dashCaseRegex, (_, s) => s.toUpperCase());
-    if (type === 'event') {
+
+    const attrConfig = this._attrs[name];
+    if (attrConfig?.type === 'event') {
       if (this.#attributeEvents.has(name)) {
         this.removeEventListener(name.replace(onRegex, ''), this.#attributeEvents.get(name));
         this.#attributeEvents.delete(name);
       }
       if (newValue) {
-        this.#attributeEvents.set(name, this.#attributeDescriptorTypeConverter(newValue, type));
+        this.#attributeEvents.set(name, this.#attributeDescriptorTypeConverter(newValue, attrConfig.type));
         this.addEventListener(name.replace(onRegex, ''), this.#attributeEvents.get(name));
       }
     } else {
       this.attributeChangedCallbackExtended(
         name,
-        this.#attributeDescriptorTypeConverter(oldValue, type),
-        this.#attributeDescriptorTypeConverter(newValue, type)
+        this.#attributeDescriptorTypeConverter(oldValue, attrConfig?.type),
+        this.#attributeDescriptorTypeConverter(newValue, attrConfig?.type)
       );
     }
   }
-
+// <mc-checkbox slot="end" checked="${item.checked}" onchange=${() => item.checked = !item.checked}></mc-checkbox>
   /**
    * Use with observedAttributesExtended
    * @function
@@ -189,6 +220,7 @@ export default class Component extends HTMLElement {
 
   #attributeDescriptorTypeConverter(value, type) {
     switch (type) {
+      case 'toggle':
       case 'boolean':
         return value !== null && `${value}` !== 'false';
       case 'int':
@@ -199,6 +231,11 @@ export default class Component extends HTMLElement {
         return isNaN(num) ? '' : num;
       case 'string':
         return value || '';
+      case 'object':
+        if (value === '' || value === undefined) return '';
+        else if (typeof value === 'object') return value;
+        return value;
+        // return JSON.parse(value);
       case 'event':
         const that = this.constructor._isPage ? this : page || this;
         return !value ? null : () => new Function('page', value).call(that, that);

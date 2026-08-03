@@ -1,6 +1,10 @@
 import { runTransition } from './viewTransitions.js';
 import { policyHTML } from './policy.js';
 
+
+// TODO fix runTransitions
+
+
 let routes = new Map();
 let pathLookup = [];
 let notFoundPage;
@@ -87,14 +91,15 @@ export function enableSPA() {
         if (!matchKey) console.warn(`No page found for path: ${url.pathname}`);
 
         const match = routes.get(matchKey[1]);
-        await runTransition({
-          newContainer: pageContainer,
-          oldContainer: event.sourceElement,
-          back: navigation.currentEntry.index > event.destination.index,
-          routeId: event.destination.id
-        }, () => {
-          renderPage(match, matchKey[0]);
-        });
+        renderPage(match, matchKey[0]);
+        // await runTransition({
+        //   newContainer: pageContainer,
+        //   oldContainer: event.sourceElement,
+        //   back: navigation.currentEntry.index > event.destination.index,
+        //   routeId: event.destination.id
+        // }, () => {
+        //   renderPage(match, matchKey[0]);
+        // });
       },
     });
   })
@@ -102,20 +107,34 @@ export function enableSPA() {
 enableSPA();
 
 
+let pageTemplates = new Map();
 async function renderPage(componentName, pathRegex) {
   currentPathRegex = pathRegex;
 
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(policyHTML.createHTML(`<${componentName}>`), 'text/html');
-  if (!customElements.get(componentName)) await customElements.whenDefined(componentName);
-  const page = doc.body.firstElementChild;
-  const currentPage = pageContainer.firstElementChild;
-  if (currentPage) currentPage.replaceWith(page);
-  else pageContainer.appendChild(page);
+  let hasTemplate = pageTemplates.has(componentName);
+  if (!hasTemplate) {
+    const el = document.createElement('template');
+    el.innerHTML = policyHTML.createHTML(`<${componentName}>`);
+    pageTemplates.set(componentName, el);
+  }
+
+  let template = pageTemplates.get(componentName);
+  const fragment = document.importNode(template.content, true);
+  const page = fragment.firstChild;
+
+  // make sure components is fully upgraded so we can render before inserting to dom
+  if (!hasTemplate) {
+    if (!customElements.get(componentName)) await customElements.whenDefined(componentName);
+    customElements.upgrade(page);
+  }
 
   page.constructor._isPage = true;
   document.title = page.constructor.title;
   window.page = page;
 
   page.render();
+
+  const currentPage = pageContainer.firstElementChild;
+  if (currentPage) currentPage.replaceWith(page);
+  else pageContainer.appendChild(page);
 }

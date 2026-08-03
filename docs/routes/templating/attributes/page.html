@@ -1,0 +1,309 @@
+<article>
+  <header>
+    <h1>Template attributes</h1>
+    <div class="page-subheader mc-font-title-medium">Templates support a wide range of attribute handling</div>
+  </header>
+
+  <div class="article-main">
+    <nav class="links-nav">
+      <h2>Links</h2>
+      <ul class="links">
+        <li><a href="#Basics">Basics</a></li>
+        <li><a href="#types">Types</a></li>
+        <li><a href="#events">Events</a></li>
+        <li><a href="#style-object">Style</a></li>
+      </ul>
+    </nav>
+
+    <div class="article-content" style="margin-right: 16px;">
+
+      <section id="basics" aria-label="Attribute basics">
+        <mc-card>
+          <h2 slot="headline">Attribute basic</h2>
+          <div slot="supporting-text">You can insert values into any attribute. You can also use signals to automatically update the element</div>
+
+          <code-block language="html">
+            <pre>
+${`<!-- input-wrapper usage -->
+<input-wrapper
+  label=\${this.label}
+  value="Test"
+  disabled=\${this.disabled}
+></input-wrapper>
+`}
+          </pre>
+          </code-block>
+          <code-block language="javascript">
+            <pre>
+${`
+import { Component, html, Signal } from '@thewebformula/lithe';
+
+class InputWrapper extends Component {
+  label;
+  name;
+
+  /* signals will automatically update the element
+     No need to manually render */
+  #disabled = new Signal(false);
+  #value = new signal('');
+
+  /* use extended observer for advanced config
+     This is a wrapper for static get observedAttributes() { } */
+  static get observedAttributesExtended() {
+    return {
+      label: { type: 'string' },
+      name: { type: 'string' },
+      value: { type: 'string' },
+      disabled: { type: 'boolean' }
+    };
+  }
+
+  /* use extended change callback
+     - converts dash casing to camel casing
+     - return correct type
+     This is a wrapper for attributeChangedCallback() { } */
+  attributeChangedCallbackExtended(name, oldValue, newValue) {
+    this[name] = newValue
+  }
+
+  // use to get / set from signal
+  get disabled() { return this.#disabled.value }
+  set disabled(value) { this.#disabled.value = value; }
+
+  get value() { return this.#value.value }
+  set value(value) { this.#value.value = value; }
+
+  #onInput(event) {
+    // do work
+  }
+  
+
+  constructor() {
+    super();
+  }
+
+  template() {
+    return html\``}
+    </pre></code-block><code-block language="html" linked><pre>
+      ${`<div>
+        <label>\${this.label}</label>
+        <input
+          name=\${this.name}
+          disabled=\${this.#disabled}
+          oninput=\${this.#onInput}
+          value=\${this.#value}
+        />
+      </div>`}
+    </pre></code-block><code-block language="javascript" linked><pre>
+    ${`\`;
+  }
+}
+customElements.define('input-wrapper', InputWrapper);
+`}
+          </pre>
+          </code-block>
+        </mc-card>
+      </section>
+
+
+
+      <section id="types" aria-label="Attribute types">
+        <mc-card>
+          <h2 slot="headline">Attribute types</h2>
+          <div slot="supporting-text">Lithe supports a wide range of attribute types</div>
+
+          <ul>
+            <li>String</li>
+            <li>toggle (boolean value, but adds / removes attribute)</li>
+            <li>boolean (boolean value, shows as string attr="true")</li>
+            <li>int</li>
+            <li>number</li>
+            <li>object</li>
+            <li>event</li>
+          </ul>
+
+          <div class="note">Boolean attributes like <strong>disabled</strong> will be added or removed based on their value</div>
+
+
+          <attr-test
+            str="value"
+            disable=${false}
+            enable=${true}
+            counter=${1}
+            percent=${0.1}
+            data=${{ three: 'three' }}></attr-test>
+
+          <code-block language="html">
+            <pre>
+${`<!-- attr-test usage -->
+<attr-test
+  str="value"
+  disable=\${false}
+  enable=\${true}
+  counter=\${1}
+  percent=\${0.1}
+  data=\${true}
+  enable=\${{ three: 'three' }}
+></attr-test>
+`}
+          </pre>
+          </code-block>
+          <code-block language="javascript">
+            <pre>
+${`
+import { Component, html, Signal } from '@thewebformula/lithe';
+
+class AttrTest extends Component {
+  str = new Signal('value');
+  disable = new Signal(false);
+  enable = new Signal(true);
+  counter = new Signal(1);
+  percent = new Signal(0.1);
+  data = new Signal({ one: 'one', two: 2 });
+
+
+  static get observedAttributesExtended() {
+    return {
+      str: { type: 'string' },
+      disabled: { type: 'toggle' },
+      enable: { type: 'boolean' },
+      counter: { type: 'int' },
+      percent: { type: 'number' },
+      data: { type: 'object' }
+    };
+  }
+
+  attributeChangedCallbackExtended(name, oldValue, newValue) {
+    // all variables are signals so we can just use .value
+    this[name].value = newValue
+  }
+
+  constructor() {
+    super();
+  }
+
+  template() {
+    return html\``}
+    </pre></code-block><code-block language="html" linked><pre>
+      ${`<div>
+        <div><strong>str</strong> \${this.str}</div>
+        <div><strong>disabled</strong> \${this.disabled}</div>
+        <div><strong>enable</strong> \${this.enable}</div>
+        <div><strong>counter</strong> \${this.counter}</div>
+        <div><strong>percent</strong> \${this.percent}</div>
+        <div><strong>data</strong> \${this.data}</div>
+      </div>`}
+    </pre></code-block><code-block language="javascript" linked><pre>
+    ${`\`;
+  }
+}
+customElements.define('attr-test', AttrTest);
+`}
+          </pre>
+          </code-block>
+        </mc-card>
+      </section>
+
+
+
+      <section id="events" aria-label="Attribute events">
+        <mc-card>
+          <h2 slot="headline">Events</h2>
+          <div slot="supporting-text">You can bind methods to event handlers in your components</div>
+
+          <code-block language="javascript">
+            <pre>
+${`import { Component, html, Signal } from '@thewebformula/lithe';
+
+class EventExample extends Component {
+  #onInput_bound = this.#onInput.bind(this);
+
+  #onInput(event) {
+    // do work
+  }
+
+  #onInput2 = (event) => {
+    // do work
+  }
+
+  template() {
+    return \``}
+    </pre></code-block><code-block language="html" linked>
+      <pre>
+      ${`<!-- Bound using .bind() -->
+      <input id="one" oninput=\${this.#onInput_bound} />
+      
+      <!-- Bound using variable function -->
+      <input id="two" oninput=\${this.#onInput2} />
+      
+      <!-- Bound using arrow function wrapper -->
+      <input id="three" oninput=\${(event) => this.#onInput(event)} />
+
+      <!-- page methods can be called normally.
+           "page" is a global representing the page component instance -->
+      <input id="three" oninput="page.onInput" />`}
+        </pre>
+    </code-block><code-block language="javascript" linked>
+      <pre>
+    ${`\`;
+  }
+}
+customElements.define('event-example', EventExample);`}
+          </pre>
+          </code-block>
+        </mc-card>
+      </section>
+
+
+      <section id="style-object" aria-label="Style attribute">
+        <mc-card>
+          <h2 slot="headline">Style attribute</h2>
+          <div slot="supporting-text">Lithe supports standard style attributes and style objects</div>
+
+          <div style="margin-top: 42px; margin-bottom: -8px;">
+            <div style="margin: 42px 0px;">
+              <div class="mc-font-title-large" style="margin-bottom: 8px;">Dynamically set attribute values</div>
+              <div style="color: white; background-color: #3f51b5; padding: 12px; border-radius: 4px;">Normal style attribute</div>
+              <div style="${{
+                color: 'white',
+                backgroundColor: '#3f51b5',
+                padding: '12px',
+                borderRadius: '4px'
+              }}">Styled using an object on the style attribute</div>
+
+
+              <div style="margin-top: 24px;">
+                <input type="color" id="text" name="text" value="white" onchange=${(e) => page.changeTextColor(e.target.value)} />
+                <label for="text">Text color</label>
+              </div>
+              <div>
+                <input type="color" id="background" name="background" value="#3f51b5" onchange=${(e) => page.changeBackgroundColor(e.target.value)} />
+                <label for="background">Background color</label>
+              </div>
+              <div style=${page.styleSignal}>Styled using signal</div>
+            </div>
+          </div>
+
+          <code-block language="html">
+            <pre>
+${`
+<div
+  style="color: white; background-color: #3f51b5; padding: 12px; border-radius: 4px;"
+>Normal style attribute</div>
+
+<!-- attributes should use camel case -->
+<div style="\${{
+  color: 'white',
+  backgroundColor: '#3f51b5',
+  padding: '12px',
+  borderRadius: '4px'
+}}">Styled using object</div>
+
+<div style=${page.styleSignal}>Styled using signal</div>`}
+                  </pre>
+          </code-block>
+        </mc-card>
+      </section>
+    </div>
+  </div>
+</article>

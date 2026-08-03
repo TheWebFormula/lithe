@@ -1,0 +1,136 @@
+<article>
+  <header>
+    <h1>Templates lists</h1>
+  </header>
+
+  <div class="article-main">
+    <div class="article-content">
+      <section id="expressions" aria-label="Expressions and binding">
+        <mc-card>
+          <h2 slot="headline">Templates overview</h2>
+          <div slot="supporting-text">
+            <div class="mc-font-body-large">Templates are built using template literals. Simply use the <strong>html</strong> tag function and write some html.</div>
+          </div>
+
+          <div style="margin: 42px 0px;">
+            <div class="mc-font-title-large" style="margin-bottom: 8px;">Basic list</div>
+            ${html(() => ['One', 'Two', 'Three'].map(item => html`<div>Value: ${item}</div>`))}
+          </div>
+
+          <div style="margin: 42px 0px;">
+            <div class="mc-font-title-large" style="margin-bottom: 8px;">Signal list</div>
+            <mc-textfield id="valueinput" placeholder="...value" style="margin-right: 9px"></mc-textfield>
+            <mc-button onclick="page.addItem(valueinput.value)" style="margin-top: 12px;">Add value</mc-button>
+            ${html(() => page.items.value.map(item => html`<div>Value: ${item.value}</div>`))}
+          </div>
+
+          <div style="margin: 42px 0px;">
+            <div class="mc-font-title-large" style="margin-bottom: 8px;">Signal object list</div>
+            <mc-checkbox id="selectall" label="Select all" onclick="page.selectAll(event)"></mc-checkbox>
+
+            <mc-list id="selection-list">
+              ${html(() => page.itemsObject.value.map(item => html`
+                <mc-list-item value="${item.label}">
+                  <div slot="headline">${item.label}</div>
+                  <mc-checkbox slot="end" checked="${item.checked}" onchange=${() => item.checked = !item.checked}></mc-checkbox>
+                </mc-list-item>
+              `))}
+            </mc-list>
+          </div>
+
+          <code-block language="javascript" class="template-code-override">
+            <pre>
+${`import { Component, Signal, SignalObject, effect } from '@thewebformula/lithe';
+import htmlTemplate from './page.html';
+
+class TemplateListsPage extends Component {
+  static title = 'Templating lists';
+  static htmlTemplate = htmlTemplate;
+
+  items = new Signal([
+    { value: 'One' },
+    { value: 'Two' },
+    { value: 'Three' }
+  ]);
+
+  itemsObject = new SignalObject([
+    { label: 'One', checked: false },
+    { label: 'Two', checked: false },
+    { label: 'Three', checked: true }
+  ]);
+
+  #disposeItemsObjectEffect;
+
+  afterRender() {
+    this.#disposeItemsObjectEffect = effect(() => {
+      const element = this.querySelector('#selectall');
+      const allChecked = this.itemsObject.value.every(item => item.checked);
+      const someChecked = this.itemsObject.value.some(item => item.checked);
+      element.indeterminate = !allChecked && someChecked;
+      element.checked = allChecked;
+    });
+  }
+
+  disconnectedCallback() {
+    if (this.#disposeItemsObjectEffect) this.#disposeItemsObjectEffect();
+  }
+
+  addItem(value) {
+    if (!value) return;
+    this.items.value = [...this.items.value, { value }];
+  }
+
+  selectAll(event) {
+    const value = !event.target.checked;
+    event.target.value = value
+    this.itemsObject.value = this.itemsObject.value.map(item => ({ ...item, checked: value }));
+  }
+}
+customElements.define('template-lists-page', TemplateListsPage);`}
+            </pre>
+          </code-block>
+
+          <code-block language="javascript" class="template-code-override">
+            <pre>
+${`<!-- page.html -->
+
+<div>
+  <div>Basic list</div>
+  \${html(() => (
+    ['One', 'Two', 'Three'].map(item => html\`<div>Value: \${item}</div>\`)
+  ))}
+</div>
+
+<div>
+  <div>Signal list</div>
+  <mc-textfield id="valueinput" placeholder="...value"></mc-textfield>
+  <mc-button onclick="page.addItem(valueinput.value)">Add value</mc-button>
+  \${html(() => (
+    page.items.value.map(item => html\`<div>Value: \${item.value}</div>\`)
+  ))}
+</div>
+
+<div>
+  <div>Signal object list</div>
+  <mc-checkbox id="selectall" label="Select all" onclick="page.selectAll(event)"></mc-checkbox>
+
+  <mc-list id="selection-list">
+    \${html(() => page.itemsObject.value.map(item => html\`
+    <mc-list-item>
+      <div slot="headline">\${item.label}</div>
+      <mc-checkbox
+        slot="end"
+        checked="\${item.checked}"
+        onchange="\${() => item.checked = !item.checked}"
+      ></mc-checkbox>
+    </mc-list-item>
+    \`))}
+  </mc-list>
+</div>`}
+            </pre>
+          </code-block>
+        </mc-card>
+      </section>
+    </div>
+  </div>
+</article>

@@ -1,0 +1,6 @@
+attr-test .strong {
+  display: inline-block;
+  font-weight: bold;
+  width: 90px;
+  margin-bottom: 12px;
+}

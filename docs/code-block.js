@@ -17,15 +17,18 @@ class CodeBlock extends Component {
   #language;
   #buttonHTML = policyHTML.createHTML('<button>copy</button>');
   #copyClick_bound = this.#copyClick.bind(this);
+  id = `code-block-${parseInt(Math.random() * 1000000)}`
 
   constructor() {
     super();
+
+    this.setAttribute('id', this.id);
   }
 
   static get observedAttributesExtended() {
-    return [
-      ['language', 'string']
-    ];
+    return {
+      language: { type: 'string' }
+    };
   }
 
   attributeChangedCallbackExtended(name, _oldValue, newValue) {
@@ -47,8 +50,11 @@ class CodeBlock extends Component {
     const highlighted = hljs.highlightAuto(pre.textContent);
     const trustedHTML = policyHTML.createHTML(highlighted.value);
     pre.innerHTML = trustedHTML;
-    this.insertAdjacentHTML('afterbegin', this.#buttonHTML);
-    this.querySelector('button').addEventListener('click', this.#copyClick_bound);
+
+    if (!this.hasAttribute('linked')) {
+      this.insertAdjacentHTML('afterbegin', this.#buttonHTML);
+      this.querySelector('button').addEventListener('click', this.#copyClick_bound);
+    }
   }
 
   disconnectedCallback() {
@@ -58,6 +64,10 @@ class CodeBlock extends Component {
 
   #copyClick() {
     let text = this.querySelector('pre').textContent.replace(/^\s*\n/, '').replace(/\n\s*$/, '');
+    let linked = this.parentElement.querySelectorAll(`#${this.id} ~ [linked]`);
+    linked.forEach(el => {
+      text += `\n${el.textContent}`.replace(/\n\s*$/, '');
+    });
     navigator.clipboard.writeText(text);
   }
 }

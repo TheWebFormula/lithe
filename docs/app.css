@@ -85,14 +85,30 @@ mc-card > code-block:last-of-type pre {
   border-radius: 0 0 var(--mc-shape-medium) var(--mc-shape-medium);
 }
 
+mc-card > code-block:last-of-type:has(+ *) pre {
+  border-radius: 0;
+}
+
 mc-card > code-block:last-child pre {
   margin-bottom: -16px;
+}
+
+
+mc-card > code-block[linked] pre {
+ padding-top: 0 !important;
+ padding-bottom: 0 !important;
+ margin-bottom: -15px;
+}
+
+mc-card > code-block:has(+ [linked]) pre {
+  padding-bottom: 0 !important;
+  margin-bottom: -15px;
 }
 
 .article-main {
   display: flex;
   flex-direction: row-reverse;
-  justify-content: center;
+  justify-content: start;
   padding-bottom: 24px;
 }
 
@@ -185,4 +201,28 @@ td, th {
   border: 1px solid #999;
   padding: 0.5rem;
   text-align: left;
+}
+
+
+.template-code-override .hljs-selector-tag:not(:first-of-type) {
+  color: #f1fa8c;
+}
+
+
+ul a {
+  font-size: 16px;
+}
+
+
+input[disabled] {
+  border: 3px solid red;
+}
+
+
+.note {
+  background-color: rgb(243, 219, 255, 0.8);
+  padding: 12px 16px;
+  margin-top: 12px;
+  margin-bottom: 24px;
+  border-radius: 8px;
 }

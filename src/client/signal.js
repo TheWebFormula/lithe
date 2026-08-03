@@ -250,6 +250,8 @@ export class SignalObject extends SignalNode {
         }, self.valueUntracked);
         let val = obj[prop];
 
+        if (prop == 'length') return val
+
         // with array methods
         if (Array.isArray(obj) && typeof val === 'function') {
         // if (typeof target[prop] === 'function' && Array.prototype.hasOwnProperty(prop)) {
@@ -268,8 +270,9 @@ export class SignalObject extends SignalNode {
           //   return Reflect.get(target, prop, receiver);
           // }
           // return target[prop].bind(target);
-        } else if (typeof val === 'object' && val !== null) return self.#createProxy(obj[prop], [...path, prop]);
-        else if (isTemplating) {
+        } else if (typeof val === 'object' && val !== null) {
+          return self.#createProxy(obj[prop], [...path, prop]);
+        } else if (isTemplating) {
           return new Compute(() => {
             try {
               if (activeConsumer) self.subscribe(activeConsumer);
@@ -286,6 +289,7 @@ export class SignalObject extends SignalNode {
 
         return val;
       },
+
       set(target, prop, value, receiver) {
         let canTrack = self.#track ? !Array.prototype.hasOwnProperty(prop) : false;
         let op;
@@ -363,6 +367,7 @@ export class Compute extends SignalNode {
 
   #recompute(path) {
     const previousConsumer = beginConsumerCompute(this);
+    if (this === previousConsumer) return;
 
     let newValue;
     let changed = false;
@@ -444,6 +449,7 @@ function addToQueue(callback, path) {
 
 function runQueue() {
   if (queueRunning) return;
+
   queueRunning = true;
   queueMicrotask(() => {
     for (const callback of queue) {

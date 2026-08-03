@@ -9,14 +9,12 @@ export class Route extends HTMLElement {
 export class Component extends HTMLElement {
   constructor();
 
-  static _isPage: boolean;
-  static _html: any;
   static useShadowRoot: boolean;
   static shadowRootDelegateFocus: boolean;
   static htmlTemplate: string | ((instance: any) => string);
   static styleSheets: CSSStyleSheet[];
   static title?: string;
-  static get observedAttributesExtended(): Array<[string, 'string' | 'number' | 'int' | 'boolean' | 'event' | ''> | []>;
+  static get observedAttributesExtended(): Record<string, { type: 'string' | 'number' | 'int' | 'toggle' | 'boolean' | 'object' | 'event' | ''; reflect?: boolean }>;
   static get observedAttributes(): string[];
 
   attributeChangedCallback(name: string, oldValue: string | null, newValue: string | null): void;
@@ -32,42 +30,28 @@ export class Component extends HTMLElement {
   beforeRender(): void;
   afterRender(): void;
 
-  template(): string | Node | DocumentFragment;
+  template(): DocumentFragment;
   render(): void;
 }
 
 export class Signal<T = any> {
   constructor(value: T);
   value: T;
-  valueUntracked: T;
-  valueNonTemplating: T;
-  watch(cb: (sig: Signal<T>) => void): void;
-  unwatch(cb: (sig: Signal<T>) => void): void;
-  dispose(): void;
 }
 
 export class SignalObject<T = any> {
   constructor(value: T, track?: boolean);
   value: T;
-  valueUntracked: T;
-  // internal access to underlying Signal instance
-  __signal?: Signal<T>;
-  watch(cb: (sig: SignalObject<T>) => void): void;
-  unwatch(cb: (sig: SignalObject<T>) => void): void;
-  dispose(): void;
 }
 
 export class Compute<T = any> {
   constructor(callback: (path?: any) => T, htmlCompute?: boolean);
-  readonly value: T;
-  readonly dirty: boolean;
-  readonly error: any;
-  updateValueVersion(path?: any): void;
-  updateValueVersionForce(): void;
-  dispose(): void;
 }
 
-export function effect(callback: () => void): () => void;
+export interface DisposeFunction {
+  (): void;
+}
+export function effect(callback: () => void): DisposeFunction;
 
 export function html(strings: TemplateStringsArray | ((...args: any[]) => any), ...values: any[]): DocumentFragment | Compute<any>;
 
