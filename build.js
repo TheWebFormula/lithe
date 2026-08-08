@@ -11,7 +11,7 @@ build({
     { from: 'docs/favicon.ico', to: 'dist/' },
     { from: 'docs/icons/*', to: 'dist/icons/' },
     { from: 'docs/manifest.json', to: 'dist/' }
-  ],
+  ]
   // csp: {
   //   enable: true,
   //   requireTrustedTypes: true,

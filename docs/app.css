@@ -110,6 +110,10 @@ mc-card > code-block:has(+ [linked]) pre {
   flex-direction: row-reverse;
   justify-content: start;
   padding-bottom: 24px;
+
+  .article-content {
+    width: clamp(100px, 800px, 100%);
+  }
 }
 
 @media (width < 1100px) {
