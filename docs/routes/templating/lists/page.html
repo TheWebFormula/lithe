@@ -83,7 +83,7 @@ class TemplateListsPage extends Component {
   selectAll(event) {
     const value = !event.target.checked;
     event.target.value = value
-    this.itemsObject.value = this.itemsObject.value.map(item => ({ ...item, checked: value }));
+    this.itemsObject.value.forEach(item => item.checked = value);
   }
 }
 customElements.define('template-lists-page', TemplateListsPage);`}
