@@ -7,7 +7,7 @@ import { pipeline } from 'node:stream/promises';
 import https from 'node:https';
 import http from 'node:http';
 import path from 'node:path';
-import { readFile, readdir, stat, rm, access, mkdir } from 'node:fs/promises';
+import { readFile, readdir, stat, rm, access, mkdir, writeFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import buildRoutes from './buildRoutes.js';
 
@@ -23,6 +23,7 @@ export default async function build(config = {
   outdir: 'dist',
   minify: true,
   sourcemap: false,
+  writeMetaFile: false,
 
   copy: [
     { from: 'docs/somefile', to: 'dist/' }
@@ -59,7 +60,8 @@ export default async function build(config = {
   securityLevel: 1,
   onStart: () => { },
   onEnd: () => { },
-  define: { }
+  define: {},
+  esbuildPlugins: []
 }) {
   config.entryPoint = config.entryPoint || 'app/app.js';
   config.outdir = config.outdir || 'dist';
@@ -143,6 +145,7 @@ export default async function build(config = {
           .map(([filename, item]) => [item.entryPoint, filename])
           .filter(v => v[0] === config.entryPoint || v[0] === config.entryPointCSS);
         await buildRoutes(config, results.metafile.inputs, appOutputs);
+        if (config.writeMetaFile) writeFile('meta.json', JSON.stringify(results.metafile, null, 2), 'utf8');
         if (typeof config.onEnd === 'function') await config.onEnd(results);
       });
     }
@@ -256,6 +259,7 @@ export default async function build(config = {
     define: config.define,
     plugins: [
       buildPlugin,
+      ...(config.esbuildPlugins || []),
       customHTMLLoader,
       cssPlugin,
       copy({

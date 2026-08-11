@@ -101,10 +101,10 @@ export function html(strings, ...values) {
           continue;
         }
 
-        
+
         // check for expressions in attribute values
         if (!attribute.value.includes(expressionStr)) continue;
-        
+
         let items = [];
         let j = 0;
         const attributeStrings = attribute.value.trim().split(expressionStr);
@@ -119,7 +119,7 @@ export function html(strings, ...values) {
 
           // track and handle signal references
           if (isSignal(values[valuesIndex])) {
-            
+
             /* TODO Can i solve this another way?
              * this is a hack to allow grabbing the entire SignalObject from value
              *   Case we are handling
@@ -283,7 +283,7 @@ function setAttrValue(ownerNode, attrNode, items) {
   } else if (htmlEventAttributes.includes(attrNode.nodeName) && typeof data[0] === 'function') {
     attrNode.value = '';
     ownerNode[attrNode.name] = data[0];
-  
+
   // toggles attributes
   } else if (data[1]?.type === undefined && booleanAttributes.includes(attrNode.nodeName)) {
     attrNode.value = '';

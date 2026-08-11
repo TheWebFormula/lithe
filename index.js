@@ -4,7 +4,7 @@ import { Signal, SignalObject, Compute, effect } from './src/client/signal.js'
 import { html } from './src/client/html.js';
 import { setSecurityLevel } from './src/client/sanitize.js';
 import { i18n } from './src/client/i18n.js';
-import { Fetcher } from './src/client/fetcher.js';
+import { Fetcher, Interceptor } from './src/client/fetcher.js';
 import { policyHTML } from './src/client/policy.js';
 
 export {
@@ -18,5 +18,6 @@ export {
   setSecurityLevel,
   i18n,
   Fetcher,
+  Interceptor,
   policyHTML
 };

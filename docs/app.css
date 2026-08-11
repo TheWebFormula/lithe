@@ -1,5 +1,5 @@
 @import url(./colorTokens.css);
-@import url(./dracula.css);
+@import url(./prism-nord.css);
 
 :root {
   --mc-background-color: var(--mc-surface-container-low);
@@ -39,8 +39,8 @@ code-block pre {
   font-family: monospace;
   font-weight: bold;
   unicode-bidi: isolate;
-  padding-left: 22px !important;
-  padding-top: 22px !important;
+  padding-top: 18px;
+  padding-left: 22px;
 }
 
 code-block {
@@ -229,4 +229,8 @@ input[disabled] {
   margin-top: 12px;
   margin-bottom: 24px;
   border-radius: 8px;
+}
+
+.snackbar-fix mc-icon-button {
+  line-height: 0;
 }

@@ -35,8 +35,7 @@ ${`<!-- input-wrapper usage -->
           </code-block>
           <code-block language="javascript">
             <pre>
-${`
-import { Component, html, Signal } from '@thewebformula/lithe';
+${`import { Component, html, Signal } from '@thewebformula/lithe';
 
 class InputWrapper extends Component {
   label;
@@ -76,7 +75,7 @@ class InputWrapper extends Component {
   #onInput(event) {
     // do work
   }
-  
+
 
   constructor() {
     super();
@@ -232,10 +231,10 @@ class EventExample extends Component {
       <pre>
       ${`<!-- Bound using .bind() -->
       <input id="one" oninput=\${this.#onInput_bound} />
-      
+
       <!-- Bound using variable function -->
       <input id="two" oninput=\${this.#onInput2} />
-      
+
       <!-- Bound using arrow function wrapper -->
       <input id="three" oninput=\${(event) => this.#onInput(event)} />
 

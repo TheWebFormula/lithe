@@ -1,23 +1,13 @@
 import { Component, policyHTML } from '@thewebformula/lithe';
-import hljs from 'highlight.js/lib/core';
-import jsln from 'highlight.js/lib/languages/javascript';
-import cssln from 'highlight.js/lib/languages/css';
-import htmlln from 'highlight.js/lib/languages/xml';
-import bashln from 'highlight.js/lib/languages/bash';
-import yamlln from 'highlight.js/lib/languages/yaml';
+import Prism from 'prismjs';
+import snackbarService from '@thewebformula/materially/services/snackbar';
 
-hljs.registerLanguage('javascript', jsln);
-hljs.registerLanguage('html', htmlln);
-hljs.registerLanguage('css', cssln);
-hljs.registerLanguage('bash', bashln);
-hljs.registerLanguage('yaml', yamlln);
-hljs.configure({ ignoreUnescapedHTML: true, cssSelector: 'code-block pre' });
 
 class CodeBlock extends Component {
   #language;
   #buttonHTML = policyHTML.createHTML('<button>copy</button>');
   #copyClick_bound = this.#copyClick.bind(this);
-  id = `code-block-${parseInt(Math.random() * 1000000)}`
+  id = `code-block-${parseInt(Math.random() * 1000000)}`;
 
   constructor() {
     super();
@@ -46,9 +36,8 @@ class CodeBlock extends Component {
 
   connectedCallback() {
     const pre = this.querySelector('pre');
-    pre.classList.add('hljs');
-    const highlighted = hljs.highlightAuto(pre.textContent);
-    const trustedHTML = policyHTML.createHTML(highlighted.value);
+    const html = Prism.highlight(pre.textContent, Prism.languages[this.#language], this.#language);
+    const trustedHTML = policyHTML.createHTML(html);
     pre.innerHTML = trustedHTML;
 
     if (!this.hasAttribute('linked')) {
@@ -69,6 +58,10 @@ class CodeBlock extends Component {
       text += `\n${el.textContent}`.replace(/\n\s*$/, '');
     });
     navigator.clipboard.writeText(text);
+    snackbarService.show({
+      message: 'Code copied to clipboard',
+      classNames: 'snackbar-fix'
+    });
   }
 }
 customElements.define('code-block', CodeBlock);

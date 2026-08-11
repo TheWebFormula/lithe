@@ -36,6 +36,7 @@
   "devDependencies": {
     "@thewebformula/lithe": "file:",
     "@thewebformula/materially": "^0.9.7",
-    "highlight.js": "^11.11.1"
+    "esbuild-plugin-prismjs": "^1.0.8",
+    "prismjs": "^1.30.0"
   }
 }

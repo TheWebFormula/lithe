@@ -11,6 +11,7 @@ import '@thewebformula/materially/components/icon';
 import '@thewebformula/materially/components/slider';
 import '@thewebformula/materially/components/list';
 import '@thewebformula/materially/components/checkbox';
+import '@thewebformula/materially/components/snackbar';
 
 import './code-block.js';
 import './routes/index/index.js';
@@ -23,7 +24,6 @@ import './routes/multi language/index.js';
 import './routes/routing/index.js';
 import './routes/view transitions/index.js';
 import './routes/web component/index.js';
-
 import './routes/templating/overview/index.js';
 import './routes/templating/attributes/index.js';
 import './routes/templating/lists/index.js';

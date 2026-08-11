@@ -24,7 +24,7 @@
       <section id="install" aria-label="Installation">
         <mc-card>
           <h2 slot="headline">Install</h2>
-        
+
           <code-block language="bash"><pre>
 npm install @thewebformula/lithe
           </pre></code-block>
@@ -37,8 +37,8 @@ npm install @thewebformula/lithe
           <h2 slot="headline">Routing</h2>
           <div slot="supporting-text">Lithe provides 2 methods for route configurations. Both methods can be used together.</div>
           <div slot="supporting-text"><a href="/routing">Routing documentation</a></div>
-          
-          <code-block language="yaml"><pre>
+
+          <code-block language="bash"><pre>
 app/
 └── routes/
     ├── index/
@@ -56,7 +56,7 @@ app/
         └── [...all]/
             └── index.js # four/* (four/a/b/)
           </pre></code-block>
-        
+
           <div style="margin: 18px">
             <div class="mc-font-body-large route-list">app/routes/index/index.js → <span>/</span></div>
             <div class="mc-font-body-large route-list">app/routes/one/index.js → <span>one</span></div>
@@ -65,7 +65,7 @@ app/
             <div class="mc-font-body-large route-list">app/routes/four/[...rest]/index.js →
               <span>four/*</span>
             </div>
-        
+
             <div class="mc-font-title-medium" style="margin-top: 24px; margin-bottom: 8px;">Directory route details</div>
             <div class="mc-font-body-large route-list"><span>routes/index/index.js</span> Root page (/)</div>
             <div class="mc-font-body-large route-list"><span>routes/404/index.js</span> Not found page. Auto redirect on non
@@ -86,26 +86,26 @@ app/
       <section id="indexhtml" aria-label="index.html example">
         <mc-card>
           <h2 slot="headline">index.html</h2>
-          
+
           <code-block language="html"><pre>
 ${`<!doctype html>
   <html lang="en">
-  
+
   <head>
     <meta charset="UTF-8">
     <meta http-equiv="Cache-Control" content="no-store" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
+
     <!-- overridden by page titles -->
     <title>Default Title</title>
-    
+
     <!-- app.js will automatically be updated to match bundle outputs -->
     <\script src="/app.js" type="module"><\/script>
 
     <!-- If you configure 'entryPointCSS' with build, app.css will automatically be updated to match bundle outputs -->
     <\link href="/app.css" rel="stylesheet">
   </head>
-  
+
   <body>
     <!-- page template render into this element -->
     <div id="page-content"></div>
@@ -130,12 +130,12 @@ ${`<!doctype html>
             </ul>
           </div>
 
-      
+
           <code-block language="html">
             <pre>
 ${`<!doctype html>
   <html lang="en">
-  
+
   <head>
     <meta charset="UTF-8">
     <meta http-equiv="Cache-Control" content="no-store" />
@@ -145,7 +145,7 @@ ${`<!doctype html>
     <!-- Add meta tag for splash screen -->
     <meta name="splash-screen" content="true">
   </head>
-  
+
   <body>
     ...
   </body>
@@ -160,7 +160,7 @@ ${`
 
 <!doctype html>
   <html lang="en">
-  
+
   <head>
     <meta charset="UTF-8">
     <meta http-equiv="Cache-Control" content="no-store" />
@@ -170,14 +170,14 @@ ${`
     <!-- Add meta tag for splash screen -->
     <meta name="splash-screen" content="true">
   </head>
-  
+
   <body>
 
     <!-- Overrides default splash screen -->
     <splash-screen>
       ...HTML
     </splash-screen>
-    
+
     ...
   </body>
 </html>`}
@@ -192,7 +192,7 @@ ${`
           <h2 slot="headline">Main application file</h2>
           <div slot="supporting-text">app.js</div>
           <div slot="supporting-text">Required: Automatically uses app.js as entry file for bundling</div>
-        
+
           <code-block language="javascript"><pre>
 ${`/* app.js
 * Import pages and code
@@ -225,7 +225,7 @@ if (!document.cookie.includes('authenticated=true')) {
         <mc-card>
           <h2 slot="headline">App Styles</h2>
           <div slot="supporting-text">You can configure an app css file that will be bundled into a single file</div>
-        
+
           <code-block language="javascript"><pre>
 ${`// build.js
 build({
@@ -248,7 +248,7 @@ ${`<!-- the link import will be automatically updated to match output filename
         <mc-card>
           <h2 slot="headline">Page</h2>
           <div slot="supporting-text">page.js and page.html</div>
-        
+
           <code-block language="javascript"><pre>
 ${`import { Component, Signal, html } from '@thewebformula/lithe';
 import htmlTemplate from './page.html'; // automatically bundles
@@ -266,35 +266,35 @@ class PageComponent extends Component {
 
   someVar = new Signal('Some var');
   clickIt_bound = this.clickIt.bind(this);
-  
-  
+
+
   constructor() {
     super();
   }
-  
+
   connectedCallback() {
     console.log(this.urlParameters); // { id: 'value' }
     console.log(this.searchParameters); // { id: 'value' }
   }
-  
+
   disconnectedCallback() { }
-  
+
   // not called on initial render
   beforeRender() { }
-  
+
   afterEnder() {
     this.querySelector('#event-listener-button')
       .addEventListener('click', this.clickIt_bound);
   }
-  
+
   clickIt() {
     console.log('clicked it!');
   }
-  
+
   changeValue() {
     this.someVar.value = 'Value updated';
   }
-  
+
   /**
   * Alternative method for html templates, instead of importing html file
   */
@@ -312,7 +312,7 @@ class PageComponent extends Component {
         You can comment out expressions
         ${`text`}
       -->
-      
+
       <!-- "page" will reference the current page class -->
       <button onclick="page.clickIt()">Click Method</button>
       <button id="event-listener-button">Event listener</button>
@@ -326,7 +326,7 @@ customElements.define('page-component-name', PageComponent);`}
           </pre></code-block>
         </mc-card>
       </section>
-      
+
 
       <section id="build" aria-label="Build app">
         <mc-card>
@@ -335,7 +335,7 @@ customElements.define('page-component-name', PageComponent);`}
           <div slot="supporting-text">No need for webpack or other bundlers. ESbuild is packed in and pre configured.
           </div>
           <a href="/build">Build config</a>
-        
+
           <code-block language="javascript"><pre>
 ${`import build from '@thewebformula/lithe/build';
 
