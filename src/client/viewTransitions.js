@@ -4,90 +4,57 @@ let viewTransitionNameGlobalBack;
 let backTransitionStack = new Map();
 let initiated = false;
 
+
 const viewTransitions = {
   'expand-from-element': {
-    setup(container, target) {
-      const scrollTop = document.documentElement.scrollTop;
-      document.documentElement.style.setProperty('--mc-view-transition-scroll-fix', `translateY(-${scrollTop}px)`);
-      const containerBounds = container.getBoundingClientRect();
-      const targetBounds = target.getBoundingClientRect();
+    enableBack: true,
+
+    setup(toElement, fromElement) {
+      const fromBounds = fromElement.getBoundingClientRect();
+      const fromBorderRadius = getComputedStyle(fromElement).borderRadius;
+      const toBounds = toElement.getBoundingClientRect();
+      const top = fromBounds.top - toBounds.top;
+      const left = fromBounds.left - toBounds.left;
+
+      // TODO work out a better way to manage scroll position
+      document.documentElement.style.setProperty('--expand-from-element-top', `${top - window.scrollY}px`);
+      document.documentElement.style.setProperty('--expand-from-element-left', `${left}px`);
+      document.documentElement.style.setProperty('--expand-from-element-width', `${fromBounds.width}px`);
+      document.documentElement.style.setProperty('--expand-from-element-height', `${fromBounds.height}px`);
+      document.documentElement.style.setProperty('--expand-from-element-border-radius', fromBorderRadius);
 
       return {
-        containerBounds,
-        targetBounds,
-        scrollTop
+        scroll: window.scrollY,
+        top,
+        left,
+        width: fromBounds.width,
+        height: fromBounds.height,
+        borderRadius: fromBorderRadius
       };
     },
-    animate(container, { containerBounds, targetBounds, scrollTop }) {
-      document.documentElement.animate(
-        [
-          {
-            transform: `translate(${targetBounds.x - containerBounds.x}px, ${targetBounds.y - containerBounds.y - scrollTop}px)`,
-            clipPath: `rect(0px ${targetBounds.width}px ${targetBounds.height}px 0px round var(--mc-shape-large, 0))`,
-            opacity: 0
-          },
-          {
-            opacity: 1,
-            offset: 0.12
-          },
-          {
-            transform: `translate(0px, 0px)`,
-            clipPath: `rect(0px ${container.offsetWidth}px ${container.offsetHeight}px 0px round 0px)`,
-            opacity: 1
-          }
-        ],
-        {
-          duration: 400,
-          easing: 'cubic-bezier(0.2, 0, 0, 1)',
-          pseudoElement: '::view-transition-new(expand-from-element)'
-        }
-      );
-    }
-  },
-
-  'expand-from-element-back': {
-    setup(container, data) {
-      const scrollTop = document.documentElement.scrollTop;
-      document.documentElement.style.setProperty('--mc-view-transition-scroll-fix', `translateY(-${scrollTop}px)`);
-      const containerBounds = container.getBoundingClientRect();
-      const targetBounds = data.targetBounds;
-
-      return {
-        containerBounds,
-        targetBounds,
-        scrollTop
-      };
+    cleanup() {
+      document.documentElement.style.removeProperty('--expand-from-element-top');
+      document.documentElement.style.removeProperty('--expand-from-element-left');
+      document.documentElement.style.removeProperty('--expand-from-element-width');
+      document.documentElement.style.removeProperty('--expand-from-element-height');
+      document.documentElement.style.removeProperty('--expand-from-element-border-radius');
     },
-    animate(container, { containerBounds, targetBounds, scrollTop }) {
-      const targetY = targetBounds.y - containerBounds.y - scrollTop;
-      const keyframeOffsetTargetY = targetY * 0.05;
-      document.documentElement.animate(
-        [
-          {
-            transform: `translate(0px, 0px)`,
-            clipPath: `rect(0px ${container.offsetWidth}px ${container.offsetHeight}px 0px round 0px)`,
-            opacity: 1
-          },
-          {
-            transform: `translate(0px, ${keyframeOffsetTargetY}px)`,
-            offset: 0.3
-          },
-          {
-            opacity: 1,
-            offset: 0.88
-          },
-          {
-            transform: `translate(${targetBounds.x - containerBounds.x}px, ${targetBounds.y - containerBounds.y - scrollTop}px)`,
-            clipPath: `rect(0px ${targetBounds.width}px ${targetBounds.height}px 0px round var(--mc-shape-large, 0))`,
-            opacity: 0
-          }
-        ],
-        {
-          duration: 240,
-          easing: 'cubic-bezier(0.3, 0, 1, 1)',
-          pseudoElement: '::view-transition-old(expand-from-element-back)'
-        }
-      );
+
+    setupBack(toElement, { scroll, top, left, width, height, fromBorderRadius }) {
+      document.documentElement.style.setProperty('--expand-from-element-scrollY', `${scroll || 0}px`);
+      document.documentElement.style.setProperty('--expand-from-element-top', `${top || 0}px`);
+      document.documentElement.style.setProperty('--expand-from-element-left', `${left || 0}px`);
+      document.documentElement.style.setProperty('--expand-from-element-width', `${width || 0}px`);
+      document.documentElement.style.setProperty('--expand-from-element-height', `${height || 0}px`);
+      document.documentElement.style.setProperty('--expand-from-element-border-radius', `${fromBorderRadius || '0px'}`);
+    },
+    cleanupBack() {
+      document.documentElement.style.removeProperty('--expand-from-element-scrollY');
+      document.documentElement.style.removeProperty('--expand-from-element-top');
+      document.documentElement.style.removeProperty('--expand-from-element-width');
+      document.documentElement.style.removeProperty('--expand-from-element-height');
+      document.documentElement.style.removeProperty('--expand-from-element-left');
+      document.documentElement.style.removeProperty('--expand-from-element-border-radius');
     }
   },
 
@@ -113,6 +80,7 @@ export function registerViewTransition(name, config = { setup() { }, animate() {
   viewTransitions[name] = config;
 }
 
+
 export async function runTransition({ oldContainer, newContainer, back, routeId }, renderCallback) {
   if (isReducedMotion === undefined) isReducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (viewTransitionNameGlobal === undefined) {
@@ -129,7 +97,6 @@ export async function runTransition({ oldContainer, newContainer, back, routeId 
 
   // check if we have a back transition
   const backTransitionDetails = back && backTransitionStack.get(routeId);
-
   const targetViewTransition = oldContainer?.getAttribute('view-transition');
   const transitionName = back ? (backTransitionDetails?.name || viewTransitionNameGlobalBack || viewTransitionNameGlobal) : (targetViewTransition || viewTransitionNameGlobal);
   if (!transitionName) {
@@ -138,15 +105,16 @@ export async function runTransition({ oldContainer, newContainer, back, routeId 
   }
 
   if (!initiated) initiateCSS();
-  const transitionItem = viewTransitions[transitionName];
+  const transitionItem = viewTransitions[transitionName] || viewTransitions[transitionName.replace(/-back$/, '')];
   if (!transitionItem) {
     console.warn(`No view transition with name: ${transitionName}`);
   }
 
   let setupData;
-  if (transitionItem?.setup) setupData = backTransitionDetails ? transitionItem.setup(newContainer, backTransitionDetails.setupData) : transitionItem.setup(newContainer, oldContainer);
+  let setupMethod = back && transitionItem.enableBack ? transitionItem.setupBack : transitionItem.setup;
+  if (setupMethod) setupData = backTransitionDetails ? setupMethod(newContainer, backTransitionDetails.setupData) : setupMethod(newContainer, oldContainer);
 
-  const targetViewTransitionBack = oldContainer?.getAttribute('view-transition-back');
+  const targetViewTransitionBack = transitionItem?.enableBack ? `${transitionName}-back` : oldContainer?.getAttribute('view-transition-back');
   if (targetViewTransitionBack) {
     backTransitionStack.set(routeId, {
       name: targetViewTransitionBack,
@@ -154,13 +122,24 @@ export async function runTransition({ oldContainer, newContainer, back, routeId 
     });
   }
 
+  document.documentElement.style.setProperty('--mc-view-transition-scroll-position', `-${window.scrollY}px`);
   newContainer.style.viewTransitionName = transitionName;
-  newContainer.firstElementChild.style.viewTransitionName = `${transitionName}-child`;
   const transition = document.startViewTransition(renderCallback);
-  await transition.ready;
-  if (transitionItem?.animate) transitionItem.animate(newContainer, setupData);
-  await transition.finished;
-  newContainer.style.viewTransitionName = '';
+
+  try {
+    await transition.ready;
+
+    // we do not want the outer intercept to wait on this
+    transition.finished.then(() => {
+      newContainer.style.viewTransitionName = '';
+      document.documentElement.style.removeProperty('--mc-view-transition-scroll-position');
+      let cleanupMethod = back && transitionItem.enableBack ? transitionItem.cleanupBack : transitionItem.cleanup;
+      if (cleanupMethod) cleanupMethod();
+    });
+  } catch (e) {
+    console.error(e);
+    renderCallback();
+  }
 }
 
 function initiateCSS() {
@@ -215,34 +194,24 @@ function initiateCSS() {
   ::view-transition-new(expand-from-element-back) {
     animation: none;
     box-sizing: border-box;
-    border-radius: var(--mc-shape-large, 0);
-  }
-
-  ::view-transition-old(expand-from-element) {
-    transform: var(--mc-view-transition-scroll-fix);
   }
 
   ::view-transition-new(expand-from-element) {
-    object-fit: none;
-    object-position: 0px 0px;
-    height: 100%;
-    width: auto;
-    overflow: hidden;
-    mix-blend-mode: normal;
+    animation: expand-from-element;
+    animation-duration: 400ms;
+    animation-timing-function: cubic-bezier(0.2, 0, 0, 1);
   }
 
   ::view-transition-old(expand-from-element-back) {
-    object-fit: none;
-    object-position: 0px 0px;
-    overflow: hidden;
-    mix-blend-mode: normal;
-    z-index: 1;
+    animation: expand-from-element-back;
+    animation-duration: 240ms;
+    animation-timing-function: cubic-bezier(0.3, 0, 1, 1);
   }
 
-  ::view-transition-old(slide-left),
-  ::view-transition-old(slide-right) {
-    margin-top: var(--mc-view-transition-scroll-fix-margin);
+  ::view-transition-old(expand-from-element) {
+    transform: translateY(var(--mc-view-transition-scroll-position, 0px));
   }
+
 
   @keyframes page-cross-fade {
     0% {
@@ -296,7 +265,30 @@ function initiateCSS() {
       clip-path: inset(0px 100% 0px 0px);
     }
   }
-  `);
+
+  @keyframes expand-from-element {
+    from {
+      transform: translate(var(--expand-from-element-left), var(--expand-from-element-top));
+      clip-path: xywh(0px 0px var(--expand-from-element-width) var(--expand-from-element-height) round var(--expand-from-element-radius, 0px));
+    }
+    to {
+      transform: translate(0px, 0px);
+      clip-path: xywh(0px 0px 100% 100% round 0px);
+    }
+  }
+
+  @keyframes expand-from-element-back {
+    from {
+      transform: translate(0px, var(--expand-from-element-scrollY, 0px));
+      clip-path: xywh(0px 0px 100% 100% round 0px);
+      z-index: 1;
+    }
+    to {
+      transform: translate(var(--expand-from-element-left), var(--expand-from-element-top));
+      clip-path: xywh(0px 0px var(--expand-from-element-width) var(--expand-from-element-height) round var(--expand-from-element-radius, 0px));
+      z-index: 1;
+    }
+  }`);
   document.adoptedStyleSheets.push(styles);
 
   initiated = true;

@@ -17,17 +17,16 @@
       <section id="Types" aria-label="View transition types">
         <mc-card>
           <h2 slot="headline">Types</h2>
-          <div slot="supporting-text">There are multiple built in transitions you can utilize. These can be used individually per anchor link or you can set them globally.</div>
+          <div slot="supporting-text">You can use the builtin view transitions, or add your own</div>
           <ul>
             <li>cross-fade</li>
             <li>slide-right</li>
             <li>slide-left</li>
             <li>expand-from-element</li>
-            <li>expand-from-element-back</li>
           </ul>
 
-          <a href="/" view-transition="expand-from-element" view-transition-back="expand-from-element-back" style="display: block; border-radius: 12px; background-color: white; height: 80px; text-align: center; line-height: 80px;">Expand example (click browser back after)</a>
-        
+          <a href="/" view-transition="expand-from-element" style="display: block; border-radius: 12px; background-color: white; height: 80px; text-align: center; line-height: 80px;">Expand example (click browser back after)</a>
+
           <code-block language="html"><pre>
 ${`<!-- Set globally -->
 <meta name="view-transition" content="slide-left">
@@ -40,12 +39,10 @@ ${`<!-- Set globally -->
 <mc-card href="/item/123" view-transition="expand-from-element"></mc-card>
 
 
-<!-- Add a back transition
-     Back will only work after the initial view-transition -->
-<a href="/"
-   view-transition="expand-from-element"
-   view-transition-back="expand-from-element-back">Welcome</a>
+<!-- back transition will automatically work if transition has enableBack: true -->
+<a href="/" view-transition="expand-from-element" >Welcome</a>
 
+<!-- Explictly set back transition -->
 <a href="/"
    view-transition="slide-left"
    view-transition-back="slide-right">Welcome</a>
@@ -58,80 +55,111 @@ ${`<!-- Set globally -->
       <section id="customizing" aria-label="Custom view transitions">
         <mc-card>
           <h2 slot="headline">Custom view transitions</h2>
-          <div slot="supporting-text">You can add your own view transitions. Both CSS and code transitions are supported.</div>
-        
+          <div slot="supporting-text">You can add your own view transitions</div>
+
           <code-block language="css"><pre>
-/* Use standard css to add view transition */
-::view-transition-old(slide-left-custom) {
-  animation: page-slide-left-out;
-  animation-duration: 400ms;
-  animation-timing-function: ease;
-}
-::view-transition-new(slide-left-custom) {
-  animation: page-slide-left-in;
-  animation-duration: 400ms;
-  animation-timing-function: ease;
+/* setup css */
+::view-transition-old(expand-from-element),
+::view-transition-new(expand-from-element),
+::view-transition-old(expand-from-element-back),
+::view-transition-new(expand-from-element-back) {
+  animation: none;
+  box-sizing: border-box;
 }
 
-@keyframes page-slide-left-custom-in {
-  0% {
-    transform: translateX(100%);
-    clip-path: inset(0px 100% 0px 0px);
+::view-transition-new(expand-from-element) {
+  animation: expand-from-element;
+  animation-duration: 400ms;
+  animation-timing-function: cubic-bezier(0.2, 0, 0, 1);
+}
+
+::view-transition-old(expand-from-element-back) {
+  animation: expand-from-element-back;
+  animation-duration: 240ms;
+  animation-timing-function: cubic-bezier(0.3, 0, 1, 1);
+}
+
+::view-transition-old(expand-from-element) {
+  transform: translateY(var(--mc-view-transition-scroll-position, 0px));
+}
+
+@keyframes expand-from-element {
+  from {
+    transform: translate(var(--expand-from-element-left), var(--expand-from-element-top));
+    clip-path: xywh(0px 0px var(--expand-from-element-width) var(--expand-from-element-height) round var(--expand-from-element-radius, 0px));
   }
-  100% {
-    transform: translateX(0px);
-    clip-path: inset(0px 0px 0px 0px);
+  to {
+    transform: translate(0px, 0px);
+    clip-path: xywh(0px 0px 100% 100% round 0px);
   }
 }
 
-@keyframes page-slide-left-custom-out {
-  0% {
-    transform: translateX(0px);
-    clip-path: inset(0px 0px 0px 0px);
+@keyframes expand-from-element-back {
+  from {
+    transform: translate(0px, var(--expand-from-element-scrollY, 0px));
+    clip-path: xywh(0px 0px 100% 100% round 0px);
+    z-index: 1;
   }
-  100% {
-    transform: translateX(-100%);
-    clip-path: inset(0px 0px 0px 100%);
+  to {
+    transform: translate(var(--expand-from-element-left), var(--expand-from-element-top));
+    clip-path: xywh(0px 0px var(--expand-from-element-width) var(--expand-from-element-height) round var(--expand-from-element-radius, 0px));
+    z-index: 1;
   }
 }
         </pre></code-block>
         <code-block language="javascript"><pre>
-${`// Register view transition using javascript
+${`// Register view transition setup and cleanup methods
 import { registerViewTransition } from '@thewebformula/lithe';
 
-registerViewTransition('the-name', {
-  setup(container, target) {
-    const scrollTop = document.documentElement.scrollTop;
-    document.documentElement.style.setProperty('--mc-view-transition-scroll-fix', \`translateY(-\${scrollTop}px)\`);
-    const containerBounds = container.getBoundingClientRect();
-    const targetBounds = target.getBoundingClientRect();
+registerViewTransition('expand-from-element', {
+  // This will assume the back transition is the name with '-back' added
+  enableBack: true,
+
+  setup(toElement, fromElement) {
+    const fromBounds = fromElement.getBoundingClientRect();
+    const fromBorderRadius = getComputedStyle(fromElement).borderRadius;
+    const toBounds = toElement.getBoundingClientRect();
+    const top = fromBounds.top - toBounds.top;
+    const left = fromBounds.left - toBounds.left;
+
+    document.documentElement.style.setProperty('--expand-from-element-top', \`\${top - window.scrollY}px\`);
+    document.documentElement.style.setProperty('--expand-from-element-left', \`\${left}px\`);
+    document.documentElement.style.setProperty('--expand-from-element-width', \`\${fromBounds.width}px\`);
+    document.documentElement.style.setProperty('--expand-from-element-height', \`\${fromBounds.height}px\`);
+    document.documentElement.style.setProperty('--expand-from-element-border-radius', fromBorderRadius);
 
     return {
-      containerBounds,
-      targetBounds,
-      scrollTop
+      scroll: window.scrollY,
+      top,
+      left,
+      width: fromBounds.width,
+      height: fromBounds.height,
+      borderRadius: fromBorderRadius
     };
   },
-  animate(container, { containerBounds, targetBounds, scrollTop }) {
-    document.documentElement.animate(
-      [
-        {
-          transform: \`translate(\${targetBounds.x - containerBounds.x}px, \${targetBounds.y - containerBounds.y - scrollTop}px)\`,
-          height: \`\${targetBounds.height}px\`,
-          width: \`\${targetBounds.width}px\`
-        },
-        {
-          transform: \`translate(0px, 0px)\`,
-          height: \`\${container.offsetHeight}px\`,
-          width: \`\${container.offsetWidth}px\`,
-        }
-      ],
-      {
-        duration: 400,
-        easing: 'cubic-bezier(0.2, 0, 0, 1)',
-        pseudoElement: '::view-transition-new(expand-from-element)'
-      }
-    );
+  cleanup() {
+    document.documentElement.style.removeProperty('--expand-from-element-top');
+    document.documentElement.style.removeProperty('--expand-from-element-left');
+    document.documentElement.style.removeProperty('--expand-from-element-width');
+    document.documentElement.style.removeProperty('--expand-from-element-height');
+    document.documentElement.style.removeProperty('--expand-from-element-border-radius');
+  },
+
+  setupBack(toElement, { scroll, top, left, width, height, fromBorderRadius }) {
+    document.documentElement.style.setProperty('--expand-from-element-scrollY', \`\${scroll || 0}px\`);
+    document.documentElement.style.setProperty('--expand-from-element-top', \`\${top || 0}px\`);
+    document.documentElement.style.setProperty('--expand-from-element-left', \`\${left || 0}px\`);
+    document.documentElement.style.setProperty('--expand-from-element-width', \`\${width || 0}px\`);
+    document.documentElement.style.setProperty('--expand-from-element-height', \`\${height || 0}px\`);
+    document.documentElement.style.setProperty('--expand-from-element-border-radius', \`\${fromBorderRadius || '0px'}\`);
+  },
+  cleanupBack() {
+    document.documentElement.style.removeProperty('--expand-from-element-scrollY');
+    document.documentElement.style.removeProperty('--expand-from-element-top');
+    document.documentElement.style.removeProperty('--expand-from-element-width');
+    document.documentElement.style.removeProperty('--expand-from-element-height');
+    document.documentElement.style.removeProperty('--expand-from-element-left');
+    document.documentElement.style.removeProperty('--expand-from-element-border-radius');
   }
 });`}
           </pre></code-block>

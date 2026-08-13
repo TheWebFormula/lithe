@@ -1,5 +1,6 @@
 import { runTransition } from './viewTransitions.js';
 import { policyHTML } from './policy.js';
+import { manual } from 'prismjs';
 
 
 // TODO fix runTransitions
@@ -9,6 +10,7 @@ let routes = new Map();
 let pathLookup = [];
 let notFoundPage;
 let pageContainer;
+let routeIdCounter = 1;
 
 const spaceRegex = /\s/g;
 const containsVariableOrWildcardRegex = /\/:|\*/g;
@@ -89,20 +91,18 @@ export function enableSPA() {
         let matchKey = pathLookup.find(v => v[0].test(url.pathname));
         if (!matchKey) matchKey = notFoundPage;
         if (!matchKey) console.warn(`No page found for path: ${url.pathname}`);
-
         const match = routes.get(matchKey[1]);
-        renderPage(match, matchKey[0]);
-        // await runTransition({
-        //   newContainer: pageContainer,
-        //   oldContainer: event.sourceElement,
-        //   back: navigation.currentEntry.index > event.destination.index,
-        //   routeId: event.destination.id
-        // }, () => {
-        //   renderPage(match, matchKey[0]);
-        // });
+        await runTransition({
+          newContainer: pageContainer,
+          oldContainer: event.sourceElement,
+          back: event.destination.index !== -1,
+          routeId: event.target.activation.entry.id
+        }, () => {
+          renderPage(match, matchKey[0]);
+        });
       },
     });
-  })
+  });
 }
 enableSPA();
 
