@@ -48,14 +48,12 @@ class InputWrapper extends Component {
 
   /* use extended observer for advanced config
      This is a wrapper for static get observedAttributes() { } */
-  static get observedAttributesExtended() {
-    return {
-      label: { type: 'string' },
-      name: { type: 'string' },
-      value: { type: 'string' },
-      disabled: { type: 'boolean' }
-    };
-  }
+  static observedAttributesExtended = {
+    label: { type: 'string' },
+    name: { type: 'string' },
+    value: { type: 'string' },
+    disabled: { type: 'boolean' }
+  };
 
   /* use extended change callback
      - converts dash casing to camel casing
@@ -161,16 +159,14 @@ class AttrTest extends Component {
   data = new Signal({ one: 'one', two: 2 });
 
 
-  static get observedAttributesExtended() {
-    return {
-      str: { type: 'string' },
-      disabled: { type: 'toggle' },
-      enable: { type: 'boolean' },
-      counter: { type: 'int' },
-      percent: { type: 'number' },
-      data: { type: 'object' }
-    };
-  }
+  static observedAttributesExtended = {
+    str: { type: 'string' },
+    disabled: { type: 'toggle' },
+    enable: { type: 'boolean' },
+    counter: { type: 'int' },
+    percent: { type: 'number' },
+    data: { type: 'object' }
+  };
 
   attributeChangedCallbackExtended(name, oldValue, newValue) {
     // all variables are signals so we can just use .value

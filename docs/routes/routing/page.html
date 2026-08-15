@@ -26,7 +26,7 @@
 
           <div class="mc-font-title-medium" style="font-weight: bold; margin-top: 24px;">Route components</div>
           <div class="mc-font-body-medium">Routes are based on the <strong>li-route</strong> components added to the index.html. These will take precedence over directory routes</div>
-      
+
           <code-block language="javascript">
             <pre>
 ${`/* routes/page-name/index.js
@@ -44,9 +44,11 @@ class PageClassName extends Component {
   }
 
   connectedCallback() {
+    super.connectedCallback();
+
     // one[id] one/:id one/value
     console.log(this.urlParameters); // { id: 'value' }
-    
+
     // two[...rest] two/*rest two/a/b
     console.log(this.urlParameters); // { rest: 'a/b' }
 
@@ -100,7 +102,7 @@ ${`
         <mc-card>
           <h2 slot="headline">Directory routes</h2>
           <div slot="supporting-text">Directory routes are automatically added to the app, as long as the files are imported. All routes go in a <strong>routes</strong> folder.</div>
-        
+
           <code-block language="yaml"><pre>
 ${`app/
 └── routes/
@@ -119,7 +121,7 @@ ${`app/
         └── [...all]/
             └── index.js # four/*all (four/a/b/)`}
           </pre></code-block>
-        
+
           <div style="margin: 18px">
             <div class="mc-font-body-large route-list">app/routes/index/index.js → <span>/</span></div>
             <div class="mc-font-body-large route-list">app/routes/one/index.js → <span>one</span></div>
@@ -128,7 +130,7 @@ ${`app/
             <div class="mc-font-body-large route-list">app/routes/four/[...rest]/index.js →
               <span>four/*rest</span>
             </div>
-        
+
             <div class="mc-font-title-medium" style="margin-top: 24px; margin-bottom: 8px;">Directory route details</div>
             <div class="mc-font-body-large route-list"><span>routes/index/index.js</span> Root page (/)</div>
             <div class="mc-font-body-large route-list"><span>routes/404/index.js</span> Not found page. Auto redirect on non
@@ -150,7 +152,7 @@ ${`app/
         <mc-card>
           <h2 slot="headline">Component routes</h2>
           <div slot="supporting-text">Component routes allow you to manually set the path for routes. These will take precedence over directory routes.</div>
-      
+
           <code-block language="html">
             <pre>
 ${`
@@ -186,7 +188,7 @@ ${`
         <mc-card>
           <h2 slot="headline">Page</h2>
           <div slot="supporting-text">Accessing url parameters</div>
-        
+
           <code-block language="javascript"><pre>
 ${`import { Component } from '@thewebformula/lithe';
 import htmlTemplate from './page.html'; // automatically bundles
@@ -197,12 +199,14 @@ class PageClassName extends Component {
 
   // hook up imported html. Supports template literals (\${this.someVar})
   static htmlTemplate = htmlTemplate;
-  
+
   constructor() {
     super();
   }
-  
+
   connectedCallback() {
+    super.connectedCallback();
+
     // one[id] one/:id one/value
     console.log(this.urlParameters); // { id: 'value' }
 

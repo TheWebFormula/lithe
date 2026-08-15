@@ -47,20 +47,26 @@ export default class Component extends HTMLElement {
   static title;
 
   /**
-   * @typedef {String} AttributeType
-   * @value '' default handling
+   * @typedef {String} AttributeConfig
    * @value 'string' Convert to a string. null = ''
    * @value 'number' Convert to a number. isNaN = ''
    * @value 'int' Convert to a int. isNaN = ''
+   * @value 'toggle' Add / remove attribute
    * @value 'boolean' Convert to a boolean. null = false
-   * @value 'object' pass object. null = null
+   * @value 'object' pass in an object. The attribute will have no value displayed in the DOM
    * @value 'event' Allows code to be executed. Similar to onchange="console.log('test')"
    */
   /**
-   * Enhances observedAttributes, allowing you to specify types
-   * @type {Array.<[name:String, AttributeType]>}
-   */
-  static get observedAttributesExtended() { return {}; };
+    * @typedef {Object} AttributeConfig
+    * @property {AttributeType} type - The parsed primitive type of the attribute
+    * @property {Boolean} [reflect=true] - Whether the attribute should be reflected to the DOM
+    */
+  /**
+    * Extended observedAttributes, allowing you to specify types
+    * @static
+    * @type {Record<string, AttributeConfig>}
+    */
+  static observedAttributesExtended = {};
   static get _attrs() {
     let extendedAttrs = Object.entries(this.observedAttributesExtended);
     let attrs = extendedAttrs.length > 0 ? extendedAttrs : this.observedAttributes.map(v => ([v, { type: 'string', reflect: true }]));
@@ -79,7 +85,7 @@ export default class Component extends HTMLElement {
     }));
   }
 
-  static get attributeTypes() { return ['string', 'toggle', 'boolean', 'int', 'number', 'object', 'event']; }
+  static attributeTypes = ['string', 'toggle', 'boolean', 'int', 'number', 'object', 'event'];
   static get observedAttributes() { return Object.entries(this.observedAttributesExtended).map(a => a[0].replace(camelCaseRegex, '$1-').toLowerCase()); }
 
   /**
@@ -93,11 +99,18 @@ export default class Component extends HTMLElement {
   #attributeEvents = new Map();
   #prepared = false;
   #attrConfig = {};
+  #noTemplates = false;
 
 
   constructor() {
     super();
-    
+
+    // Check if a subclass overrides connectedCallback but fails to call super.connectedCallback
+    if (this.constructor.prototype.hasOwnProperty('connectedCallback') && !this.constructor.prototype.connectedCallback.toString().includes('super.connectedCallback')) {
+      console.error(`${this.constructor.name} overrides connectedCallback but fails to call super.connectedCallback(). You can use afterRender() also.`);
+    }
+
+
     if (this.constructor.useShadowRoot) {
       this.attachShadow({ mode: 'open', delegatesFocus: this.constructor.shadowRootDelegateFocus });
     } else if (this.constructor.styleSheets[0] instanceof CSSStyleSheet) {
@@ -137,7 +150,7 @@ export default class Component extends HTMLElement {
       );
     }
   }
-// <mc-checkbox slot="end" checked="${item.checked}" onchange=${() => item.checked = !item.checked}></mc-checkbox>
+
   /**
    * Use with observedAttributesExtended
    * @function
@@ -169,7 +182,8 @@ export default class Component extends HTMLElement {
    * */
   urlChange() {}
 
-  connectedCallback() { }
+
+  connectedCallback() { this._render(); }
   disconnectedCallback() { }
 
   /** Called before render */
@@ -189,8 +203,9 @@ export default class Component extends HTMLElement {
    */
   template() { }
 
-  render() {
+  _render() {
     if (!this.#prepared) this.#prepareRender();
+    if (this.#noTemplates) return;
 
     this.beforeRender();
 
@@ -209,12 +224,19 @@ export default class Component extends HTMLElement {
     this.afterRender();
   }
 
-  #prepareRender() {
-    if (this.constructor.useShadowRoot && this.constructor.styleSheets[0] instanceof CSSStyleSheet) {
-      this.shadowRoot.adoptedStyleSheets = this.constructor.styleSheets;
-    }
+  template2() { }
 
-    if (typeof this.constructor.htmlTemplate === 'function') this.template = () => this.constructor.htmlTemplate(this);
+  #prepareRender() {
+    // prevent rendering if there is no template
+    this.#noTemplates = this.constructor.prototype.template === Component.prototype.template && this.constructor.htmlTemplate === Component.htmlTemplate;
+
+    if (!this.#noTemplates) {
+      if (this.constructor.useShadowRoot && this.constructor.styleSheets[0] instanceof CSSStyleSheet) {
+        this.shadowRoot.adoptedStyleSheets = this.constructor.styleSheets;
+      }
+
+      if (typeof this.constructor.htmlTemplate === 'function') this.template = () => this.constructor.htmlTemplate(this);
+    }
     this.#prepared = true;
   }
 

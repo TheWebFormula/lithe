@@ -15,11 +15,10 @@ class CodeBlock extends Component {
     this.setAttribute('id', this.id);
   }
 
-  static get observedAttributesExtended() {
-    return {
-      language: { type: 'string' }
-    };
-  }
+  static observedAttributesExtended = {
+    language: { type: 'string' }
+  };
+
 
   attributeChangedCallbackExtended(name, _oldValue, newValue) {
     this[name] = newValue;
@@ -35,6 +34,8 @@ class CodeBlock extends Component {
   }
 
   connectedCallback() {
+    super.connectedCallback();
+
     const pre = this.querySelector('pre');
     const html = Prism.highlight(pre.textContent, Prism.languages[this.#language], this.#language);
     const trustedHTML = policyHTML.createHTML(html);

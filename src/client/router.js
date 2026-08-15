@@ -132,8 +132,6 @@ async function renderPage(componentName, pathRegex) {
   document.title = page.constructor.title;
   window.page = page;
 
-  page.render();
-
   const currentPage = pageContainer.firstElementChild;
   if (currentPage) currentPage.replaceWith(page);
   else pageContainer.appendChild(page);

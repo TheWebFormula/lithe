@@ -21,7 +21,7 @@
           <h2 slot="headline">Page file</h2>
           <div slot="supporting-text">page.js</div>
           <div slot="supporting-text">Web component is imported in this file</div>
-        
+
           <code-block language="javascript"><pre>
 ${`import { Component, html } from '@thewebformula/lithe';
 /* HTML imports will bundle with the build */
@@ -36,7 +36,7 @@ class PageClass extends Component {
 
   // you can set the html from and import or use the template method (see below)
   static htmlTemplate = htmlTemplate;
-  
+
   constructor() {
     super();
   }
@@ -61,12 +61,12 @@ customElements.define('page-component-name', PageClass);`}
         <mc-card>
           <h2 slot="headline">Component file</h2>
           <div slot="supporting-text">component.js</div>
-        
+
           <code-block language="html"><pre>
 ${`<!-- component.html -->
 <button><slot></slot></button>`}
           </pre></code-block>
-        
+
           <code-block language="javascript"><pre>
 ${`import { Component } from '@thewebformula/lithe';
 
@@ -98,7 +98,7 @@ class CustomButton extends Component {
     */
   static useShadowRoot = false;
 
-  
+
   /**
     * @type {Boolean}
     */
@@ -115,20 +115,26 @@ class CustomButton extends Component {
 
   /**
     * @typedef {String} AttributeType
-    * @value '' default handling
     * @value 'string' Convert to a string. null = ''
     * @value 'number' Convert to a number. isNaN = ''
     * @value 'int' Convert to a int. isNaN = ''
-    * @value 'boolean' Convert to a boolean. null = false
+    * @value 'toggle' Add / remove attribute
+    * @value 'boolean' Convert to a boolean
+    * @value 'object' Pass in an objecty. This will add teh attribute with no value
     * @value 'event' Allows code to be executed. Similar to onchange="console.log('test')"
     */
-    /**
-    * Enhances observedAttributes, allowing you to specify types
-    * You can still use \`observedAttributes\` in stead of this.
-    * @type {Array.<[name:String, AttributeType]>}
+  /**
+    * @typedef {Object} AttributeConfig
+    * @property {AttributeType} type - The parsed primitive type of the attribute
+    * @property {Boolean} [reflect=true] - Whether the attribute should be reflected to the DOM
     */
-  static get observedAttributesExtended() { return []; }; // static observedAttributesExtended = [['required', 'boolean']];
-  
+  /**
+    * Extended observedAttributes, allowing you to specify types
+    * @static
+    * @type {Record<string, AttributeConfig>}
+    */
+  static observedAttributesExtended = { require: { type: 'toggle' } };
+
 
   /**
     * Use with observedAttributesExtended
@@ -144,7 +150,7 @@ class CustomButton extends Component {
   // need to bind events to access \`this\`
   #onClick_bound = this.#onClick.bind(this);
 
-  
+
   constructor() {
     super();
   }
@@ -157,14 +163,16 @@ class CustomButton extends Component {
     */
   template() { return '<div></div>' }
 
-  connectedCallback() {}
+  connectedCallback() {
+    super.connectedCallback();
+  }
   disconnectedCallback() {}
   beforeRender() {}
 
   afterRender() {
     this.#root.querySelector('button').addEventListener('click', this.#onClick_bound);
   }
-  
+
   disconnectedCallback() {
     this.#root.querySelector('button').removeEventListener('click', this.#onClick_bound);
   }
@@ -184,20 +192,20 @@ customElements.define('custom-button', CustomButton);`}
       <section id="interacting" aria-label="Component interaction example">
         <mc-card>
           <h2 slot="headline">Interacting with component elements</h2>
-        
+
           <code-block language="html"><pre>
 ${`<!-- index.html -->
 <body>
   <custom-webcomponent></custom-webcomponent>
 </body>`}
           </pre></code-block>
-        
+
           <code-block language="html"><pre>
 ${`<!-- component.html -->
 <button onclick="this.closest('custom-webcomponent').clickIt()">Click it direct</button>
 <button id="eventlistener-button">Click it event listener</button>`}
         </pre></code-block>
-      
+
         <code-block language="javascript"><pre>
 ${`import { Component } from '@thewebformula/lithe';
 import html from './component.html'; // automatically bundles
@@ -210,7 +218,7 @@ class CustomWebcomponent extends Component {
 
   varOne = 'var one';
 
-  
+
   constructor() {
     super();
   }
@@ -218,7 +226,7 @@ class CustomWebcomponent extends Component {
   afterRender() {
     this.#root.querySelector('#eventlistener-button').addEventListener('click', this.#onClick_bound);
   }
-  
+
   disconnectedCallback() {
     this.#root.querySelector('#eventlistener-button').removeEventListener('click', this.#onClick_bound);
   }

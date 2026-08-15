@@ -273,6 +273,7 @@ class PageComponent extends Component {
   }
 
   connectedCallback() {
+    super.connectedCallback(); // must call super
     console.log(this.urlParameters); // { id: 'value' }
     console.log(this.searchParameters); // { id: 'value' }
   }

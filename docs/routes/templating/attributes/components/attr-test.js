@@ -12,16 +12,14 @@ class AttrTest extends Component {
   _data = new Signal({ one: 'one', two: 2 });
 
 
-  static get observedAttributesExtended() {
-    return {
-      str: { type: 'string' },
-      disabled: { type: 'toggle' },
-      enable: { type: 'boolean' },
-      counter: { type: 'int' },
-      percent: { type: 'number' },
-      data: { type: 'object' }
-    };
-  }
+  static observedAttributesExtended = {
+    str: { type: 'string' },
+    disabled: { type: 'toggle' },
+    enable: { type: 'boolean' },
+    counter: { type: 'int' },
+    percent: { type: 'number' },
+    data: { type: 'object' }
+  };
 
   attributeChangedCallbackExtended(name, oldValue, newValue) {
     // this[name] = newValue;
@@ -49,9 +47,6 @@ class AttrTest extends Component {
     super();
   }
 
-  connectedCallback() {
-    this.render();
-  }
 
   #onInput(e) {
     this._str.value = e.target.value;
@@ -123,7 +118,7 @@ class AttrTest extends Component {
         const counter = this._counter.value;
         const percent = this._percent.value;
         const data = JSON.stringify(this._data.value);
-        
+
         return html`<code-block language="html">
           <pre>
 ${`<!-- HTML rendered -->
