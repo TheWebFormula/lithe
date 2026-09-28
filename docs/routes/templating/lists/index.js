@@ -1,5 +1,7 @@
-import { Component, Signal, SignalObject, effect } from '@thewebformula/lithe';
+import { Component, Signal, SignalObject, SignalArray, effect } from '@thewebformula/lithe';
 import htmlTemplate from './page.html';
+
+window.SignalArray = SignalArray;
 
 class TemplateListsPage extends Component {
   static title = 'Templating lists';
@@ -12,26 +14,34 @@ class TemplateListsPage extends Component {
     { value: 'Three' }
   ]);
 
-  itemsObject = new SignalObject([
+  itemsWithKey = new Signal([
+    { value: 'One' },
+    { value: 'Two' },
+    { value: 'Three' }
+  ]);
+
+  itemsCheckList = new SignalArray([
     { label: 'One', checked: false },
     { label: 'Two', checked: false },
     { label: 'Three', checked: true }
   ]);
 
-  #disposeItemsObjectEffect;
+  #disposeItemsCheckListEffect;
 
   afterRender() {
-    this.#disposeItemsObjectEffect = effect(() => {
+    this.#disposeItemsCheckListEffect = effect(() => {
       const element = this.querySelector('#selectall');
-      const allChecked = this.itemsObject.value.every(item => item.checked);
-      const someChecked = this.itemsObject.value.some(item => item.checked);
+      const allChecked = this.itemsCheckList.value.every(item => item.checked);
+      const someChecked = this.itemsCheckList.value.some(item => item.checked);
       element.indeterminate = !allChecked && someChecked;
       element.checked = allChecked;
     });
   }
 
   disconnectedCallback() {
-    if (this.#disposeItemsObjectEffect) this.#disposeItemsObjectEffect();
+    super.disconnectedCallback();
+
+    if (this.#disposeItemsCheckListEffect) this.#disposeItemsCheckListEffect();
   }
 
 
@@ -40,10 +50,57 @@ class TemplateListsPage extends Component {
     this.items.value = [...this.items.value, { value }];
   }
 
+  addItemWithKey(value) {
+    if (!value) return;
+    this.itemsWithKey.value = [...this.itemsWithKey.value, { value }];
+  }
+
   selectAll(event) {
     const value = !event.target.checked;
     event.target.value = value
-    this.itemsObject.value.forEach(item => item.checked = value);
+    for (let item of this.itemsCheckList.value) {
+      item.checked = value;
+    }
+  }
+
+  addToCheckList() {
+    this.itemsCheckList.value.push({
+      label: 'New Item',
+      checked: false
+    });
+  }
+
+  removeToCheckList() {
+    this.itemsCheckList.value.pop();
+  }
+
+  current = 0;
+  count = 10_000;
+  count2 = 10;
+  addLots() {
+    let arr = [];
+    for (let i = 0; i < this.count; i++) {
+      arr.push({ value: this.current + i });
+    }
+    this.current += this.count;
+    this.itemsWithKey.value = [...this.itemsWithKey.value, ...arr];
+  }
+
+  updateLots() {
+    let arr = [];
+    for (let i = 0; i < this.count2; i++) {
+      arr.push({ value: this.current + i });
+    }
+    this.current += this.count2;
+    this.itemsWithKey.value = [...this.itemsWithKey.value, ...arr];
+  }
+
+  setOrig() {
+    this.itemsWithKey.value = [
+      { value: 'One' },
+      { value: 'Two' },
+      { value: 'Three' }
+    ];
   }
 }
 customElements.define('template-lists-page', TemplateListsPage);

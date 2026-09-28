@@ -4,7 +4,9 @@ import snackbarService from '@thewebformula/materially/services/snackbar';
 
 
 class CodeBlock extends Component {
+  #observer;
   #language;
+  #placeholder = false;
   #buttonHTML = policyHTML.createHTML('<button>copy</button>');
   #copyClick_bound = this.#copyClick.bind(this);
   id = `code-block-${parseInt(Math.random() * 1000000)}`;
@@ -16,7 +18,8 @@ class CodeBlock extends Component {
   }
 
   static observedAttributesExtended = {
-    language: { type: 'string' }
+    language: { type: 'string' },
+    placeholder: { type: 'toggle' }
   };
 
 
@@ -33,13 +36,33 @@ class CodeBlock extends Component {
     this.querySelector('pre').classList.add(`language-${value}`);
   }
 
+  get placeholder() {
+    return this.#placeholder;
+  }
+
+  set placeholder(value) {
+    this.#placeholder = value;
+  }
+
   connectedCallback() {
     super.connectedCallback();
 
-    const pre = this.querySelector('pre');
-    const html = Prism.highlight(pre.textContent, Prism.languages[this.#language], this.#language);
-    const trustedHTML = policyHTML.createHTML(html);
-    pre.innerHTML = trustedHTML;
+    if (!this.#placeholder) {
+      const pre = this.querySelector('pre');
+      const html = Prism.highlight(pre.textContent, Prism.languages[this.#language], this.#language);
+      const trustedHTML = policyHTML.createHTML(html);
+      pre.innerHTML = trustedHTML;
+    } else {
+      this.#highlightPlaceholder();
+      this.#observer = new MutationObserver(() => {
+        this.#highlightPlaceholder();
+      });
+      this.#observer.observe(this.querySelector('[placeholder]'), {
+        childList: true,
+        characterData: true,
+        subtree: true
+      });
+    }
 
     if (!this.hasAttribute('linked')) {
       this.insertAdjacentHTML('afterbegin', this.#buttonHTML);
@@ -47,7 +70,17 @@ class CodeBlock extends Component {
     }
   }
 
+  #highlightPlaceholder() {
+    const dataDiv = this.querySelector('[placeholder]');
+    const html = Prism.highlight(dataDiv.textContent, Prism.languages[this.#language], this.#language);
+    const trustedHTML = policyHTML.createHTML(html);
+    this.querySelector('pre').innerHTML = trustedHTML;
+  }
+
   disconnectedCallback() {
+    super.disconnectedCallback();
+
+    if (this.#observer) this.#observer.disconnect(); //
     let button = this.querySelector('button');
     if (button) button.removeEventListener('click', this.#copyClick_bound);
   }

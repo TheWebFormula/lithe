@@ -24,18 +24,18 @@ export function i18n(key, ...variables) {
     return message.replace(valueRegex, function (_, varIndex, formatterName, formatterVarIndex) {
       if (varIndex) {
         const variable = variables[parseInt(varIndex) - 1];
-        if (isSignal(variable)) return variable.valueNonTemplating;
+        if (isSignal(variable)) return variable.valueTemplating;
         return variable
       }
       if (formatterName && formatterVarIndex) {
         const formatMethod = translations.get(currentLocal).formatters[formatterName].method;
         const variable = variables[parseInt(formatterVarIndex) - 1];
-        if (isSignal(variable)) return formatMethod(variable.valueNonTemplating);
+        if (isSignal(variable)) return formatMethod(variable.valueTemplating);
         return formatMethod(variable);
       }
       return '';
     });
-  });
+  }, true);
   signals.add(compute);
   return compute;
 }
@@ -49,7 +49,7 @@ i18n.setLocale = locale => {
     currentLocal = locale;
     currentTranslations = translations.get(currentLocal);
     for (const signal of signals) {
-      signal.updateValueVersionForce();
+      signal.markDirty();
     }
   }
 }
@@ -74,7 +74,7 @@ i18n.format = (formatterName, value) => {
       return '';
     }
 
-    if (isSignal(value)) return formatter.method(value.valueNonTemplating);
+    if (isSignal(value)) return formatter.method(value.valueTemplating);
     return formatter.method(value);
   })
   signals.add(compute);

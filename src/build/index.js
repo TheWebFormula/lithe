@@ -1,6 +1,6 @@
 import * as esbuild from 'esbuild';
 import { copy } from 'esbuild-plugin-copy';
-import htmlMinify from "html-minifier";
+import htmlMinifyNext from 'html-minifier-next';
 import { createBrotliCompress, constants } from 'node:zlib';
 import { createReadStream, createWriteStream, watch, readFileSync } from 'node:fs';
 import { pipeline } from 'node:stream/promises';
@@ -67,10 +67,17 @@ export default async function build(config = {
   config.outdir = config.outdir || 'dist';
 
   // get basedir and appj s filename
+  if (config.entryPoint.startsWith('./')) config.entryPoint = config.entryPoint.replace(/^\.\//, '');
+  if (config.entryPointCSS.startsWith('./')) config.entryPointCSS = config.entryPointCSS.replace(/^\.\//, '');
   let entrySplit = config.entryPoint.split('/');
   if (entrySplit.length > 1) {
     config.basedir = entrySplit[0];
-    entrySplit[0] = config.outdir;
+    if (config.basedir === '.' && entrySplit.length > 2) {
+      config.basedir = entrySplit[1];
+      entrySplit[1] = config.outdir;
+    } else {
+      entrySplit[0] = config.outdir;
+    }
   } else config.basedir = '';
   config.appJSFilename = entrySplit[entrySplit.length - 1].replace('.js', '');
 
@@ -170,9 +177,12 @@ export default async function build(config = {
 
       build.onLoad({ filter: /\.html$/ }, async (args) => {
         const rawContent = await readFile(args.path, 'utf8');
-        // TODO more advanced minifier that will handle template expressions
-        const minifiedContent = !config.minify ? rawContent : htmlMinify.minify(rawContent, {
+        const minifiedContent = !config.minify ? rawContent : await htmlMinifyNext.minify(rawContent, {
           collapseWhitespace: true,
+          collapseAttributeWhitespace: true,
+          conservativeCollapse: true,
+          removeAttributeQuotes: true,
+          minifySVG: true,
           minifyCSS: true,
           minifyJS: true,
           continueOnParseError: true
@@ -195,10 +205,18 @@ export default async function build(config = {
         // need to use build instead of transform because transform is not resolving @imports from node modules
         const contextCss = await esbuild.build({
           entryPoints: [args.path],
+          outdir: config.outdir,
           bundle: true,
           write: false,
           minify: config.minify,
-          loader: { '.css': 'css' }
+          loader: {
+            '.css': 'css',
+            '.woff': 'dataurl',
+            '.woff2': 'dataurl',
+            '.ttf': 'dataurl',
+            '.eot': 'dataurl',
+            '.svg': 'dataurl'
+          }
         });
 
         if (args.path === entryPointCSSResolved) {

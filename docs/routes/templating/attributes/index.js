@@ -1,6 +1,7 @@
 import { Component, Signal } from '@thewebformula/lithe';
 import htmlTemplate from './page.html';
 import './components/attr-test.js';
+// import './components/attr-test2.js';
 
 class TemplateAttributesPage extends Component {
   static title = 'Templating attributes';
@@ -18,7 +19,6 @@ class TemplateAttributesPage extends Component {
   }
 
   changeTextColor = color => {
-    console.log(color);
     this.styleSignal.value = {
       ...this.styleSignal.value,
       color

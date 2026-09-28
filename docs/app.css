@@ -41,11 +41,16 @@ code-block pre {
   unicode-bidi: isolate;
   padding-top: 18px;
   padding-left: 22px;
+  padding-bottom: 18px;
 }
 
 code-block {
   display: block;
   position: relative;
+}
+
+code-block [placeholder] {
+  display: none;
 }
 
 code-block button {

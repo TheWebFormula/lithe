@@ -67,22 +67,27 @@ export default class Component extends HTMLElement {
     * @type {Record<string, AttributeConfig>}
     */
   static observedAttributesExtended = {};
-  static get _attrs() {
-    let extendedAttrs = Object.entries(this.observedAttributesExtended);
-    let attrs = extendedAttrs.length > 0 ? extendedAttrs : this.observedAttributes.map(v => ([v, { type: 'string', reflect: true }]));
-    return Object.fromEntries(attrs.map(a => {
-      let type = a[1].type;
-      let reflect = a[1].reflect === false ? false : true;
-      if (!this.attributeTypes.includes(type)) {
-        console.warn(`Incorrect attribute type ${type || 'none'} on ${this.tagName || this.name}[${a[0]}]. (${this.attributeTypes.join(', ')})`);
-        type = 'string';
-      }
-      return [a[0], {
-        name: a[0],
-        type,
-        reflect
-      }];
-    }));
+  static _attrConfig;
+  static get attrConfig() {
+    if (!this._attrConfig) {
+      let extendedAttrs = Object.entries(this.observedAttributesExtended);
+      let attrs = extendedAttrs.length > 0 ? extendedAttrs : this.observedAttributes.map(v => ([v, { type: 'string', reflect: true }]));
+      this._attrConfig = Object.fromEntries(attrs.map(a => {
+        let type = a[1].type;
+        let reflect = a[1].reflect === false ? false : true;
+        if (!this.attributeTypes.includes(type)) {
+          console.warn(`Incorrect attribute type ${type || 'none'} on ${this.tagName || this.name}[${a[0]}]. (${this.attributeTypes.join(', ')})`);
+          type = 'string';
+        }
+        return [a[0], {
+          name: a[0],
+          type,
+          reflect
+        }];
+      }));
+    }
+
+    return this._attrConfig;
   }
 
   static attributeTypes = ['string', 'toggle', 'boolean', 'int', 'number', 'object', 'event'];
@@ -98,8 +103,8 @@ export default class Component extends HTMLElement {
 
   #attributeEvents = new Map();
   #prepared = false;
-  #attrConfig = {};
   #noTemplates = false;
+  #currentTemplate;
 
 
   constructor() {
@@ -110,17 +115,17 @@ export default class Component extends HTMLElement {
       console.error(`${this.constructor.name} overrides connectedCallback but fails to call super.connectedCallback(). You can use afterRender() also.`);
     }
 
+    // Check if a subclass overrides disconnectedCallback but fails to call super.disconnectedCallback
+    if (this.constructor.prototype.hasOwnProperty('disconnectedCallback') && !this.constructor.prototype.disconnectedCallback.toString().includes('super.disconnectedCallback')) {
+      console.error(`${this.constructor.name} overrides disconnectedCallback but fails to call super.disconnectedCallback(). You can use afterRender() also.`);
+    }
+
 
     if (this.constructor.useShadowRoot) {
       this.attachShadow({ mode: 'open', delegatesFocus: this.constructor.shadowRootDelegateFocus });
     } else if (this.constructor.styleSheets[0] instanceof CSSStyleSheet) {
       document.adoptedStyleSheets.push(...this.constructor.styleSheets);
     }
-  }
-
-  get _attrs() {
-    if (!this.#attrConfig) this.#attrConfig = this.constructor._attrs;
-    return this.#attrConfig;
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
@@ -131,8 +136,7 @@ export default class Component extends HTMLElement {
     if (newValue === '{_ex_}') newValue = '';
 
     name = name.replace(dashCaseRegex, (_, s) => s.toUpperCase());
-
-    const attrConfig = this._attrs[name];
+    const attrConfig = this.constructor.attrConfig[name];
     if (attrConfig?.type === 'event') {
       if (this.#attributeEvents.has(name)) {
         this.removeEventListener(name.replace(onRegex, ''), this.#attributeEvents.get(name));
@@ -184,7 +188,9 @@ export default class Component extends HTMLElement {
 
 
   connectedCallback() { this._render(); }
-  disconnectedCallback() { }
+  disconnectedCallback() {
+    if (this.#currentTemplate) this.#currentTemplate.disconnect();
+  }
 
   /** Called before render */
   beforeRender() { }
@@ -213,8 +219,9 @@ export default class Component extends HTMLElement {
 
     activateComponent();
     try {
-      if (this.constructor.useShadowRoot) this.shadowRoot.appendChild(this.template());
-      else this.appendChild(this.template());
+      this.#currentTemplate = this.template();
+      if (this.constructor.useShadowRoot) this.shadowRoot.appendChild(this.#currentTemplate.fragment);
+      else this.appendChild(this.#currentTemplate.fragment);
     } catch (e) {
       console.error(e);
       console.error('There was an error processing the template for', this.constructor.name);

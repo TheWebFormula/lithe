@@ -1,5 +1,6 @@
 import { Component, html, Signal } from '@thewebformula/lithe';
-import styles from'./styles.css';
+import styles from './styles.css';
+import Prism from 'prismjs';
 
 class AttrTest extends Component {
   static styleSheets = [styles];
@@ -10,6 +11,7 @@ class AttrTest extends Component {
   _counter = new Signal(1);
   _percent = new Signal(0.1);
   _data = new Signal({ one: 'one', two: 2 });
+  _id = parseInt(Math.random() * 999999);
 
 
   static observedAttributesExtended = {
@@ -22,7 +24,7 @@ class AttrTest extends Component {
   };
 
   attributeChangedCallbackExtended(name, oldValue, newValue) {
-    // this[name] = newValue;
+    this[name] = newValue;
   }
 
   get str() { return this._str.value; }
@@ -100,8 +102,6 @@ class AttrTest extends Component {
               onchange=${(e) => this.#disableChange(e)}
             ></mc-switch>
 
-            <div value=${true} ></div>
-
             <mc-switch
               label="Enable (boolean)"
               checked=${this._enable}
@@ -111,17 +111,15 @@ class AttrTest extends Component {
             <mc-slider min="0" max="1" value="${this._percent}" step="0.1" onchange=${(e) => this.#percentChange(e)} >Percent (number)</mc-slider>
           </div>
         </div>
-      ${html(() => {
-        const str = this._str.value;
-        const disabled = this._disabled.value;
-        const enable = this._enable.value;
-        const counter = this._counter.value;
-        const percent = this._percent.value;
-        const data = JSON.stringify(this._data.value);
-
-        return html`<code-block language="html">
-          <pre>
-${`<!-- HTML rendered -->
+        <code-block language="html" placeholder>
+          <pre></pre>
+          <div placeholder>${html(() => {
+            const str = this._str.value;
+            const disabled = this._disabled.value;
+            const enable = this._enable.value;
+            const counter = this._counter.value;
+            const percent = this._percent.value;
+            return`<!-- HTML rendered -->
 <attr-test
   str="${str}"
   ${disabled ? 'disabled' : ''}
@@ -129,9 +127,9 @@ ${`<!-- HTML rendered -->
   counter="${counter}"
   percent="${percent}"
   data
-></attr-test>`}
-          </pre>
-        </code-block>`})}
+></attr-test>`;
+      })}</div>
+        </code-block>
       </div>
     `;
   }

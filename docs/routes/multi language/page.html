@@ -24,23 +24,23 @@
             <li>Number formatting</li>
             <li>Relative time formatting</li>
           </ul>
-        
+
           <mc-switch checked="${page.languagesChecked}" onchange="page.changeLanguage(this.checked)" label-right="en / es"></mc-switch>
-        
+
           <div>${i18n('About')}</div>
           <div>${i18n('key_string')}</div>
           <div>${page.count} ${i18n.format('itemPlural', page.count)}</div>
           <div>${i18n('time_from_now', page.time)}</div>
           <div>${i18n('date_key', page.date)}</div>
           <div>${i18n('currency_key', page.currency)}</div>
-        
+
           <div style="margin-top: 24px">
             <div class="mc-font-title-medium">Dynamic pluralization with signals</div>
             <mc-textfield label="${i18n('Label days')}" type="number" value="${page.days}" style="margin-top: 12px; margin-bottom: 12px;"
               oninput="page.days.value = this.value"></mc-textfield>
             <div>${i18n('relativeTime_key', page.days)}</div>
           </div>
-        
+
           <code-block language="javascript"><pre>
 ${`import { i18n } from '@thewebformula/lithe';
 
@@ -57,7 +57,7 @@ i18n.cache();
 i18n.addTranslation('en', en);
 i18n.addTranslation('es', es);`}
           </pre></code-block>
-        
+
           <code-block language="html"><pre>
 ${`<!-- Use i18n method to translate keys -->
 <div>\${i18n('About')}</div>
@@ -84,8 +84,8 @@ ${`<!-- Use i18n method to translate keys -->
 <!-- Attribute binding multiple -->
 <div i18n-attr="one,two" one="one" two="two"></div>`}
           </pre></code-block>
-        
-        
+
+
           <code-block language="json"><pre>
 ${`// en
 
@@ -136,7 +136,7 @@ ${`// en
   "currency_key": "$currencyFormat($1)",
   "relativeTime_key": "$relativeTimeFormat($1)" } }` }
           </pre></code-block>
-        
+
           <code-block language="json"><pre>
 ${`// es
 

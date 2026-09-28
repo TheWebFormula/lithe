@@ -1,16 +1,11 @@
 import { runTransition } from './viewTransitions.js';
 import { policyHTML } from './policy.js';
-import { manual } from 'prismjs';
-
-
-// TODO fix runTransitions
 
 
 let routes = new Map();
 let pathLookup = [];
 let notFoundPage;
 let pageContainer;
-let routeIdCounter = 1;
 
 const spaceRegex = /\s/g;
 const containsVariableOrWildcardRegex = /\/:|\*/g;

@@ -121,7 +121,6 @@ customElements.define('input-wrapper', InputWrapper);
 
           <div class="note">Boolean attributes like <strong>disabled</strong> will be added or removed based on their value</div>
 
-
           <attr-test
             str="value"
             disable=${false}
@@ -259,12 +258,12 @@ customElements.define('event-example', EventExample);`}
             <div style="margin: 42px 0px;">
               <div class="mc-font-title-large" style="margin-bottom: 8px;">Dynamically set attribute values</div>
               <div style="color: white; background-color: #3f51b5; padding: 12px; border-radius: 4px;">Normal style attribute</div>
-              <div style="${{
+              <div style=${{
                 color: 'white',
                 backgroundColor: '#3f51b5',
                 padding: '12px',
                 borderRadius: '4px'
-              }}">Styled using an object on the style attribute</div>
+              }}>Styled using an object on the style attribute</div>
 
 
               <div style="margin-top: 24px;">

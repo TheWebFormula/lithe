@@ -16,7 +16,7 @@ class MultiLanguagePage extends Component {
 
   constructor() {
     super();
-    
+
     i18n.addTranslation('en', en);
     i18n.addTranslation('es', es);
   }
@@ -27,6 +27,7 @@ class MultiLanguagePage extends Component {
   }
 
   disconnectedCallback() {
+    super.disconnectedCallback();
     i18n.setLocale(navigator.language);
   }
 }

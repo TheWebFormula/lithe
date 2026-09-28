@@ -1,7 +1,7 @@
 import Route from './src/client/Route.js';
 import Component from './src/client/Component.js';
-import { Signal, SignalObject, Compute, effect } from './src/client/signal.js'
 import { html } from './src/client/html.js';
+import { Signal, SignalObject, SignalArray, Compute, effect } from './src/client/signal.js'
 import { setSecurityLevel } from './src/client/sanitize.js';
 import { i18n } from './src/client/i18n.js';
 import { Fetcher, Interceptor } from './src/client/fetcher.js';
@@ -13,6 +13,7 @@ export {
   html,
   Signal,
   SignalObject,
+  SignalArray,
   Compute,
   effect,
   setSecurityLevel,
