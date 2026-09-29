@@ -1,7 +1,6 @@
 import { Component, Signal } from '@thewebformula/lithe';
 import htmlTemplate from './page.html';
 import './components/attr-test.js';
-// import './components/attr-test2.js';
 
 class TemplateAttributesPage extends Component {
   static title = 'Templating attributes';

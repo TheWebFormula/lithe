@@ -1,5 +1,4 @@
 import { addToQueue } from './queue.js';
-// import * as debugTool from './debuger.js';
 
 
 const SIGNAL_NODE = Symbol('SIGNAL_NODE');
@@ -76,11 +75,11 @@ class SignalNode {
   get value() {
     if (activeConsumer) this.subscribe(activeConsumer);
 
-    // return the instance of the signal for templating. This is needed for the template tag function to recognize it as a signal
-    // if (isTemplating && !isHTMLCompute(this) && !Array.isArray(this.valueUntracked)) return this;
-
     if (this.#value === ERRORED) throw this.#error;
+
+    // return the instance of the signal for templating. This is needed for the template tag function to recognize it as a signal
     if (isTemplating && !isHTMLCompute(this) && !isHTMLCompute(activeConsumer)) return this;
+
     return this.#value;
   }
 
@@ -106,8 +105,6 @@ class SignalNode {
       }
     }
 
-    // computes are updated on read, so we do not want to trigger a notify on itself
-    // if (this[COMPUTE]) return;
     addToQueue(this.#notifyWatchers);
   }
 
@@ -412,7 +409,6 @@ export class SignalArray extends SignalNode {
 
 
         if (ARRAY_MUTATION_METHODS.has(prop)) {
-          // return Reflect.get(target, prop, receiver);
           let fn = self.#methods.get(prop);
 
           if (fn === undefined) {
@@ -432,8 +428,6 @@ export class SignalArray extends SignalNode {
           if (!self.#proxies.has(val)) self.#proxies.set(val, self.#createProxy(val));
           return self.#proxies.get(val);
         }
-
-        // return target[prop];
 
         if (!self.#signals.has(target)) self.#signals.set(target, new Map());
         let targetSignals = self.#signals.get(target);
@@ -550,146 +544,6 @@ export class SignalObject extends SignalNode {
     });
   }
 }
-
-
-
-// export class SignalObject extends SignalNode {
-//   [SIGNAL_OBJECT] = true;
-//   #signals = new Map();
-//   #proxies = new Map();
-//   #methods = new Map();
-//   #rootProxy;
-//   templateSignal = new Signal([]);
-//
-//   constructor(value, track = false) {
-//     super();
-//     super.value = value;
-//     this.#rootProxy = this.#createProxy(value);
-//   }
-//
-//   // block
-//   set dirty(_) { }
-//   set lastCleanEpoch(_) { }
-//   set version(_) { }
-//
-//   get value() {
-//     if (activeConsumer) {
-//       this.subscribe(activeConsumer);
-//       this.templateSignal.subscribe(activeConsumer);
-//     }
-//     return this.#rootProxy;
-//   }
-//   set value(value) {
-//     if (super.value === value) return;
-//     this.#rootProxy = this.#createProxy(value);
-//     super.value = value;
-//   }
-//
-//   #createProxy(value, path = []) {
-//     if (value === null || typeof value !== 'object' || value.__isSignalProxy) return value;
-//
-//     const self = this;
-//
-//     return new Proxy(value, {
-//       get(target, prop, receiver) {
-//         if (prop === SIGNAL_NODE) return true;
-//         if (prop === SIGNAL_OBJECT) return true;
-//         if (prop === HTMLCOMPUTE) return false;
-//         if (prop === '__signal') return self;
-//         if (prop === 'valueUntracked') return self.valueUntracked;
-//         if (prop === 'valueOf' || prop === 'toJSON') return () => target;
-//
-//         const val = target[prop];
-//         if (prop === 'fragment') return val;
-//         if (prop == 'length') return val
-//
-//         if (Array.isArray(target) && typeof val === 'function') {
-//           // if (isTemplating && path.length === 0 && prop === 'map') {
-//           //   let fn = self.#methods.get(prop);
-//           //   if (fn === undefined) {
-//           //     fn = (...args) => {
-//           //       if (!self.#methods.has('htmlMap')) self.#methods.set('htmlMap', args[0]);
-//           //       let newArr = [];
-//           //       for(let i = 0; i < self.#rootProxy.length; i++) {
-//           //         newArr.push(args[0](self.#rootProxy[i]));
-//           //       }
-//           //       self.templateSignal.value = newArr;
-//           //       return self.templateSignal;
-//           //     }
-//           //     self.#methods.set(prop, fn);
-//           //   }
-//           //   return fn;
-//           // } else if (prop === 'push' && self.#methods.has('htmlMap')) {
-//           //   let htmlMap = self.#methods.get('htmlMap');
-//           //   let htmlPush = self.#methods.get('htmlPush');
-//           //   if (htmlPush === undefined) {
-//           //     htmlPush = (...args) => {
-//           //       const index = Array.prototype.push.apply(target, args);
-//           //       const ni = self.#rootProxy[index - 1];
-//           //       isTemplating = true;
-//           //       self.templateSignal.value = self.#rootProxy.map(htmlMap);
-//           //       // self.templateSignal.value.push(htmlMap(ni))
-//           //       isTemplating = false;
-//           //       self.templateSignal.markDirty();
-//           //       return index;
-//           //     };
-//           //     self.#methods.set('htmlPush', htmlPush);
-//           //   }
-//           //   return htmlPush;
-//           // }
-//
-//           // const mutatingMethods = ['push', 'pop', 'shift', 'unshift', 'splice', 'sort', 'reverse'];
-//           // if (self.#methods.has('htmlMap') && mutatingMethods.includes(prop)) {
-//           //   let htmlMap = self.#methods.get('htmlMap');
-//           //   return (...args) => {
-//           //     const result = target[prop].apply(target, args);
-//           //     isTemplating = true;
-//           //     self.templateSignal.value = self.#rootProxy.map(htmlMap);
-//           //     isTemplating = false;
-//           //     // self.templateSignal.markDirty();
-//           //     return result;
-//           //   };
-//           // }
-//
-//
-//
-//           return Reflect.get(target, prop, receiver);
-//         } else if (val !== null && typeof val === 'object') {
-//           if (!self.#proxies.has(prop)) {
-//             self.#proxies.set(prop, self.#createProxy(val, [...path, prop]));
-//           }
-//           return self.#proxies.get(prop);
-//         }
-//
-//         let changePath = [...path, prop].join('');
-//         if (!self.#signals.has(changePath)) {
-//           const sig = new Signal(target[prop]);
-//           self.#signals.set(changePath, sig);
-//         }
-//
-//         const propSignal = self.#signals.get(changePath);
-//         if (isTemplating) return propSignal;
-//         return propSignal.value;
-//       },
-//
-//       set(target, prop, value, receiver) {
-//         let changePath = [...path, prop].join('');
-//         if (self.#signals.has(changePath)) {
-//           const sig = self.#signals.get(changePath);
-//           sig.value = value;
-//           return true;
-//         }
-//         return Reflect.set(target, prop, value, receiver);
-//       },
-//
-//       deleteProperty(target, prop) {
-//         let changePath = [...path, prop];
-//         const result = Reflect.deleteProperty(target, prop);
-//         return result;
-//       }
-//     });
-//   }
-// }
 
 
 function setActiveConsumer(consumer) {

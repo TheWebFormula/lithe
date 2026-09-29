@@ -1,7 +1,6 @@
 import { isSignal, isHTMLCompute, isSignalObject, isSignalArray } from './signal.js';
 import { addToQueue } from './queue.js';
 import { policyHTML } from './policy.js';
-// import * as debugTool from './debuger.js';
 
 
 const TEMPLATE_VALUE = Symbol('TEMPLATE_VALUE');
@@ -21,69 +20,6 @@ export function getTemplate(strings, values) {
   let template = templates.get(str);
   return template.clone(values);
 }
-
-
-// debugTool.registerTool('getElementData', 'elemeents.onSelectionChanged',  (element) => {
-//   let instance;
-//   const elementMap = new Map(templates.values().toArray().flatMap(t => t.instances.values().toArray()).flatMap(instance => instance.elements.map(el => [el, instance])));
-//   while (element && element !== document.body) {
-//     if (elementMap.has(element)) {
-//       instance = elementMap.get(element);
-//       break;
-//     }
-//     element = element.parentElement;
-//   }
-//
-//   let matches = [];
-//   if (instance) {
-//     for (let valueNode of instance.valueNodes) {
-//       if (valueNode.isAttr === true) {
-//         if (element === valueNode.node.ownerNode || element.contains(valueNode.node.ownerNode)) {
-//           matches.push(valueNode);
-//         }
-//       } else if (element === valueNode.node || element.contains(valueNode.node)) {
-//         matches.push(valueNode);
-//       }
-//     }
-//   }
-//
-//   return {
-//     templateInstance: instance,
-//     valueNodes: matches.map(v => ({
-//       node: v.node,
-//       values: v.values
-//     }))
-//   };
-// }, generateCssPathId);
-//
-// function generateCssPathId(element) {
-//   let nonElementIndex = '';
-//   if (element.nodeType !== Node.ELEMENT_NODE) {
-//     let parent = element.parentElement;
-//     if (parent) nonElementIndex = Array.from(parent.children).indexOf(element) + 1;
-//     element = parent;
-//   }
-//
-//   const path = [];
-//   while (element && element.nodeType === Node.ELEMENT_NODE) {
-//     if (element.tagName.toLowerCase() === 'body') {
-//       path.unshift('body');
-//       break;
-//     }
-//
-//     // Get the 1-based index among all sibling elements
-//     let index = 1;
-//     let sibling = element.previousElementSibling;
-//     while (sibling) {
-//       index++;
-//       sibling = sibling.previousElementSibling;
-//     }
-//
-//     path.unshift(`nth-${index}`);
-//     element = element.parentNode;
-//   }
-//   return path.join('-') + nonElementIndex;
-// }
 
 
 class Template {
@@ -499,7 +435,7 @@ function setNodeFragmentValue(value, node) {
 // TODO implament reflect and aria
 function setAttrValue(ownerNode, attrName, attrType, value, update = false) {
   let attrNode = ownerNode.getAttributeNode(attrName);
-  // console.log(ownerNode, attrName, attrType, value, update, attrNode)
+
   if (attrType === 'toggle') {
     if (update) { // we do not want to change the rendered state
       ownerNode[attrName] = value;
@@ -550,95 +486,12 @@ function cleanup() {
   }
 
   for (let i = 0; i < toRemove.length; i++) {
-    // console.log(toRemove[i])
     if (typeof toRemove[i].remove === 'function') toRemove[i].remove();
   }
   toRemove.length = 0;
 
   isTemplating = false;
 }
-
-
-// function buildSingleDataKeyed(node, value) {
-//   let isHTMLCompute = !!value?.[HTMLCOMPUTE];
-//   value = getValue(value);
-
-//   if (isHTMLCompute && (value instanceof DocumentFragment || (Array.isArray(value) && value[0] instanceof DocumentFragment))) {
-//     let elements = [];
-//     let nodeIndex = 0;
-//     let currentNodes = Array.isArray(node) ? node : [node];
-//     let keys = new Set();
-//     let key = 'index';
-
-//     // TODO handle reordering of elements when keyed
-
-//     // check if elements have valid key attribute
-//     // This will look for unique attribute values (key, id, value)
-//     // If no valid key attribute is found, the key will default to 'index'
-//     for (let i = 0; i < currentNodes.length; i++) {
-//       if (key === 'index') {
-//         if (currentNodes[i].nodeType === Node.TEXT_NODE) break;
-//         if (currentNodes[i]?.hasAttribute('key')) key = 'key';
-//         else if (currentNodes[i]?.hasAttribute('id')) key = 'id';
-//         else if (currentNodes[i]?.hasAttribute('value')) key = 'value';
-//         else break;
-//       }
-
-//       let keyValue = currentNodes[i].getAttribute('key');
-//       if (!key || keys.has(keyValue)) {
-//         key = 'index';
-//         break;
-//       }
-//       keys.add(keyValue);
-//     }
-
-//     // build map of current elements by key
-//     let currentByKey = new Map();
-//     for (let i = 0; i < currentNodes.length; i++) {
-//       let keyValue = key === 'index' ? i : currentNodes[i].getAttribute(key);
-//       currentByKey.set(keyValue, currentNodes[i]);
-//     }
-
-//      // build map of new elements by key
-//     let newByKey = new Map();
-//     for (let frag of [].concat(value)) {
-//       for (let el of frag.childNodes) {
-//         // remove empty new line text nodes
-//         if (el.nodeType === Node.TEXT_NODE && el.textContent.trim() === '') continue;
-
-//         let keyValue = key === 'index' ? nodeIndex : el.getAttribute(key);
-//         newByKey.set(keyValue, el);
-//         nodeIndex++;
-//       }
-//     }
-
-//     // replace / add / keep based on changes
-//     let newElements = newByKey.entries().toArray();
-//     for (let i = 0; i < newElements.length; i++) {
-//       let el = newElements[i][1];
-//       let current = currentByKey.get(newElements[i][0]);
-//       // new node
-//       if (!current) {
-//         elements[i - 1].after(el);
-//         elements.push(el);
-
-//       // no change
-//       } else if (el.outerHTML === current?.outerHTML) {
-//         elements.push(current);
-
-//       // updated node
-//       } else {
-//         current.replaceWith(el);
-//         elements.push(el);
-//       }
-//     }
-
-//     return elements;
-//   }
-
-//   node.textContent = value;
-// }
-
 
 
 const booleanAttributes = [
