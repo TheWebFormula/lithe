@@ -104,3 +104,17 @@ class TemplateListsPage extends Component {
   }
 }
 customElements.define('template-lists-page', TemplateListsPage);
+
+
+
+
+// <mc-button onclick="page.addLots()">Add lots</mc-button>
+// <mc-button onclick="page.updateLots()">update lots</mc-button>
+// <mc-button onclick="page.setOrig()">Revert</mc-button>
+// <div style="margin: 42px 0px;">
+//   <div class="mc-font-title-large" style="margin-bottom: 8px;">Signal list with value as key</div>
+//    <div class="mc-font-title-small" style="margin-bottom: 8px;">You cannot have 2 items with the same key</div>
+//   <mc-textfield id="valueinputwithkey" placeholder="...value" style="margin-right: 9px"></mc-textfield>
+//   <mc-button onclick="page.addItemWithKey(valueinputwithkey.value)" style="margin-top: 12px;">Add value</mc-button>
+//   ${html(() => page.itemsWithKey.value.map(item => html`<div key="${item.value}">Value: ${item.value}</div>`))}
+// </div>

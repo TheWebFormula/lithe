@@ -221,7 +221,7 @@ class EventExample extends Component {
   }
 
   template() {
-    return \``}
+    return html\``}
     </pre></code-block><code-block language="html" linked>
       <pre>
       ${`<!-- Bound using .bind() -->
@@ -280,8 +280,7 @@ customElements.define('event-example', EventExample);`}
 
           <code-block language="html">
             <pre>
-${`
-<div
+${`<div
   style="color: white; background-color: #3f51b5; padding: 12px; border-radius: 4px;"
 >Normal style attribute</div>
 
@@ -293,7 +292,7 @@ ${`
   borderRadius: '4px'
 }}">Styled using object</div>
 
-<div style=${page.styleSignal}>Styled using signal</div>`}
+<div style=\${page.styleSignal}>Styled using signal</div>`}
                   </pre>
           </code-block>
         </mc-card>
