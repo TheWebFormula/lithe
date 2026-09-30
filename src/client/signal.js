@@ -51,7 +51,7 @@ class SignalNode {
   #consumers = [];
   #dirty = false;
   #version = 0;
-  #lastCleanEpoch = 0;
+  #lastCleanEpoch = -1;
   #value = UNSET;
   #error;
   #watchers = new Set();
