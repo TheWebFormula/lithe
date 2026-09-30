@@ -18,7 +18,11 @@ build({
       inline: true,
       languages: ['javascript', 'css', 'bash', 'html', 'yaml', 'json']
     })
-  ]
+  ],
+  // devServer: {
+  //   enable: true,
+  //   livereload: false
+  // }
   // csp: {
   //   enable: true,
   //   requireTrustedTypes: true,
