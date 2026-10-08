@@ -1,5 +1,6 @@
 import { getSearchParameters, getUrlParameters } from './router.js';
 import { html, activateComponent, deactivateComponent } from './html.js';
+import { isCss } from './css.js';
 
 
 const dashCaseRegex = /-([a-z])/g;
@@ -17,28 +18,33 @@ export default class Component extends HTMLElement {
   /**
    * Attach up shadow root
    * @type {Boolean}
+   * @default false
    */
   static useShadowRoot = false;
 
   /**
    * Delegate focus for shadowRoot
    * @type {Boolean}
+   * @default false
    */
   static shadowRootDelegateFocus = false;
 
   /**
    * Pass in HTML string. Use for imported .HTML
    *   Supports template literals: <div>${this.var}</div>
+   *   alternative to using the template() method
    * @type {String}
    */
   static htmlTemplate = '';
 
   /**
-   * Pass in styles for shadow root.
-   *   Can use imported stylesheets: import styles from '../styles.css' assert { type: 'css' };
-   * @type {CSSStyleSheet}
+   * Pass in styles.
+   *   StyleSheetTemplate: Can use css tag: css`h1 { color: blue; }`
+   *   CSSStyleSheet: Can use imported stylesheets: import styles from '../styles.css' assert { type: 'css' };
+   * @type {CSSStyleSheet | StyleSheetTemplate | (CSSStyleSheet | StyleSheetTemplate)[]}
    */
-  static styleSheets = [];
+  static styles = [];
+
 
   /**
    * Page title
@@ -59,7 +65,7 @@ export default class Component extends HTMLElement {
   /**
     * @typedef {Object} AttributeConfig
     * @property {AttributeType} type - The parsed primitive type of the attribute
-    * @property {Boolean} [reflect=true] - Whether the attribute should be reflected to the DOM
+    * @property {Boolean} [reflect=true] - Whether the attribute should be reflected to the DOM (converted to dash case when reflected)
     */
   /**
     * Extended observedAttributes, allowing you to specify types
@@ -120,11 +126,8 @@ export default class Component extends HTMLElement {
       console.error(`${this.constructor.name} overrides disconnectedCallback but fails to call super.disconnectedCallback(). You can use afterRender() also.`);
     }
 
-
     if (this.constructor.useShadowRoot) {
       this.attachShadow({ mode: 'open', delegatesFocus: this.constructor.shadowRootDelegateFocus });
-    } else if (this.constructor.styleSheets[0] instanceof CSSStyleSheet) {
-      document.adoptedStyleSheets.push(...this.constructor.styleSheets);
     }
   }
 
@@ -158,7 +161,7 @@ export default class Component extends HTMLElement {
   /**
    * Use with observedAttributesExtended
    * @function
-   * @param {String} name - Attribute name
+   * @param {String} name - Attribute name (converted to camel case)
    * @param {String} oldValue - Old attribute value
    * @param {String} newValue - New attribute value
    */
@@ -190,6 +193,7 @@ export default class Component extends HTMLElement {
   connectedCallback() { this._render(); }
   disconnectedCallback() {
     if (this.#currentTemplate) this.#currentTemplate.disconnect();
+    if (!this.constructor.useShadowRoot) this.#removeDocumnetStyles();
   }
 
   /** Called before render */
@@ -201,11 +205,11 @@ export default class Component extends HTMLElement {
   /**
    * Method that returns a html template string. This is an alternative to use static htmlTemplate
    *    template() {
-   *       return `<div>${this.var}</div>`;
+   *       return html`<div>${this.var}</div>`;
    *    }
    * @name template
    * @function
-   * @return {String}
+   * @return {TemplateInstance}
    */
   template() { }
 
@@ -238,13 +242,40 @@ export default class Component extends HTMLElement {
     this.#noTemplates = this.constructor.prototype.template === Component.prototype.template && this.constructor.htmlTemplate === Component.htmlTemplate;
 
     if (!this.#noTemplates) {
-      if (this.constructor.useShadowRoot && this.constructor.styleSheets[0] instanceof CSSStyleSheet) {
-        this.shadowRoot.adoptedStyleSheets = this.constructor.styleSheets;
-      }
-
+      this.#addStyles();
       if (typeof this.constructor.htmlTemplate === 'function') this.template = () => this.constructor.htmlTemplate(this);
     }
+
     this.#prepared = true;
+  }
+
+  #addStyles() {
+    const styles = Array.isArray(this.constructor.styles) ? this.constructor.styles : [this.constructor.styles];
+    const root = this.constructor.useShadowRoot ? this.shadowRoot : document;
+    if (styles.length > 0) {
+      for (let style of styles) {
+        if (style instanceof CSSStyleSheet) {
+          root.adoptedStyleSheets.push(style);
+        } else if (isCss(style)) {
+          root.adoptedStyleSheets.push(style.CSSStyleSheet);
+        }
+      }
+    }
+  }
+
+  #removeDocumnetStyles() {
+    const styles = Array.isArray(this.constructor.styles) ? this.constructor.styles : [this.constructor.styles];
+    document.adoptedStyleSheets = document.adoptedStyleSheets.filter(s => {
+      for (let style of styles) {
+        if (style instanceof CSSStyleSheet) {
+          if (s === style) return false;
+        } else if (isCss(style)) {
+          if (s === style.CSSStyleSheet) return false;
+        }
+      }
+
+      return true;
+    })
   }
 
   #attributeDescriptorTypeConverter(value, type) {

@@ -1,4 +1,4 @@
-import { Compute, beginTemplating, endTemplating } from './signal.js';
+import Cue, { beginTemplating, endTemplating } from './Cue.js';
 import { getTemplate } from './template.js';
 
 export function activateComponent() {
@@ -11,7 +11,7 @@ export function deactivateComponent() {
 
 export function html(strings, ...values) {
   // if a function is used then handle under compute. <div>${html(() => this.isLoading.value ? 'Loading...' : '')}</div>
-  if (typeof strings === 'function') return new Compute(strings, true);
+  if (typeof strings === 'function') return new Cue.HTML(strings);
 
   const t = getTemplate(strings, values);
   t.connect(values);

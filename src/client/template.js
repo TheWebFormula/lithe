@@ -1,4 +1,4 @@
-import { isSignal, isHTMLCompute, isSignalObject, isSignalArray } from './signal.js';
+import Cue from './Cue.js';
 import { addToQueue } from './queue.js';
 import { policyHTML } from './policy.js';
 
@@ -213,7 +213,7 @@ class ValueNode {
 
   addValue(value, index) {
     this.values.push(value);
-    if (isSignal(value)) {
+    if (Cue.isCue(value)) {
       this.isSignal = true;
       this.signals.push(value);
 
@@ -225,6 +225,7 @@ class ValueNode {
 
   signalChange = (signal) => {
     if (!this.initialized) return;
+
     // if node is an html compute then a signal update means re rendering
     this.disconnectTemplateInstances();
     this.update(true);
@@ -470,12 +471,12 @@ function setAttrValue(ownerNode, attrName, attrType, value, update = false) {
 
 
 function getValue(value) {
-  let isValueSignal = isSignal(value);
+  let isValueSignal = Cue.isCue(value);
   if (isValueSignal && value.error) {
     console.error(value.error);
     return '';
   }
-  return isValueSignal ? value.valueTemplating : value;
+  return isValueSignal ? value.getForTemplate() : value;
 }
 
 

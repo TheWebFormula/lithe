@@ -1,4 +1,4 @@
-import { isSignal, Compute } from './signal.js';
+import Cue from './Cue.js';
 
 
 const translations = new Map();
@@ -14,7 +14,7 @@ window.addEventListener('languagechange', languageChange);
 
 
 export function i18n(key, ...variables) {
-  const compute = new Compute(() => {
+  const compute = new Cue.HTML(() => {
     const message = currentTranslations.messages[key];
     if (!message) {
       if (window.liDev) console.warn(`Cannot localize. Missing key: ${key}`);
@@ -24,18 +24,18 @@ export function i18n(key, ...variables) {
     return message.replace(valueRegex, function (_, varIndex, formatterName, formatterVarIndex) {
       if (varIndex) {
         const variable = variables[parseInt(varIndex) - 1];
-        if (isSignal(variable)) return variable.valueTemplating;
+        if (Cue.isCue(variable)) return variable.getForTemplate();
         return variable
       }
       if (formatterName && formatterVarIndex) {
         const formatMethod = translations.get(currentLocal).formatters[formatterName].method;
         const variable = variables[parseInt(formatterVarIndex) - 1];
-        if (isSignal(variable)) return formatMethod(variable.valueTemplating);
+        if (Cue.isCue(variable)) return formatMethod(variable.getForTemplate());
         return formatMethod(variable);
       }
       return '';
     });
-  }, true);
+  });
   signals.add(compute);
   return compute;
 }
@@ -67,14 +67,14 @@ i18n.cache = () => {
 }
 
 i18n.format = (formatterName, value) => {
-  const compute = new Compute(() => {
+  const compute = new Cue.Compute(() => {
     const formatter = translations.get(currentLocal).formatters[formatterName];
     if (!formatter) {
       if (window.liDev) console.warn(`Cannot find formatter: ${formatterName}`);
       return '';
     }
 
-    if (isSignal(value)) return formatter.method(value.valueTemplating);
+    if (Cue.isCue(value)) return formatter.method(value.getForTemplate());
     return formatter.method(value);
   })
   signals.add(compute);
