@@ -104,6 +104,12 @@ build({
   */
   sourcemap: false,
 
+  // Auto generate sitemap.xml
+  sitemap: {
+    enable: true, // default: false
+    host: 'https://lithe.dev'
+  },
+
   // Compress files with Brotli or Gzip
   compression: false,
   compressionConfig: {
