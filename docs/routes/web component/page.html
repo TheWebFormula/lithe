@@ -8,77 +8,102 @@
     <nav class="links-nav">
       <h2>Links</h2>
       <ul class="links">
-        <li><a href="#pagejs">page.js</a></li>
-        <li><a href="#componentjs">component.js</a></li>
-        <li><a href="#interacting">Interacting with components</a></li>
+        <li><a href="#example">Example button</a></li>
+        <li><a href="#breakdown">Breakdown</a></li>
       </ul>
     </nav>
 
+
     <div class="article-content">
+      <section id="example" aria-label="Page example">
+        <h2>Standard component</h2>
+        <p class="subheader">You can use the <strong>Component</strong> class to build webcomponent. This extends the default capabilities of web components.</p>
 
-      <section id="pagejs" aria-label="Page example">
-        <mc-card>
-          <h2 slot="headline">Page file</h2>
-          <div slot="supporting-text">page.js</div>
-          <div slot="supporting-text">Web component is imported in this file</div>
 
-          <code-block language="javascript"><pre>
-${`import { Component, html } from '@thewebformula/lithe';
-/* HTML imports will bundle with the build */
-import htmlTemplate from './page.html';
+        <h4>Simple button</h4>
+        <code-block language="html"><pre>
+${`<my-button loading=\${this.isLoading}>
+  <i class="load" slot="icon"></i>
+  Load data
+</my-button>`}
+        </pre></code-block>
 
-// imported component
-import './component.js';
+        <br>
+        <code-block language="javascript"><pre>
+${`import { Component, html, css } from '@thewebformula/lithe';
 
-class PageClass extends Component {
-  // html page title
-  static title = 'Page';
+class MyButton extends Component {
+  static useShadowRoot = true;
+  static shadowRootDelegateFocus = true;
+  static styles = css\`
+    button:not(.loading) .loading-text { display: none; }
+    button.loading .text { display: none; }
+  \`;
 
-  // you can set the html from and import or use the template method (see below)
-  static htmlTemplate = htmlTemplate;
+  static observedAttributesExtended = {
+    disabled: { type: 'toggle' },
+    loading: { type: 'toggle' }
+  };
 
-  constructor() {
-    super();
+  attributeChangedCallbackExtended(name, oldValue, newValue) {
+    this[name] = newValue;
   }
 
-  // this can be used in place of import the html file
-  template() {
-    return html\`${`
-      <div>Page Content</div>
+  #button;
+  #disabled = false;
+  get disabled() { return this.#disabled; }
+  set disabled(value) {
+    this.#disabled = value;
+    this.#button.disabled = value;
+  }
 
-      <!-- custom component -->
-      <custom-button>Click</custom-button>
-    `}\`;
+  #loading = false;
+  get loading() { return this.#loading; }
+  set loading(value) {
+    this.#loading = value;
+    this.#button.classList.toggle('loading', value);
+  }
+
+  afterRender() {
+    this.#button = this.shadowRoot.querySelector('button');
+  }
+
+  handleClick(event) {
+    if (this.#loading) {
+      event.stopImmediatePropagation();
+      event.preventDefault();
+    }
+  }
+
+  template() {
+    return html\`
+      <button disabled=\${this.#disabled} loading=\${this.#loading} onclick=\${(event) => this.handleClick(event)}>
+        <slot name="icon"></slot>
+        <slot class="text"></slot>
+        <span class="loading-text">Loading...</span>
+      </button>
+    \`;
   }
 }
-customElements.define('page-component-name', PageClass);`}
-          </pre></code-block>
-        </mc-card>
-      </section>
+customElements.define('my-button', MyButton);`}
+        </pre></code-block>
 
 
-      <section id="componentjs" aria-label="Component example">
-        <mc-card>
-          <h2 slot="headline">Component file</h2>
-          <div slot="supporting-text">component.js</div>
 
-          <code-block language="html"><pre>
-${`<!-- component.html -->
-<button><slot></slot></button>`}
-          </pre></code-block>
 
-          <code-block language="javascript"><pre>
+        <h4 id="breakdown">Component breakdown</h4>
+        <code-block language="javascript"><pre>
 ${`import { Component } from '@thewebformula/lithe';
 
 /** You can import html
- * html imports as a string
- */
+* html imports as a string
+*/
 import htmlTemplate from './component.html';
 
 /** You can import stylesheets
- * Stylesheets imports as modules that export CSSStyleSheet
- * You can add them to the component 'static styleSheets = [styles];'
- */
+* Stylesheets imports as modules that export CSSStyleSheet
+* You can add them to the component 'static styles = [styles];'
+*/
 import styles from '../styles.css' assert { type: 'css' };
 
 
@@ -86,7 +111,8 @@ import styles from '../styles.css' assert { type: 'css' };
 class CustomButton extends Component {
   /**
     * Pass in HTML string. Use for imported .HTML
-    * Supports template literals: <div>\${this.var}</div>
+    *   Supports template literals: <div>\${this.var}</div>
+    *   alternative to using the template() method
     * @type {String}
     */
   static htmlTemplate = htmlTemplate;
@@ -95,22 +121,25 @@ class CustomButton extends Component {
   /**
     * Hook up shadow root
     * @type {Boolean}
+    * @default false
     */
   static useShadowRoot = false;
 
 
   /**
     * @type {Boolean}
+    * @default false
     */
   static shadowRootDelegateFocus = false;
 
 
   /**
-    * Pass in styles for shadow root.
-    * Can use imported stylesheets: import styles from '../styles.css' assert { type: 'css' };
-    * @type {[CSSStyleSheet]}
+    * Pass in styles.
+    *   StyleSheetTemplate: Can use css tag: css\`h1 { color: blue; }\`
+    *   CSSStyleSheet: Can use imported stylesheets: import styles from '../styles.css' assert { type: 'css' };
+    * @type {CSSStyleSheet | StyleSheetTemplate | (CSSStyleSheet | StyleSheetTemplate)[]}
     */
-  static styleSheets;
+  static styles;
 
 
   /**
@@ -126,7 +155,7 @@ class CustomButton extends Component {
   /**
     * @typedef {Object} AttributeConfig
     * @property {AttributeType} type - The parsed primitive type of the attribute
-    * @property {Boolean} [reflect=true] - Whether the attribute should be reflected to the DOM
+    * @property {Boolean} [reflect=true] - Whether the attribute should be reflected to the DOM (converted to dash case when reflected)
     */
   /**
     * Extended observedAttributes, allowing you to specify types
@@ -138,108 +167,47 @@ class CustomButton extends Component {
 
   /**
     * Use with observedAttributesExtended
-    * You can still use \`attributeChangedCallback\` in stead of this.
+    * Attribut names are automatically converted from dashcase to camel case
     * @function
-    * @param {String} name - Attribute name
+    * @param {String} name - Attribute name (converted to camel case)
     * @param {String} oldValue - Old attribute value
     * @param {String} newValue - New attribute value
     */
   attributeChangedCallbackExtended(name, oldValue, newValue) { }
 
 
-  // need to bind events to access \`this\`
-  #onClick_bound = this.#onClick.bind(this);
-
-
-  constructor() {
-    super();
-  }
-
   /**
     * Method that returns a html template string. This is an alternative to use static htmlTemplate
     * @name template
     * @function
-    * @return {String}
+    * @return {TemplateInstance}
     */
-  template() { return '<div></div>' }
+  template() { return html'<div></div>' }
 
   connectedCallback() {
-    super.connectedCallback();
+    super.connectedCallback(); // must be called if using connectedCallback
   }
-  disconnectedCallback() {}
-  beforeRender() {}
 
+  // Rendering only happens once unless called manually
+  beforeRender() {}
   afterRender() {
     this.#root.querySelector('button').addEventListener('click', this.#onClick_bound);
   }
 
   disconnectedCallback() {
+    super.disconnectedCallback(); // must be called if using disconnectedCallback
     this.#root.querySelector('button').removeEventListener('click', this.#onClick_bound);
   }
 
   #onClick() {
     console.log('Custom button component clicked!');
   }
+  #onClick_bound = this.#onClick.bind(this);
 }
 
 // define web component
 customElements.define('custom-button', CustomButton);`}
-          </pre></code-block>
-        </mc-card>
-      </section>
-
-
-      <section id="interacting" aria-label="Component interaction example">
-        <mc-card>
-          <h2 slot="headline">Interacting with component elements</h2>
-
-          <code-block language="html"><pre>
-${`<!-- index.html -->
-<body>
-  <custom-webcomponent></custom-webcomponent>
-</body>`}
-          </pre></code-block>
-
-          <code-block language="html"><pre>
-${`<!-- component.html -->
-<button onclick="this.closest('custom-webcomponent').clickIt()">Click it direct</button>
-<button id="eventlistener-button">Click it event listener</button>`}
         </pre></code-block>
-
-        <code-block language="javascript"><pre>
-${`import { Component } from '@thewebformula/lithe';
-import html from './component.html'; // automatically bundles
-
-class CustomWebcomponent extends Component {
-  static htmlTemplate = html;
-
-  // need to bind events to access \`this\`
-  #onClick_bound = this.clickIt.bind(this);
-
-  varOne = 'var one';
-
-
-  constructor() {
-    super();
-  }
-
-  afterRender() {
-    this.#root.querySelector('#eventlistener-button').addEventListener('click', this.#onClick_bound);
-  }
-
-  disconnectedCallback() {
-    this.#root.querySelector('#eventlistener-button').removeEventListener('click', this.#onClick_bound);
-  }
-
-  clickIt() {
-    console.log('click it!');
-  }
-}
-
-// define web component
-customElements.define('custom-webcomponent', CustomWebcomponent);`}
-          </pre></code-block>
-        </mc-card>
       </section>
     </div>
   </div>

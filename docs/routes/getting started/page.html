@@ -1,351 +1,107 @@
 <article>
   <header>
     <h1>Getting started</h1>
-    <div class="page-subheader mc-font-title-medium">Material theme, colors, motion, font</div>
+    <div class="page-subheader mc-font-title-medium">Quick start guide to build your first app. This will introduce you to most of the concepts needed.</div>
   </header>
 
   <div class="article-main">
-    <nav class="links-nav">
-      <h2>Links</h2>
-      <ul class="links">
-        <li><a href="#install">Install</a></li>
-        <li><a href="#routing">Routing</a></li>
-        <li><a href="#indexhtml">index.html</a></li>
-        <!-- <li><a href="#splash">Splash screen</a></li> -->
-        <li><a href="#appjs">app.js</a></li>
-        <li><a href="#appcss">app.css</a></li>
-        <li><a href="#pagejs">Page</a></li>
-        <li><a href="#build">build</a></li>
-      </ul>
-    </nav>
-
     <div class="article-content">
 
-      <section id="install" aria-label="Installation">
-        <mc-card>
-          <h2 slot="headline">Install</h2>
+      <section aria-label="Check out the playground">
+        <h2>Check out the playground</h2>
+        <p class="subheader">You can jump over to our playground to see the quick start tutorial in action.</p>
+        <mc-button href="/playground" outlined>Playground <mc-icon>arrow_forward</mc-icon></mc-button>
+      </section>
 
-          <code-block language="bash"><pre>
+
+      <section aria-label="create your first page">
+        <h2>Create your first page</h2>
+        <p class="subheader">We will create the required files to render your first page. This includes; index.html, page.js, app.js, and build.js</p>
+
+        <code-block language="bash" style="margin-top: 46px;"><pre>
 npm install @thewebformula/lithe
-          </pre></code-block>
-        </mc-card>
-      </section>
-
-
-      <section id="routing" aria-label="Routing">
-        <mc-card >
-          <h2 slot="headline">Routing</h2>
-          <div slot="supporting-text">Lithe provides 2 methods for route configurations. Both methods can be used together.</div>
-          <div slot="supporting-text"><a href="/routing">Routing documentation</a></div>
-
-          <code-block language="bash"><pre>
-app/
-└── routes/
-    ├── index/
-    │   └── index.js     # /
-    ├── 404/
-    │   └── index.js     # /404 (or any url that is not found)
-    ├── one/
-    │   └── index.js     # one/
-    ├── two[id?]/
-    │   └── index.js     # two/:id?
-    ├── three/
-    │   └── [id]/
-    │       └── index.js # three/:id
-    └── four/
-        └── [...all]/
-            └── index.js # four/* (four/a/b/)
-          </pre></code-block>
-
-          <div style="margin: 18px">
-            <div class="mc-font-body-large route-list">app/routes/index/index.js → <span>/</span></div>
-            <div class="mc-font-body-large route-list">app/routes/one/index.js → <span>one</span></div>
-            <div class="mc-font-body-large route-list">app/routes/two[id?]/index.js → <span>two/:id?</span></div>
-            <div class="mc-font-body-large route-list">app/routes/three/[id]/index.js → <span>three/:id</span></div>
-            <div class="mc-font-body-large route-list">app/routes/four/[...rest]/index.js →
-              <span>four/*</span>
-            </div>
-
-            <div class="mc-font-title-medium" style="margin-top: 24px; margin-bottom: 8px;">Directory route details</div>
-            <div class="mc-font-body-large route-list"><span>routes/index/index.js</span> Root page (/)</div>
-            <div class="mc-font-body-large route-list"><span>routes/404/index.js</span> Not found page. Auto redirect on non
-              matching routes</div>
-            <div class="mc-font-body-large route-list"><span>index.js</span> Route component file</div>
-            <div class="mc-font-body-large route-list"><span>[id]</span> Directory that represents a url parameter</div>
-            <div class="mc-font-body-large route-list"><span>[id?]</span> Directory that represents an options url parameter
-            </div>
-            <div class="mc-font-body-large route-list"><span>name[id?]</span> Inline url parameter to avoid sub folder</div>
-            <div class="mc-font-body-large route-list"><span>[...rest]</span> Directory that represents catch-all route</div>
-            <div class="mc-font-body-large route-list"><span>[...rest?]</span> Directory that represents optional catch-all
-              route</div>
-          </div>
-        </mc-card>
-      </section>
-
-
-      <section id="indexhtml" aria-label="index.html example">
-        <mc-card>
-          <h2 slot="headline">index.html</h2>
-
-          <code-block language="html"><pre>
-${`<!doctype html>
-  <html lang="en">
-
-  <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="Cache-Control" content="no-store" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <!-- overridden by page titles -->
-    <title>Default Title</title>
-
-    <!-- app.js will automatically be updated to match bundle outputs -->
-    <\script src="/app.js" type="module"><\/script>
-
-    <!-- If you configure 'entryPointCSS' with build, app.css will automatically be updated to match bundle outputs -->
-    <\link href="/app.css" rel="stylesheet">
-  </head>
-
-  <body>
-    <!-- page template render into this element -->
-    <div id="page-content"></div>
-  </body>
-</html>`}
-          </pre></code-block>
-        </mc-card>
-      </section>
-
-
-      <!-- <section id="splash" aria-label="Splash screen">
-        <mc-card>
-          <h2 slot="headline">Splash screen</h2>
-          <div slot="supporting-text">You can add a splash screen to your app</div>
-
-          <div class="mc-font-body-medium">
-            <ul>
-              <li>Only shows if load takes longer than 300 milliseconds</li>
-              <li>Splash screen will show for a minimum of 1.2 seconds</li>
-              <li>A default splash screen is provided using the PWA icon</li>
-              <li>You can override the default splash screen with custom HTML (example below)</li>
-            </ul>
-          </div>
-
-
-          <code-block language="html">
-            <pre>
-${`<!doctype html>
-  <html lang="en">
-
-  <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="Cache-Control" content="no-store" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-
-    <!-- Add meta tag for splash screen -->
-    <meta name="splash-screen" content="true">
-  </head>
-
-  <body>
-    ...
-  </body>
-</html>`}
-                </pre>
-          </code-block>
-
-          <code-block language="html">
-            <pre>
-${`
-<!-- Add custom splash screen HTML -->
-
-<!doctype html>
-  <html lang="en">
-
-  <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="Cache-Control" content="no-store" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-
-    <!-- Add meta tag for splash screen -->
-    <meta name="splash-screen" content="true">
-  </head>
-
-  <body>
-
-    <!-- Overrides default splash screen -->
-    <splash-screen>
-      ...HTML
-    </splash-screen>
-
-    ...
-  </body>
-</html>`}
-                </pre>
-          </code-block>
-        </mc-card>
-      </section> -->
-
-
-      <section id="appjs" aria-label="app.js example">
-        <mc-card>
-          <h2 slot="headline">Main application file</h2>
-          <div slot="supporting-text">app.js</div>
-          <div slot="supporting-text">Required: Automatically uses app.js as entry file for bundling</div>
-
-          <code-block language="javascript"><pre>
-${`/* app.js
-* Import pages and code
-*/
-
-import someModule from './someModule.js';
-
-import './routes/index/index.js';
-import './routes/page-two/index.js';`}
         </pre></code-block>
 
-        <!-- <div style="margin-top: 42px; margin-bottom: 12px;">
-          <div style="font-size: 16px;">Prevent navigation allows you to lock down the app for uses like authentication</div>
-        </div>
+        <h4 class="mc-font-title-large">app/index.html</h4>
+        <p class="subheader">Creeate the index html that will be used to load the site.</p>
+        <code-block language="html"><pre>
+${`<!-- app/index.html -->
 
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Cache-Control" content="no-store" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Default Title</title> <!-- default value, overridden by the component title -->
+
+    <link rel="preload" href="/app.css" as="style"> <!--auto handles preload style links -->
+    <script type="module" src="/app.js" defer></script> <!-- auto injected if not present -->
+  </head>
+
+  <body>
+    <main id="page-content"></main> <!--render looks for [id="page-content"] -->
+  </body>
+</html>`}
+        </pre></code-block>
+
+        <h4 class="mc-font-title-large">app/routes/index/index.js</h4>
+        <p class="subheader">Create the home page. The <strong>routes</strong> folder is the default routing folder and <strong>index</strong> is the root. <a href="/routing">Routing</a></p>
         <code-block language="javascript"><pre>
-${`import { preventNavigation } from '@thewebformula/lithe';
+${`// app/routes/index/index.js
 
-// if not authenticated redirect to login and prevent navigation
-if (!document.cookie.includes('authenticated=true')) {
-  if (location.pathname !== '/login') location.href = '/login';
-  preventNavigation(true);
-}`}
-          </pre></code-block>
-        </mc-card> -->
-      </section>
-
-
-      <section id="appcss" aria-label="app.css example">
-        <mc-card>
-          <h2 slot="headline">App Styles</h2>
-          <div slot="supporting-text">You can configure an app css file that will be bundled into a single file</div>
-
-          <code-block language="javascript"><pre>
-${`// build.js
-build({
-  entryPointCSS: 'app/app.css' // undefined by default
-});`}
-          </pre></code-block>
-          <code-block language="html">
-            <pre>
-${`<!-- the link import will be automatically updated to match output filename
-  If you do not add a link tag, once will be added
--->
-<\link href="/app.css" rel="stylesheet">`}
-          </pre>
-          </code-block>
-        </mc-card>
-      </section>
-
-
-      <section id="pagejs" aria-label="page.js example">
-        <mc-card>
-          <h2 slot="headline">Page</h2>
-          <div slot="supporting-text">page.js and page.html</div>
-
-          <code-block language="javascript"><pre>
-${`import { Component, Signal, html } from '@thewebformula/lithe';
-import htmlTemplate from './page.html'; // automatically bundles
+import { Component, Cue, html } from '@thewebformula/lithe';
 
 class PageComponent extends Component {
-  // html page title
-  static title = 'Page';
+  static title = 'Page';  // title element value
 
-  /**
-    * Pass in HTML string. Use for imported .HTML
-    * Supports template literals: <div>\${this.var}</div>
-    * @type {String}
-    */
-  static htmlTemplate = htmlTemplate;
+  someVar = new Cue.state('Hello world');
+  shouldShow = new Cue.state(true);
 
-  someVar = new Signal('Some var');
-  clickIt_bound = this.clickIt.bind(this);
-
-
-  constructor() {
-    super();
+  toggle() {
+    this.shouldShow.set(!this.shouldShow.get());
   }
 
-  connectedCallback() {
-    super.connectedCallback(); // must call super
-    console.log(this.urlParameters); // { id: 'value' }
-    console.log(this.searchParameters); // { id: 'value' }
-  }
-
-  disconnectedCallback() { }
-
-  // not called on initial render
-  beforeRender() { }
-
-  afterEnder() {
-    this.querySelector('#event-listener-button')
-      .addEventListener('click', this.clickIt_bound);
-  }
-
-  clickIt() {
-    console.log('clicked it!');
-  }
-
-  changeValue() {
-    this.someVar.value = 'Value updated';
-  }
-
-  /**
-  * Alternative method for html templates, instead of importing html file
-  */
   template() {
     return html\`
       <div>Page Content</div>
       <div>\${this.someVar}</div>
 
-      \${
-        // nested html
-        this.show ? html\`<div>Showing</div>\` : ''
-      }
-
-      <!--
-        You can comment out expressions
-        ${`text`}
-      -->
-
-      <!-- "page" will reference the current page class -->
-      <button onclick="page.clickIt()">Click Method</button>
-      <button id="event-listener-button">Event listener</button>
-      <button onclick="page.changeValue()">Change value</button>
+      <button onclick={() => this.onClick()}>Toggle visibility</button>
+      \${html(() => this.shouldShow ? html\`<div>Showing</div>\` : '')}
     \`;
   }
 }
-
-// Define page component
 customElements.define('page-component-name', PageComponent);`}
-          </pre></code-block>
-        </mc-card>
-      </section>
-
-
-      <section id="build" aria-label="Build app">
-        <mc-card>
-          <h2 slot="headline">Build app</h2>
-          <div slot="supporting-text">build.js</div>
-          <div slot="supporting-text">No need for webpack or other bundlers. ESbuild is packed in and pre configured.
-          </div>
-          <a href="/build">Build config</a>
-
-          <code-block language="javascript"><pre>
-${`import build from '@thewebformula/lithe/build';
-
-/**
-* runs dev server by default on port 3000 with livereload
-* basedir defaults to 'app/'
-*/
-build({ basedir: 'app/' });`}
         </pre></code-block>
+
+        <h4 class="mc-font-title-large">app/app.js</h4>
+        <p class="subheader">Create main app file to load routes and other modules.</p>
+        <code-block language="javascript"><pre>
+${` // /app/app.js
+
+import './routes/index/index.js';`}
+      </pre></code-block>
+
+
+
+        <h4 class="mc-font-title-large">build.js</h4>
+        <p class="subheader">This is the build script that handles the bundling and development server. <a href="/build">Build</a></p>
+        <code-block language="javascript"><pre>
+${`// build.js
+
+import build from '@thewebformula/lithe/build';
+
+build({ basedir: 'app/' });`}
+      </pre></code-block>
+
+
+        <h4 class="mc-font-title-large">Run it!</h4>
+        <code-block language="bash"><pre>
+node build.js
+      </pre></code-block>
+    </section>
     </div>
   </div>
 </article>

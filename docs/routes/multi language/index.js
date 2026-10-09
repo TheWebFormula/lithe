@@ -1,4 +1,4 @@
-import { Component, Signal, i18n } from '@thewebformula/lithe';
+import { Component, Cue, i18n } from '@thewebformula/lithe';
 import htmlTemplate from './page.html';
 import en from '../../locales/en.json' assert { type: "json" };
 import es from '../../locales/es.json' assert { type: "json" };
@@ -11,8 +11,8 @@ class MultiLanguagePage extends Component {
   time = 30
   date = new Date();
   currency = '123.45';
-  days = new Signal(3);
-  count = new Signal(1);
+  days = new Cue.State(3);
+  count = new Cue.State(1);
 
   constructor() {
     super();

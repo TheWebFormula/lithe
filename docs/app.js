@@ -1,4 +1,3 @@
-import '@thewebformula/lithe';
 import '@thewebformula/materially/components/navigation-drawer';
 import '@thewebformula/materially/components/navigation-bar';
 import '@thewebformula/materially/components/anchor';
@@ -27,3 +26,4 @@ import './routes/web component/index.js';
 import './routes/templating/overview/index.js';
 import './routes/templating/attributes/index.js';
 import './routes/templating/lists/index.js';
+import './routes/playground/index.js';

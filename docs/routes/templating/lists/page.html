@@ -6,40 +6,37 @@
   <div class="article-main">
     <div class="article-content">
       <section id="expressions" aria-label="Expressions and binding">
-        <mc-card>
-          <h2 slot="headline">Templates overview</h2>
-          <div slot="supporting-text">
-            <div class="mc-font-body-large">Templates are built using template literals. Simply use the <strong>html</strong> tag function and write some html.</div>
-          </div>
+        <h2 >Templates overview</h2>
+        <p class="subheader">Templates are built using template literals. Simply use the <strong>html</strong> tag function and write some html.</p>
 
-          <div style="margin: 42px 0px;">
-            <div class="mc-font-title-large" style="margin-bottom: 8px;">Basic list</div>
-            ${html(() => ['One', 'Two', 'Three'].map(item => html`<div>Value: ${item}</div>`))}
-          </div>
+        <div style="margin: 42px 0px;">
+          <div class="mc-font-title-large" style="margin-bottom: 8px;">Basic list</div>
+          ${html(() => ['One', 'Two', 'Three'].map(item => html`<div>Value: ${item}</div>`))}
+        </div>
 
-          <div style="margin: 42px 0px;">
-            <div class="mc-font-title-large" style="margin-bottom: 8px;">Signal list</div>
-            <mc-textfield id="valueinput" placeholder="...value" style="margin-right: 9px"></mc-textfield>
-            <mc-button onclick="page.addItem(valueinput.value)" style="margin-top: 12px;">Add value</mc-button>
-            ${html(() => page.items.value.map(item => html`<div>Value: ${item.value}</div>`))}
-          </div>
+        <div style="margin: 42px 0px;">
+          <div class="mc-font-title-large" style="margin-bottom: 8px;">Signal list</div>
+          <mc-textfield id="valueinput" placeholder="...value" style="margin-right: 9px"></mc-textfield>
+          <mc-button onclick="page.addItem(valueinput.value)" style="margin-top: 12px;">Add value</mc-button>
+          ${html(() => page.items.get().map(item => html`<div>Value: ${item.value}</div>`))}
+        </div>
 
-          <div style="margin: 42px 0px;">
-            <div class="mc-font-title-large" style="margin-bottom: 8px;">Signal array list</div>
-            <mc-checkbox id="selectall" label="Select all" onclick="page.selectAll(event)"></mc-checkbox>
+        <div style="margin: 42px 0px;">
+          <div class="mc-font-title-large" style="margin-bottom: 8px;">Signal array list</div>
+          <mc-checkbox id="selectall" label="Select all" onclick="page.selectAll(event)"></mc-checkbox>
 
-            <mc-list id="selection-list">
-              ${page.itemsCheckList.map(item => { return html`
-                <mc-list-item value="${item.label}">
-                  <div slot="headline">${item.label}</div>
-                  <mc-checkbox slot="end" checked="${item.checked}" onchange=${() => item.checked = !item.checked}></mc-checkbox>
-                </mc-list-item>
-              `})}
-            </mc-list>
-          </div>
+          <mc-list id="selection-list">
+            ${page.itemsCheckList.get().map(item => { return html`
+              <mc-list-item value="${item.label}">
+                <div slot="headline">${item.label}</div>
+                <mc-checkbox slot="end" checked="${item.checked}" onchange=${() => item.checked = !item.checked}></mc-checkbox>
+              </mc-list-item>
+            `})}
+          </mc-list>
+        </div>
 
-          <code-block language="javascript" class="template-code-override">
-            <pre>
+        <code-block language="javascript" class="template-code-override">
+          <pre>
 ${`import { Component, Signal, SignalArray, effect } from '@thewebformula/lithe';
 import htmlTemplate from './page.html';
 
@@ -90,11 +87,11 @@ class TemplateListsPage extends Component {
   }
 }
 customElements.define('template-lists-page', TemplateListsPage);`}
-            </pre>
-          </code-block>
-
-          <code-block language="javascript" class="template-code-override">
-            <pre>
+          </pre>
+        </code-block>
+        <br>
+        <code-block language="html" class="template-code-override">
+          <pre>
 ${`<!-- page.html -->
 
 <div>
@@ -130,9 +127,8 @@ ${`<!-- page.html -->
     \`))}
   </mc-list>
 </div>`}
-            </pre>
-          </code-block>
-        </mc-card>
+          </pre>
+        </code-block>
       </section>
     </div>
   </div>

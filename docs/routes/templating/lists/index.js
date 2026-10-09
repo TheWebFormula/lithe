@@ -1,26 +1,25 @@
-import { Component, Signal, SignalObject, SignalArray, effect } from '@thewebformula/lithe';
+import { Component, Cue } from '@thewebformula/lithe';
 import htmlTemplate from './page.html';
 
-window.SignalArray = SignalArray;
 
 class TemplateListsPage extends Component {
   static title = 'Templating lists';
   static htmlTemplate = htmlTemplate;
 
 
-  items = new Signal([
+  items = new Cue.State([
     { value: 'One' },
     { value: 'Two' },
     { value: 'Three' }
   ]);
 
-  itemsWithKey = new Signal([
+  itemsWithKey = new Cue.State([
     { value: 'One' },
     { value: 'Two' },
     { value: 'Three' }
   ]);
 
-  itemsCheckList = new SignalArray([
+  itemsCheckList = new Cue.Array([
     { label: 'One', checked: false },
     { label: 'Two', checked: false },
     { label: 'Three', checked: true }
@@ -29,10 +28,10 @@ class TemplateListsPage extends Component {
   #disposeItemsCheckListEffect;
 
   afterRender() {
-    this.#disposeItemsCheckListEffect = effect(() => {
+    this.#disposeItemsCheckListEffect = Cue.effect(() => {
       const element = this.querySelector('#selectall');
-      const allChecked = this.itemsCheckList.value.every(item => item.checked);
-      const someChecked = this.itemsCheckList.value.some(item => item.checked);
+      const allChecked = this.itemsCheckList.get().every(item => item.checked);
+      const someChecked = this.itemsCheckList.get().some(item => item.checked);
       element.indeterminate = !allChecked && someChecked;
       element.checked = allChecked;
     });
@@ -47,31 +46,31 @@ class TemplateListsPage extends Component {
 
   addItem(value) {
     if (!value) return;
-    this.items.value = [...this.items.value, { value }];
+    this.items.set([...this.items.get(), { value }]);
   }
 
   addItemWithKey(value) {
     if (!value) return;
-    this.itemsWithKey.value = [...this.itemsWithKey.value, { value }];
+    this.itemsWithKey.set([...this.itemsWithKey.get(), { value }]);
   }
 
   selectAll(event) {
     const value = !event.target.checked;
     event.target.value = value
-    for (let item of this.itemsCheckList.value) {
+    for (let item of this.itemsCheckList.get()) {
       item.checked = value;
     }
   }
 
   addToCheckList() {
-    this.itemsCheckList.value.push({
+    this.itemsCheckList.get().push({
       label: 'New Item',
       checked: false
     });
   }
 
   removeToCheckList() {
-    this.itemsCheckList.value.pop();
+    this.itemsCheckList.get().pop();
   }
 
   current = 0;
@@ -83,7 +82,7 @@ class TemplateListsPage extends Component {
       arr.push({ value: this.current + i });
     }
     this.current += this.count;
-    this.itemsWithKey.value = [...this.itemsWithKey.value, ...arr];
+    this.itemsWithKey.set([...this.itemsWithKey.get(), ...arr]);
   }
 
   updateLots() {
@@ -92,15 +91,15 @@ class TemplateListsPage extends Component {
       arr.push({ value: this.current + i });
     }
     this.current += this.count2;
-    this.itemsWithKey.value = [...this.itemsWithKey.value, ...arr];
+    this.itemsWithKey.set([...this.itemsWithKey.get(), ...arr]);
   }
 
   setOrig() {
-    this.itemsWithKey.value = [
+    this.itemsWithKey.set([
       { value: 'One' },
       { value: 'Two' },
       { value: 'Three' }
-    ];
+    ]);
   }
 }
 customElements.define('template-lists-page', TemplateListsPage);

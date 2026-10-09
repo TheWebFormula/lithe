@@ -49,7 +49,8 @@ class CodeBlock extends Component {
 
     if (!this.#placeholder) {
       const pre = this.querySelector('pre');
-      const html = Prism.highlight(pre.textContent, Prism.languages[this.#language], this.#language);
+      const content = pre.textContent.replace(/\n\s*$/, '');
+      const html = Prism.highlight(content, Prism.languages[this.#language], this.#language);
       const trustedHTML = policyHTML.createHTML(html);
       pre.innerHTML = trustedHTML;
     } else {
@@ -72,7 +73,8 @@ class CodeBlock extends Component {
 
   #highlightPlaceholder() {
     const dataDiv = this.querySelector('[placeholder]');
-    const html = Prism.highlight(dataDiv.textContent, Prism.languages[this.#language], this.#language);
+    const content = dataDiv.textContent.replace(/\n\s*$/, '');
+    const html = Prism.highlight(content, Prism.languages[this.#language], this.#language);
     const trustedHTML = policyHTML.createHTML(html);
     this.querySelector('pre').innerHTML = trustedHTML;
   }

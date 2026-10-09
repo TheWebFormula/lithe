@@ -1,4 +1,4 @@
-import { Component } from '@thewebformula/lithe';
+import { Component, css } from '@thewebformula/lithe';
 import htmlTemplate from './page.html';
 
 class HomePage extends Component {

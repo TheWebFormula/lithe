@@ -1,64 +1,88 @@
 <article>
   <header>
     <h1>Build</h1>
-    <div class="page-subheader mc-font-title-medium">Build app with bundles optimized based on routes</div>
+    <div class="page-subheader mc-font-title-medium">The build system includes everything you need. It handles develoment and production bundling and tooling.</div>
   </header>
 
   <div class="article-main">
+    <nav class="links-nav">
+      <h2>Links</h2>
+      <ul class="links">
+        <li><a href="#build">Build</a></li>
+        <li><a href="#indexhtml">Script injection: index.html</a></li>
+      </ul>
+    </nav>
 
-    <div class="article-content" style="margin-right: 16px;">
 
+    <div class="article-content"">
       <section id="build" aria-label="Build">
-        <mc-card>
-          <h2 slot="headline">Build app</h2>
-          <div slot="supporting-text">No need for webpack or other bundlers. ESbuild is packed in and pre configured</div>
-          <ul slot="supporting-text">
-            <li>Minification</li>
-            <li>Sourcemaps</li>
-            <li>Dev server</li>
-            <li>live relaoding</li>
-            <li>File copying</li>
-            <li>ENV vars</li>
-            <li>Compression</li>
-            <li>CSP html meta tag (Content-Security-Policy)</li>
-          </ul>
-          <ul slot="supporting-text">
-            <li><strong>NODE_ENV=production</strong> Automatically adjusts build settings for production</li>
-            <li><strong>NODE_ENV=other_value</strong> Automatically adjusts build settings for development</li>
-          </ul>
+        <h2 style="margin-bottom: 18px;">Features</h2>
+        <ul>
+          <li>
+            Development server
+            <ul>
+              <li>Live reload</li>
+              <li>CSS hot swapping</li>
+              <li>Sourcemaps</li>
+              <li>HTTPS</li>
+            </ul>
+          </li>
+          <li>Minification</li>
+          <li>Chunking</li>
+          <li>Compression (Brotli, GZip)</li>
+          <li>File copying</li>
+          <li>Environment variable injection</li>
+          <li>CSP html meta tag (Content-Security-Policy)</li>
+          <li>Extendable (uses esbuild underneath)</li>
+        </ul>
 
-          <code-block language="javascript"><pre>
+
+        <h4>Behavior</h4>
+        <p>By default the build will automaticly adjust itself based on <strong>NODE_ENV</strong>.</p>
+        <ul>
+          <li>
+            NODE_ENV = <strong>production</strong>
+            <ul>
+              <li>Minification enabled</li>
+              <li>Dev-server disabled</li>
+              <li>Sourcemaps disabled</li>
+            </ul>
+          </li>
+          <li>
+            NODE_ENV = <strong>other_value</strong>
+            <ul>
+              <li>Minification disabled</li>
+              <li>Dev-server enabled (with livereload)</li>
+              <li>Sourcemaps enabled</li>
+            </ul>
+          </li>
+        </ul>
+
+        <h4>Basic setup</h4>
+        <code-block language="javascript"><pre>
 ${`import build from '@thewebformula/lithe/build';
 
-/**
-* If using 'app/' as root folder then no config needed
-*/
-build();
-
-/**
-* Common usage
-*/
 build({
-  entryPoint: 'docs/app.js',
-  entryPointCSS: 'docs/app.css',
+  entryPoint: 'app/app.js', // "app/app.js" is the default
+  entryPointCSS: 'app/app.css', // no entry css bundling if not specified
   copy: [
-    { from: 'docs/_headers', to: 'dist/' },
-    { from: 'docs/robots.txt', to: 'dist/' },
-    { from: 'docs/sitemap.xml', to: 'dist/' },
-    { from: 'docs/favicon.ico', to: 'dist/' }
+    { from: 'app/sitemap.xml', to: 'dist/' },
+    { from: 'app/favicon.ico', to: 'dist/' }
   ]
-});
+});`}
+        </pre></code-block>
 
 
-/**
-* Full config options
-*/
+        <h4>All options</h4>
+
+        <code-block language="javascript"><pre>
+${`import build from '@thewebformula/lithe/build';
+
 build({
   // App javascript file : Default 'app/app.js'
   entryPoint: 'app/app.js',
 
-  /**
-   * App styles file
+  /** App styles file
    * If you add a path, the file will be bundled and output as a single .css file
    * Default: undefined
    */
@@ -67,37 +91,27 @@ build({
   // index.html file : Default '[entryPoint root folder]/index.html'
   indexHTML: 'app/index.html',
 
-  // folder that contains 'app.js' : Default 'dist/'
+  // output folder : Default 'dist/'
   outdir: 'dist/',
 
-  /**
-  * Minify code
-  * Set to 'true' when 'NODE_ENV=production'
-  *   otherwise it defaults to 'false'
-  * Recommend: do not set
+  /** Minify code
+  * 'true' when 'NODE_ENV=production' otherwise is 'false'
   */
   minify: true,
 
-  /**
-  * Create source maps
-  * Set to 'false' when 'NODE_ENV=production'
-  *   otherwise it defaults to 'true'
-  * * Recommend: do not set
+  /** Create source maps
+  * 'false' when 'NODE_ENV=production' otherwise is 'true'
   */
   sourcemap: false,
 
-  /**
-  * Compress files with Brotli or Gzip
-  * Defaults to false
-  * If compression is enabled, the dev server will serve the compressed files
-  */
+  // Compress files with Brotli or Gzip
   compression: false,
   compressionConfig: {
     type: 'brd',
     level: 19
   },
 
-  // inject env vars to build
+  // inject env vars
   define: {
     'process.env.SOME_VAR': process.env.SOME_VAR
   },
@@ -114,26 +128,19 @@ build({
     }
   ],
 
-  /**
-  * Run dev server
-  * Set to 'false' when 'NODE_ENV=production'
-  * otherwise it defaults to 'true'
-  * Recommend: do not set unless you need to change ports
+  /** Dev-server
+  * 'false' when 'NODE_ENV=production' otherwise is 'true'
   */
   devServer: {
-    /* We recommend not setting enable
-     * If not set then it will be controlled by the NODE_ENV variable
-     *   NODE_ENV=production will not run the dev server
-     *   NODE_ENV=other value will run the dev server
-     * if this is set then it will run even if NODE_ENV=production
-     */
     enable: true,
 
+    // 'false' when 'NODE_ENV=production' otherwise is 'true'
     livereload: true,
+
     host: 'localhost',
     port: 3000,
     cacheHeaders: false,
-    
+
     // SSL options for local https
     keyfile: '/tmp/ssl/dev.local.key',
     certfile: '/tmp/ssl/dev.local.crt',
@@ -143,8 +150,7 @@ build({
     }
   },
 
-  /**
-  * Content security policy settings
+  /** Content security policy settings
   * This will inject a meta tag into the index.html file with the specified settings
   * defaults to 'false'
   */
@@ -157,18 +163,17 @@ build({
     fontSrc: [self, "https://fonts.gstatic.com"]
   },
 
-  /**
-  * devWarnings
+  /** devWarnings
   * Enable console warning
   * only html sanitization currently
   * defaults to 'false'
   */
   devWarnings: false,
 
-  /**
-  * securityLevel
+  /** securityLevel
   * Set security level warnings for html
   * Default: 1
+  * values: 0,1,2
   */
   securityLevel: 1,
 
@@ -178,8 +183,50 @@ build({
   // callback after bundle
   onEnd: () => {}
 });`}
-          </pre></code-block>
-        </mc-card>
+        </pre></code-block>
+      </section>
+
+
+
+
+      <section id="indexhtml" aria-label="Loading app scripts: index.html">
+        <h2>Loading app scripts: index.html</h2>
+        <p class="subheader">The build system will automatically hanlde script and style loading. You can specify them yourself.</p>
+
+        <h4>index.html</h4>
+        <code-block language="html"><pre>
+${`<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Cache-Control" content="no-store" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Default Title</title>
+
+
+    <!-- Option A - specify nothing and the build will inject them -->
+
+    <!-- Option B - add the scripts pointing at the source files
+                    the build will auto update the file names to match the bundled outputs
+                    the tags will stay in the same location you added them
+    -->
+    <link rel="stylesheet" href="/app.css">
+    <script type="module" src="/app.js" defer></script>
+
+
+    <!-- Preloading styles
+         The build will automatically hook up preloaded style sheets.
+         This means you only need to specify the preload
+    -->
+    <link rel="preload" href="/app.css" as="style">
+  </head>
+
+  <body>
+    <main id="page-content"></main> <!--render looks for [id="page-content"] -->
+  </body>
+</html>`}
+        </pre></code-block>
       </section>
     </div>
   </div>

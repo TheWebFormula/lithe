@@ -1,14 +1,14 @@
 <article>
   <header>
     <h1>Fetcher</h1>
-    <div class="page-subheader mc-font-title-medium">Fetch instances and interceptors</div>
+    <div class="page-subheader mc-font-title-medium">Extended fetch capabities, including instances and interceptors</div>
   </header>
 
   <div class="article-main" style="justify-content: flex-end;">
     <nav class="links-nav">
       <h2>Links</h2>
       <ul class="links">
-        <li><a href="#basic">Fetcher</a></li>
+        <li><a href="#jwt">Example: JWT refresh token</a></li>
         <li><a href="#instance">Instances</a></li>
         <li><a href="#interceptors">Interceptors</a></li>
       </ul>
@@ -16,27 +16,22 @@
 
     <div class="article-content">
 
-      <section id="basic" aria-label="Fetcher example">
-        <mc-card>
-          <h2 slot="headline">Fetcher</h2>
+      <section id="jwt" aria-label="Example: JWT refresh token">
+        <h2>Example: JWT refresh token</h2>
+        <p class="subheader">In this example we will create a fetcher instance that automatically handle refreshing short lived JWT access tokens.</p>
 
-          <code-block language="javascript"><pre>
+        <code-block language="javascript"><pre>
 ${`import { Fetcher, Interceptor } from '@thewebformula/lithe';
-
-// Setup token issuer instance
-const tokenIssuerFetcher = new Fetcher({
-  baseURL: 'http://localhost:3001',
-  credentials: 'include'
-});
 
 // Setup refresh token interceptor
 const refreshToken = new Interceptor({
   // Only intercept 401 status codes
   statusCodes: [401],
 
-  // pause all requests until after handler is resolved
-  // includes the request run from the return
-  // this will prevent other requests from failing and calling the /token endpoint
+  /**
+  * pause all requests until after handler is resolved
+  * this will prevent other requests from failing and calling the /token endpoint
+  */
   waitForResoltuion: true,
 
   async after(request, response) {
@@ -52,34 +47,42 @@ const refreshToken = new Interceptor({
   }
 });
 
-const apiFetcher = new Fetcher({
+export const apiFetcher = new Fetcher({
   baseURL: 'http://localhost:3002',
   credentials: 'include',
   interceptors: [refreshToken]
 });
 
+// Setup token issuer instance
+export const tokenIssuerFetcher = new Fetcher({
+  baseURL: 'http://localhost:3001',
+  credentials: 'include'
+});`}
+        </pre></code-block>
+        <br>
+        <code-block language="javascript"><pre>
+${`import { tokenIssuerFetcher, apiFetcher } from './apiFetcher.js';
 
-// Login
-let resp = await tokenIssuerFetcher.post('/login', {
-  headers: {
-    'Authorization': \`Basic \${btoa('user:pass')}\`
-  }
-});
-if (resp.status !== 201) throw Error('Cannot authenticate');
+async function login() {
+  const resp = await tokenIssuerFetcher.post('/login', {
+    headers: { Authorization: \`Basic \${btoa('user:pass')}\` }
+  });
+  if (resp.status !== 201) throw Error('Cannot authenticate');
+}
 
-// make a request
-const resp = await apiFetcher.get('/token');
-const data = await resp.json();`}
-          </pre></code-block>
-        </mc-card>
+async function getData() {
+  const resp = await apiFetcher.get('/token');
+  return resp.json();
+}`}
+        </pre></code-block>
       </section>
 
 
-      <section id="instance" aria-label="Fetcher instances">
-        <mc-card>
-          <h2 slot="headline">Instances</h2>
+      <section id="instance" aria-label="Creating instances">
+        <h2>Creating instances</h2>
+        <p class="subheader">You can make instances to support needs like multiple domains, auth vs no auth, and more.</p>
 
-          <code-block language="javascript"><pre>
+        <code-block language="javascript"><pre>
 ${`import { Fetcher } from '@thewebformula/lithe';
 
 const fetcherInstance = new Fetcher({
@@ -107,9 +110,9 @@ const resp = await fetcherInstance.fetch('/send-data', {
   }
 });
 
+
 // retrive data the same as fetch
 const data = await resp.json();
-
 
 // Convenience methods
 await fetcherInstance.get('/get-data', {...});
@@ -121,16 +124,15 @@ await fetcherInstance.head('/send-data', {...});
 
 // Update headers on instance
 fetcherInstance.headers.set('Authorization', \`Bearer \${token}\`);`}
-          </pre></code-block>
-        </mc-card>
+        </pre></code-block>
       </section>
 
 
       <section id="interceptor" aria-label="Fetcher interceptors">
-        <mc-card>
-          <h2 slot="headline">Interceptors</h2>
+        <h2>Fetcher interceptors</h2>
+        <p class="subheader">Interceptors allow you to handle items like authentication refresh, pre-processing data, header manipulation and more.</p>
 
-          <code-block language="javascript"><pre>
+        <code-block language="javascript"><pre>
 ${`import { Fetcher, Interceptor } from '@thewebformula/lithe';
 
 // Setup refresh token interceptor
@@ -177,8 +179,7 @@ const fetcherInstance = new Fetcher({
   baseURL: 'http://localhost:3000',
   interceptors: [setUserHeader, errorHandler],
 });`}
-          </pre></code-block>
-        </mc-card>
+        </pre></code-block>
       </section>
     </div>
   </div>

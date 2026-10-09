@@ -1,4 +1,4 @@
-import { Component, Signal } from '@thewebformula/lithe';
+import { Component, Cue } from '@thewebformula/lithe';
 import htmlTemplate from './page.html';
 import './components/attr-test.js';
 
@@ -6,7 +6,7 @@ class TemplateAttributesPage extends Component {
   static title = 'Templating attributes';
   static htmlTemplate = htmlTemplate;
 
-  styleSignal = new Signal({
+  styleState = new Cue.State({
     color: 'white',
     backgroundColor: '#3f51b5',
     padding: '12px',
@@ -18,17 +18,17 @@ class TemplateAttributesPage extends Component {
   }
 
   changeTextColor = color => {
-    this.styleSignal.value = {
-      ...this.styleSignal.value,
+    this.styleState.set({
+      ...this.styleState.get(),
       color
-    };
+    });
   }
 
   changeBackgroundColor = color => {
-    this.styleSignal.value = {
-      ...this.styleSignal.value,
+    this.styleState.set({
+      ...this.styleState.get(),
       backgroundColor: color
-    };
+    });
   }
 }
 customElements.define('template-attributes-page', TemplateAttributesPage);

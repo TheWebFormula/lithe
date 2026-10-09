@@ -1,17 +1,17 @@
-import { Component, Signal, Compute, SignalObject } from '@thewebformula/lithe';
+import { Component, Cue } from '@thewebformula/lithe';
 import htmlTemplate from './page.html';
 
 
-class SignalsAndBindingPage extends Component {
-  static title = 'Signals and binding';
+class CueAndBindingPage extends Component {
+  static title = 'Cue\'s and binding';
   static htmlTemplate = htmlTemplate;
 
-  basicBind = new Signal('');
-  number = new Signal(1);
-  numberTimesTwo = new Compute(() => {
-    return this.number.value * 2;
+  basicBind = new Cue.State('');
+  number = new Cue.State(1);
+  numberTimesTwo = new Cue.Compute(() => {
+    return this.number.get() * 2;
   });
-  obj = new SignalObject({
+  obj = new Cue.Object({
     one: 'one',
     count: 1,
     nested: {
@@ -19,13 +19,26 @@ class SignalsAndBindingPage extends Component {
     }
   });
 
+  itemsCheckList = new Cue.Array([
+    { label: 'One', checked: false },
+    { label: 'Two', checked: false },
+    { label: 'Three', checked: true }
+  ]);
+
 
   constructor() {
     super();
   }
 
   updateValue() {
-    this.basicBind.value = 'Updated';
+    this.basicBind.set('Updated');
+  }
+
+  addToCheckList() {
+    this.itemsCheckList.get().push({
+      label: 'New Item',
+      checked: false
+    });
   }
 }
-customElements.define('signals-binding-page', SignalsAndBindingPage);
+customElements.define('cue-binding-page', CueAndBindingPage);

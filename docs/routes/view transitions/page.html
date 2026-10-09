@@ -15,19 +15,21 @@
     <div class="article-content">
 
       <section id="Types" aria-label="View transition types">
-        <mc-card>
-          <h2 slot="headline">Types</h2>
-          <div slot="supporting-text">You can use the builtin view transitions, or add your own</div>
-          <ul>
-            <li>cross-fade</li>
-            <li>slide-right</li>
-            <li>slide-left</li>
-            <li>expand-from-element</li>
-          </ul>
+        <h2>View transition types</h2>
+        <p class="subheader">There are multiple transitions built in, and you can add your own.</p>
 
-          <a href="/" view-transition="expand-from-element" style="display: block; border-radius: 12px; background-color: white; height: 80px; text-align: center; line-height: 80px;">Expand example (click browser back after)</a>
+        <h4>Built in</h4>
+        <ul>
+          <li>cross-fade</li>
+          <li>slide-right</li>
+          <li>slide-left</li>
+          <li>expand-from-element</li>
+        </ul>
 
-          <code-block language="html"><pre>
+
+        <a href="/" view-transition="expand-from-element" style="margin: 36px; display: block; border-radius: 12px; background-color: rgba(255,255,255,0.2); height: 80px; text-align: center; line-height: 80px;">Expand example (click browser back after)</a>
+
+        <code-block language="html"><pre>
 ${`<!-- Set globally -->
 <meta name="view-transition" content="slide-left">
 <meta name="view-transition-back" content="slide-right">
@@ -47,17 +49,15 @@ ${`<!-- Set globally -->
    view-transition="slide-left"
    view-transition-back="slide-right">Welcome</a>
 `}
-          </pre></code-block>
-        </mc-card>
+        </pre></code-block>
       </section>
 
 
       <section id="customizing" aria-label="Custom view transitions">
-        <mc-card>
-          <h2 slot="headline">Custom view transitions</h2>
-          <div slot="supporting-text">You can add your own view transitions</div>
+        <h2>Custom view transitions</h2>
+        <p class="subheader">Add you r own transition with pure CSS or javascript</p>
 
-          <code-block language="css"><pre>
+        <code-block language="css"><pre>
 /* setup css */
 ::view-transition-old(expand-from-element),
 ::view-transition-new(expand-from-element),
@@ -106,8 +106,9 @@ ${`<!-- Set globally -->
     z-index: 1;
   }
 }
-        </pre></code-block>
-        <code-block language="javascript"><pre>
+      </pre></code-block>
+      <br>
+      <code-block language="javascript"><pre>
 ${`// Register view transition setup and cleanup methods
 import { registerViewTransition } from '@thewebformula/lithe';
 
@@ -162,8 +163,7 @@ registerViewTransition('expand-from-element', {
     document.documentElement.style.removeProperty('--expand-from-element-border-radius');
   }
 });`}
-          </pre></code-block>
-        </mc-card>
+        </pre></code-block>
       </section>
     </div>
   </div>

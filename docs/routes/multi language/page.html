@@ -4,44 +4,47 @@
   </header>
 
   <div class="article-main">
-    <nav class="links-nav">
+    <!--<nav class="links-nav">
       <h2>Links</h2>
       <ul class="links">
         <li><a href="#Localization">Localization</a></li>
       </ul>
-    </nav>
+    </nav>-->
 
     <div class="article-content">
 
       <section id="Localization" aria-label="Example">
-        <mc-card>
-          <h2 slot="headline">Localization</h2>
-          <div slot="supporting-text">Localization allows to configure multiple locales with local message configurations</div>
-          <ul slot="supporting-text">
-            <li>Language</li>
-            <li>Pluralization</li>
-            <li>Date formatting</li>
-            <li>Number formatting</li>
-            <li>Relative time formatting</li>
-          </ul>
+        <h2>Localization</h2>
+        <p>Localization allows to configure multiple locales with local message configurations</p>
+        <ul>
+          <li>Language</li>
+          <li>Pluralization</li>
+          <li>Date formatting</li>
+          <li>Number formatting</li>
+          <li>Relative time formatting</li>
+        </ul>
 
+        <div style="margin: 56px 0;">
           <mc-switch checked="${page.languagesChecked}" onchange="page.changeLanguage(this.checked)" label-right="en / es"></mc-switch>
 
-          <div>${i18n('About')}</div>
-          <div>${i18n('key_string')}</div>
-          <div>${page.count} ${i18n.format('itemPlural', page.count)}</div>
-          <div>${i18n('time_from_now', page.time)}</div>
-          <div>${i18n('date_key', page.date)}</div>
-          <div>${i18n('currency_key', page.currency)}</div>
+          <div style="line-height: 24px;">
+            <div>${i18n('About')}</div>
+            <div>${i18n('key_string')}</div>
+            <div>${page.count} ${i18n.format('itemPlural', page.count)}</div>
+            <div>${i18n('time_from_now', page.time)}</div>
+            <div>${i18n('date_key', page.date)}</div>
+            <div>${i18n('currency_key', page.currency)}</div>
+          </div>
 
           <div style="margin-top: 24px">
             <div class="mc-font-title-medium">Dynamic pluralization with signals</div>
             <mc-textfield label="${i18n('Label days')}" type="number" value="${page.days}" style="margin-top: 12px; margin-bottom: 12px;"
-              oninput="page.days.value = this.value"></mc-textfield>
+              oninput="page.days.set(this.value)"></mc-textfield>
             <div>${i18n('relativeTime_key', page.days)}</div>
           </div>
+        </div>
 
-          <code-block language="javascript"><pre>
+        <code-block language="javascript"><pre>
 ${`import { i18n } from '@thewebformula/lithe';
 
 /* Set locale
@@ -56,9 +59,9 @@ i18n.cache();
 // Load local messages
 i18n.addTranslation('en', en);
 i18n.addTranslation('es', es);`}
-          </pre></code-block>
-
-          <code-block language="html"><pre>
+        </pre></code-block>
+        <br>
+        <code-block language="html"><pre>
 ${`<!-- Use i18n method to translate keys -->
 <div>\${i18n('About')}</div>
 <div>\${i18n('key_string')}</div>
@@ -74,7 +77,7 @@ ${`<!-- Use i18n method to translate keys -->
 <div>
   <div class="mc-font-title-medium">Dynamic pluralization with signals</div>
   <mc-textfield label="\${i18n('Label days')}" type="number" value="\${page.days}"
-    oninput="page.days.value = this.value"></mc-textfield>
+    oninput="page.days.set(this.value)"></mc-textfield>
   <div>\${i18n('relativeTime_key', page.days)}</div>
 </div>
 
@@ -83,10 +86,9 @@ ${`<!-- Use i18n method to translate keys -->
 
 <!-- Attribute binding multiple -->
 <div i18n-attr="one,two" one="one" two="two"></div>`}
-          </pre></code-block>
-
-
-          <code-block language="json"><pre>
+        </pre></code-block>
+        <br>
+        <code-block language="json"><pre>
 ${`// en
 
 // type configuration
@@ -135,9 +137,9 @@ ${`// en
   "place_ordinal": "$1 $placeOrdinal($1)",
   "currency_key": "$currencyFormat($1)",
   "relativeTime_key": "$relativeTimeFormat($1)" } }` }
-          </pre></code-block>
-
-          <code-block language="json"><pre>
+        </pre></code-block>
+        <br>
+        <code-block language="json"><pre>
 ${`// es
 
 // type configuration
@@ -186,8 +188,7 @@ ${`// es
   "date_key": "$dateFormat($1)",
   "currency_key": "$currencyFormat($1)",
   "relativeTime_key": "$relativeTimeFormat($1)" } }` }
-          </pre></code-block>
-        </mc-card>
+        </pre></code-block>
       </section>
     </div>
   </div>

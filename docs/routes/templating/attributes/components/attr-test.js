@@ -1,16 +1,13 @@
-import { Component, html, Signal } from '@thewebformula/lithe';
-import styles from './styles.css';
-import Prism from 'prismjs';
+import { Component, html, Cue } from '@thewebformula/lithe';
+
 
 class AttrTest extends Component {
-  static styleSheets = [styles];
-
-  _str = new Signal('value');
-  _disabled = new Signal(false);
-  _enable = new Signal(true);
-  _counter = new Signal(1);
-  _percent = new Signal(0.1);
-  _data = new Signal({ one: 'one', two: 2 });
+  _str = new Cue.State('value');
+  _disabled = new Cue.State(false);
+  _enable = new Cue.State(true);
+  _counter = new Cue.State(1);
+  _percent = new Cue.State(0.1);
+  _data = new Cue.State({ one: 'one', two: 2 });
   _id = parseInt(Math.random() * 999999);
 
 
@@ -27,23 +24,23 @@ class AttrTest extends Component {
     this[name] = newValue;
   }
 
-  get str() { return this._str.value; }
-  set str(value) { this._str.value = value; }
+  get str() { return this._str.get(); }
+  set str(value) { this._str.set(value); }
 
-  get enable() { return this._enable.value; }
-  set enable(value) { this._enable.value = value; }
+  get enable() { return this._enable.get(); }
+  set enable(value) { this._enable.set(value); }
 
-  get counter() { return this._counter.value; }
-  set counter(value) { this._counter.value = value; }
+  get counter() { return this._counter.get(); }
+  set counter(value) { this._counter.set(value); }
 
-  get percent() { return this._percent.value; }
-  set percent(value) { this._percent.value = value; }
+  get percent() { return this._percent.get(); }
+  set percent(value) { this._percent.set(value); }
 
-  get data() { return this._data.value; }
-  set data(value) { this._data.value = value; }
+  get data() { return this._data.get(); }
+  set data(value) { this._data.set(value); }
 
-  get disabled() { return this._disabled.value; }
-  set disabled(value) { this._disabled.value = value; }
+  get disabled() { return this._disabled.get(); }
+  set disabled(value) { this._disabled.set(value); }
 
   constructor() {
     super();
@@ -51,30 +48,26 @@ class AttrTest extends Component {
 
 
   #onInput(e) {
-    this._str.value = e.target.value;
+    this._str.set(e.target.get());
   }
 
   #disableChange(e) {
-    const prev = this._disabled.value;
-    this._disabled.value = !prev;
+    const prev = this._disabled.get();
+    this._disabled.set(!prev);
   }
 
   #enableChange(e) {
-    const prev = this._enable.value;
-    this._enable.value = !prev;
+    const prev = this._enable.get();
+    this._enable.set(!prev);
   }
 
   #onInputCounter(e) {
-    this._counter.value = e.target.value;
+    this._counter.set(e.target.get());
   }
 
   #percentChange(e) {
-    this._percent.value = e.target.value;
+    this._percent.set(e.target.get());
   }
-
-  // template() {
-  //   return html`<mc-slider min="0" max="1" value="${this._percent}" step="0.1" onchange=${(e) => this.#percentChange(e)}>Percent (number)</mc-slider>`;
-  // }
 
   template() {
     return html`
@@ -114,11 +107,11 @@ class AttrTest extends Component {
         <code-block language="html" placeholder>
           <pre></pre>
           <div placeholder>${html(() => {
-            const str = this._str.value;
-            const disabled = this._disabled.value;
-            const enable = this._enable.value;
-            const counter = this._counter.value;
-            const percent = this._percent.value;
+            const str = this._str.get();
+            const disabled = this._disabled.get();
+            const enable = this._enable.get();
+            const counter = this._counter.get();
+            const percent = this._percent.get();
             return`<!-- HTML rendered -->
 <attr-test
   str="${str}"
