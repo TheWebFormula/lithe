@@ -158,7 +158,7 @@ function replaceAppTags(basedir, entryPoint, entryPointCSS, outdir, appOutputs, 
 
   const appScriptTagRegex = new RegExp(`\\bsrc\\s*=\\s*["']/?${originalAppJS}["']`, 'g');
   if (appScriptTagRegex.test(indexHTMLtemplate)) indexHTMLtemplate = indexHTMLtemplate.replace(appScriptTagRegex, `src="/${outputAppJSName}"`);
-  else indexHTMLtemplate = indexHTMLtemplate.replace(/<\/head>/, `  <script defer type="module" src="/${outputAppJSName}"></script>\n</head>`);
+  else indexHTMLtemplate = indexHTMLtemplate.replace(/<\/head>/, `  <script type="module" src="/${outputAppJSName}"></script>\n</head>`);
 
   if (outputAppCSSName) {
     const appLinkTagRegex = new RegExp(`\\bhref\\s*=\\s*["']/?${originalAppCSS}["']`, 'g');

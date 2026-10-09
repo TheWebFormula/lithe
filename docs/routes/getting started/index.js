@@ -36,7 +36,6 @@ customElements.define('getting-started-page', GettingStartedPage);
 //
 // <head>
 // <meta charset="UTF-8">
-// <meta http-equiv="Cache-Control" content="no-store" />
 // <meta name="viewport" content="width=device-width, initial-scale=1.0">
 //
 //
@@ -61,7 +60,6 @@ customElements.define('getting-started-page', GettingStartedPage);
 //
 // <head>
 // <meta charset="UTF-8">
-// <meta http-equiv="Cache-Control" content="no-store" />
 // <meta name="viewport" content="width=device-width, initial-scale=1.0">
 //
 //
