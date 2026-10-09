@@ -8,5 +8,6 @@ class BuildPage extends Component {
   constructor() {
     super();
   }
+
 }
 customElements.define('build-page', BuildPage);

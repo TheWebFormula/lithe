@@ -1,8 +1,8 @@
 import path from 'node:path';
-import { readFile, writeFile } from 'node:fs/promises';
+import { readFile, writeFile, stat } from 'node:fs/promises';
 import { glob } from 'node:fs/promises';
 import { brotliCompressSync } from 'node:zlib';
-
+import * as sitemapGen from './sitemap.js';
 
 const routePathParamRegex = /\/?\[(\.{3})?([^\[]+)\]/g;
 const pageElementNameRegex = /customElements.define\(['"`]([^'"`]*)['"`],/;
@@ -10,9 +10,10 @@ const routeComponentAttrsRegex = /<li-route(?:\s(?<attrs>.*?))?(\s?\/)?>/gm;
 const routeComponentAttrIndividualRegex = /(\w+)="(.+?)"/gm;
 const stripCommentsRegex = /<!--([.\S\s]*?)-->/g
 const cspMetaTagRegex = /<meta\s+http-equiv="Content-Security-Policy"\s+content="([^"]*)"/;
+const htmlTemplateImportNameRegex = /static\s+htmlTemplate\s+?=\s+?([^;\n]+)\s*?(;|\r?\n|$)/;
 
 
-export default async function build({ basedir, outdir, entryPoint, entryPointCSS, indexHTML, devServer, devWarnings, securityLevel, compression, compressionConfig, compressionLabel, isDev, csp }, inputs, appOutputs) {
+export default async function build({ basedir, outdir, entryPoint, entryPointCSS, indexHTML, devServer, devWarnings, securityLevel, compression, compressionConfig, compressionLabel, isDev, csp, sitemap }, inputs, appOutputs) {
   let routeConfigs = await parseRoutes(basedir, inputs);
   let indexHTMLtemplate = await readFile(indexHTML, 'utf-8');
   let routeComponents = getRouteComponents(indexHTMLtemplate);
@@ -21,7 +22,9 @@ export default async function build({ basedir, outdir, entryPoint, entryPointCSS
 
   let routeComponentHTML = '';
   await Promise.all(routeConfigs.map(async route => {
-    const pageComponent = await readFile(path.join(basedir, route.importPath), 'utf-8');
+    const componentPath = path.join(basedir, route.importPath);
+    const pageComponent = await readFile(componentPath, 'utf-8');
+
     const match = pageComponent.match(pageElementNameRegex);
     if (!match) return console.error(`Cannot find component name for route: ${path}. customElements.define('component-name', Page);`);
     const componentName = match[1];
@@ -29,6 +32,22 @@ export default async function build({ basedir, outdir, entryPoint, entryPointCSS
     // already has an <li-route> component
     if (routeComponents.includes(componentName)) return;
 
+    if (sitemap?.enable) {
+      // get last modiied for component and imported html template
+      let stats = [stat(componentPath)];
+      const importName = pageComponent.match(htmlTemplateImportNameRegex);
+      if (importName !== null) {
+        const relativePath = pageComponent.match(new RegExp(`import\\s+${importName[1]}\\s+from\\s+(["'])(.*?)\\1`));
+        if (relativePath[2]) {
+          let routeBase = route.importPath.split('/');
+          routeBase.pop();
+          routeBase = routeBase.join('/');
+          stats.push(stat(path.join(basedir, routeBase, relativePath[2])));
+        }
+      }
+      stats = (await Promise.all(stats)).sort((a, b) => b - a);
+      sitemapGen.addUrl(route.path, stats[0].mtime, sitemap?.host);
+    }
     routeComponentHTML += `  <li-route path="${route.path}" component="${componentName}"${route.notFound ? ' notfound' : ''}></li-route>\n`;
   }));
 
@@ -67,7 +86,7 @@ export default async function build({ basedir, outdir, entryPoint, entryPointCSS
   }
 
   await writeFile(path.join(outdir, 'index.html'), indexHTMLtemplate, 'utf-8');
-
+  if (sitemap?.enable) await writeFile(path.join(outdir, 'sitemap.xml'), sitemapGen.getContent(), 'utf-8');
 }
 
 

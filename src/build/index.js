@@ -42,6 +42,11 @@ export default async function build(config = {
     }
   },
 
+  sitemap: {
+    enable: false,
+    host: ''
+  },
+
   compression: true,
   compressionConfig: {
     type: 'brd',
@@ -96,6 +101,7 @@ export default async function build(config = {
   config.compressionConfig = config.compressionConfig || { type: 'brd', level: 19 };
   config.compressionLabel = config.compressionConfig.type === 'brd' ? 'br' : 'gz';
   config.compressionExt = `.${config.compressionLabel}`;
+  config.sitemap = config.sitemap || {};
 
   if (typeof config.devServer === 'object') {
     if (typeof config.devServer.enable === 'undefined') config.devServer.enable = isDev;
@@ -151,6 +157,7 @@ export default async function build(config = {
         const appOutputs = Object.entries(results.metafile.outputs)
           .map(([filename, item]) => [item.entryPoint, filename])
           .filter(v => v[0] === config.entryPoint || v[0] === config.entryPointCSS);
+
         await buildRoutes(config, results.metafile.inputs, appOutputs);
         if (config.writeMetaFile) writeFile('meta.json', JSON.stringify(results.metafile, null, 2), 'utf8');
         if (typeof config.onEnd === 'function') await config.onEnd(results);
