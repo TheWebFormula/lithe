@@ -113,13 +113,21 @@ class CueNode {
     if (this.#pendingState) this.#pendingState.set(this.#isPending);
     if (this.#isPending) {
       this.#pendingValue = previousValue;
-      this.#value.then((v) => {
-        this.#value = v;
-        epoch++;
-        this.notify();
-        this.#isPending = false;
-        if (this.#pendingState) this.#pendingState.set(this.#isPending);
-      });
+      this.#value
+        .then((v) => {
+          this.#value = v;
+          epoch++;
+          this.notify();
+          this.#isPending = false;
+          if (this.#pendingState) this.#pendingState.set(this.#isPending);
+        })
+        .catch(e => {
+          this.error = e;
+          // this.#value = CUE_ERRORED;
+          // super.set(CUE_ERRORED);
+          this.#isPending = false;
+          if (this.#pendingState) this.#pendingState.set(this.#isPending);
+        });
     }
   }
 
@@ -586,17 +594,24 @@ class CueObject extends CueNode {
 
     super.set(value);
     if (super.isPendingRaw) {
-      value.then((v) => {
-        for (const key in Reflect.ownKeys(this.#rootProxy)) {
-          delete this.#rootProxy[key];
-        }
-        Object.assign(this.#rootProxy, v);
-      });
+      value
+        .then((v) => {
+          for (const key of Reflect.ownKeys(this.#rootProxy)) {
+            delete this.#rootProxy[key];
+          }
+
+          Object.assign(this.#rootProxy, v);
+        })
+
+        // .catch(e => {
+        //   console.log('----', e)
+        // });
     } else {
-      for (const key in Reflect.ownKeys(this.#rootProxy)) {
+      for (const key of Reflect.ownKeys(this.#rootProxy)) {
         delete this.#rootProxy[key];
       }
-      Object.assign(this.#rootProxy, v);
+
+      Object.assign(this.#rootProxy, value);
     }
   }
 
@@ -640,15 +655,15 @@ class CueObject extends CueNode {
       },
 
       set(target, prop, value, receiver) {
-        if (Array.isArray(target[prop])) {
+        if (Array.isArray(target[prop]) || Array.isArray(value)) {
           if (self.#cueArrays.has(prop)) self.#cueArrays.get(prop).set(value);
-          return true;
-        } else if (typeof target[prop] === 'object' && target[prop] !== null) {
+          // return true;
+        } else if ((typeof value === 'object' && value !== null) || (typeof target[prop] === 'object' && target[prop] !== null)) {
           if (self.#cueObjects.has(prop)) self.#cueObjects.get(prop).set(value);
-          return true;
+          // return true;
         } else if (self.#cues.has(prop)) {
           self.#cues.get(prop).set(value);
-          return true;
+          // return true;
         }
 
         return Reflect.set(target, prop, value, receiver);
