@@ -31,7 +31,8 @@
   "dependencies": {
     "esbuild": "^0.28.2",
     "esbuild-plugin-copy": "^2.1.1",
-    "html-minifier-next": "^8.4.0"
+    "html-minifier-next": "^8.4.0",
+    "sharp": "^0.35.5"
   },
   "devDependencies": {
     "@thewebformula/lithe": "file:",
