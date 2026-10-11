@@ -2,6 +2,7 @@ import path from 'node:path';
 import { readFile, writeFile, stat } from 'node:fs/promises';
 import { glob } from 'node:fs/promises';
 import { brotliCompressSync } from 'node:zlib';
+import htmlMinifyNext from 'html-minifier-next';
 import * as sitemapGen from './sitemap.js';
 
 const routePathParamRegex = /\/?\[(\.{3})?([^\[]+)\]/g;
@@ -13,7 +14,7 @@ const cspMetaTagRegex = /<meta\s+http-equiv="Content-Security-Policy"\s+content=
 const htmlTemplateImportNameRegex = /static\s+htmlTemplate\s+?=\s+?([^;\n]+)\s*?(;|\r?\n|$)/;
 
 
-export default async function build({ basedir, outdir, entryPoint, entryPointCSS, indexHTML, devServer, devWarnings, securityLevel, compression, compressionConfig, compressionLabel, isDev, csp, sitemap }, inputs, appOutputs) {
+export default async function build({ basedir, outdir, entryPoint, entryPointCSS, indexHTML, devServer, devWarnings, securityLevel, minify, compression, compressionConfig, compressionLabel, isDev, csp, sitemap }, inputs, appOutputs) {
   let routeConfigs = await parseRoutes(basedir, inputs);
   let indexHTMLtemplate = await readFile(indexHTML, 'utf-8');
   let routeComponents = getRouteComponents(indexHTMLtemplate);
@@ -79,6 +80,24 @@ export default async function build({ basedir, outdir, entryPoint, entryPointCSS
     location.reload();
   });
   </script >\n</body > `);
+  }
+
+  if (minify) {
+    indexHTMLtemplate = await htmlMinifyNext.minify(indexHTMLtemplate, {
+      collapseWhitespace: true,
+      collapseAttributeWhitespace: true,
+      collapseInlineTagWhitespace: true,
+      conservativeCollapse: true,
+      removeAttributeQuotes: true,
+      minifySVG: true,
+      minifyCSS: true,
+      minifyJS: true,
+      continueOnParseError: true,
+      removeComments: true,
+      ignoreCustomFragments: [
+        /<pre[\s\S]*?<\/pre>/
+      ]
+    });
   }
 
   if (compression) {

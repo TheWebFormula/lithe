@@ -9,6 +9,7 @@ import http from 'node:http';
 import path from 'node:path';
 import { readFile, readdir, stat, rm, access, mkdir, writeFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
+import sharp from 'sharp';
 import buildRoutes from './buildRoutes.js';
 
 // TODO gzip
@@ -187,16 +188,79 @@ export default async function build(config = {
         const minifiedContent = !config.minify ? rawContent : await htmlMinifyNext.minify(rawContent, {
           collapseWhitespace: true,
           collapseAttributeWhitespace: true,
+          collapseInlineTagWhitespace: true,
           conservativeCollapse: true,
           removeAttributeQuotes: true,
           minifySVG: true,
           minifyCSS: true,
           minifyJS: true,
-          continueOnParseError: true
+          continueOnParseError: true,
+          removeComments: true,
+          ignoreCustomFragments: [
+            /<pre[\s\S]*?<\/pre>/
+          ]
         });
         return {
           contents: `export default (page) => page.constructor._html\`${minifiedContent}\`;`,
           loader: 'js',
+        };
+      });
+    },
+  };
+
+
+  const customSVGLoader = {
+    name: 'svg-loader',
+    setup(build) {
+      build.onLoad({ filter: /\.svg$/ }, async (args) => {
+        const rawContent = await readFile(args.path, 'utf8');
+        const minifiedContent = !config.minify ? rawContent : await htmlMinifyNext.minify(rawContent, {
+          collapseWhitespace: true,
+          collapseAttributeWhitespace: true,
+          collapseInlineTagWhitespace: true,
+          conservativeCollapse: true,
+          removeAttributeQuotes: true,
+          minifySVG: true,
+          minifyCSS: true,
+          minifyJS: true,
+          continueOnParseError: true,
+          removeComments: true
+        });
+        return { contents: minifiedContent, loader: 'file' };
+      });
+    },
+  };
+
+  const imageImportPlugin = {
+    name: "img-to-webp",
+    setup(build) {
+      const NAMESPACE = 'webp-virtual-ns';
+
+      build.onResolve({ filter: /\.(png|jpe?g)$/ }, async (args) => {
+        if (args.pluginData?.swapped) return null;
+
+        const result = await build.resolve(args.path, {
+          kind: args.kind,
+          resolveDir: args.resolveDir,
+          pluginData: { swapped: true }
+        });
+        const originalAbsPath = result.path;
+        const webpAbsPath = originalAbsPath.replace(/\.(png|jpe?g)$/, '.webp');
+
+        return {
+          path: webpAbsPath,
+          namespace: NAMESPACE,
+          pluginData: { path: result.path }
+        };
+      });
+
+      build.onLoad({ filter: /.*/, namespace: NAMESPACE }, async (args) => {
+        const originalAbsPath = args.path;
+        const webpBuffer = await sharp(args.pluginData.path).webp().toBuffer();
+        return {
+          contents: webpBuffer,
+          loader: 'file',
+          watchFiles: [originalAbsPath]
         };
       });
     },
@@ -244,8 +308,8 @@ export default async function build(config = {
   const brotliOptions = {
     params: {
       [constants.BROTLI_PARAM_MODE]: constants.BROTLI_MODE_TEXT,
-      [constants.BROTLI_PARAM_QUALITY]: 8,
-      [constants.BROTLI_PARAM_LGWIN]: 20
+      [constants.BROTLI_PARAM_QUALITY]: 11,
+      // [constants.BROTLI_PARAM_LGWIN]: 20
     }
   };
   const compressPlugin = {
@@ -281,10 +345,17 @@ export default async function build(config = {
     minify: config.minify,
     sourcemap: config.sourcemap,
     entryNames: isDev && !config.devServer?.cacheHeaders ? '[name]' : '[name]-[hash]',
+    assetNames: isDev && !config.devServer?.cacheHeaders ? '[name]' : '[name]-[hash]',
     define: config.define,
+    loader: {
+      '.jpg': 'file',
+      '.webp': 'file',
+      '.png': 'file'
+    },
     plugins: [
       buildPlugin,
       ...(config.esbuildPlugins || []),
+      customSVGLoader,
       customHTMLLoader,
       cssPlugin,
       copy({
@@ -293,6 +364,7 @@ export default async function build(config = {
         watch: true
       }),
       ...(config.compression ? [compressPlugin] : []),
+      imageImportPlugin
     ]
   });
 
