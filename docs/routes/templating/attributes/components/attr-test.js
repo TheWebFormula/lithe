@@ -48,7 +48,7 @@ class AttrTest extends Component {
 
 
   #onInput(e) {
-    this._str.set(e.target.get());
+    this._str.set(e.target.value);
   }
 
   #disableChange(e) {
@@ -62,11 +62,11 @@ class AttrTest extends Component {
   }
 
   #onInputCounter(e) {
-    this._counter.set(e.target.get());
+    this._counter.set(e.target.value);
   }
 
   #percentChange(e) {
-    this._percent.set(e.target.get());
+    this._percent.set(e.target.value);
   }
 
   template() {

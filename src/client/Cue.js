@@ -71,6 +71,7 @@ class CueNode {
   #error;
   #watchers = new Set();
   #pendingState;
+  #pendingDelay;
   #isPending = false;
 
 
@@ -88,6 +89,11 @@ class CueNode {
 
   get error() { return this.#error; }
   set error(value) { this.#error = value; }
+
+  get pendingDelay() { return this.#pendingDelay; }
+  set pendingDelay(value) {
+    this.#pendingDelay = parseInt(value);
+  }
 
   get() {
     if (activeConsumer) this.subscribe(activeConsumer);
@@ -109,8 +115,8 @@ class CueNode {
     epoch++;
     this.notify();
 
-    this.#isPending = this.#value instanceof Promise;
-    if (this.#pendingState) this.#pendingState.set(this.#isPending);
+    this.#setPendingState(this.#value instanceof Promise);
+
     if (this.#isPending) {
       this.#pendingValue = previousValue;
       this.#value
@@ -118,15 +124,13 @@ class CueNode {
           this.#value = v;
           epoch++;
           this.notify();
-          this.#isPending = false;
-          if (this.#pendingState) this.#pendingState.set(this.#isPending);
+          this.#setPendingState(false);
         })
         .catch(e => {
           this.error = e;
           // this.#value = CUE_ERRORED;
           // super.set(CUE_ERRORED);
-          this.#isPending = false;
-          if (this.#pendingState) this.#pendingState.set(this.#isPending);
+          this.#setPendingState(false);
         });
     }
   }
@@ -142,7 +146,7 @@ class CueNode {
   get isPending() {
     if (activeConsumer) this.subscribe(activeConsumer);
 
-    this.#isPending = this.#value instanceof Promise;
+    this.#setPendingState(this.#value instanceof Promise);
     if (isTemplating && !this.#pendingState) this.#pendingState = new CuePending(this.#isPending);
 
     if (this.#pendingState) {
@@ -150,6 +154,17 @@ class CueNode {
     } else {
       return this.#isPending;
     }
+  }
+
+  #setPendingState(isPending) {
+    this.#isPending = this.#value instanceof Promise;
+    if (!this.#pendingState) return;
+
+    if (this.#isPending && this.#pendingDelay) {
+      setTimeout(() => {
+        this.#pendingState.set(this.#isPending);
+      }, 100);
+    } else this.#pendingState.set(this.#isPending);
   }
 
   get isPendingRaw() {
@@ -286,7 +301,7 @@ class CuePending extends CueNode {
   set version(_) { }
 
   get() {
-    // if (activeConsumer) this.subscribe(activeConsumer);
+    if (activeConsumer) this.subscribe(activeConsumer);
     if (isTemplating && !isCueHtml(activeConsumer)) return this;
     return super.getRawValue();
   }

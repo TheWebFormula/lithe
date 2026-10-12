@@ -44,6 +44,7 @@ class Template {
       addToQueue(cleanup, 1);
       isTemplating = true;
     }
+
     if (this.cleaned) {
       this.cleaned = false;
       this.availableInstnaces = this.instances.values().toArray().filter(i => i.disconnected).reverse();
@@ -464,7 +465,7 @@ function setAttrValue(ownerNode, attrName, attrType, value, update = false) {
     value = Boolean(value).toString();
     if (attrNode.value !== value) attrNode.value = value;
   } else {
-    value = String(value);
+    value = String(value === undefined ? '' : value);
     if (attrNode.value !== value) attrNode.value = value;
   }
 }
