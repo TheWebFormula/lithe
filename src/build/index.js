@@ -197,7 +197,8 @@ export default async function build(config = {
           continueOnParseError: true,
           removeComments: true,
           ignoreCustomFragments: [
-            /<pre[\s\S]*?<\/pre>/
+            // /<pre[\s\S]*?<\/pre>/,
+            /\\?\${(?:[^{}]|{(?:[^{}]|{[^{}]*}){0,1000}}){0,1000}}/
           ]
         });
         return {
