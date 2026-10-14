@@ -11,6 +11,7 @@ import { readFile, readdir, stat, rm, access, mkdir, writeFile } from 'node:fs/p
 import { createHash } from 'node:crypto';
 import sharp from 'sharp';
 import buildRoutes from './buildRoutes.js';
+import { cli } from '@custom-elements-manifest/analyzer/cli.js';
 
 // TODO gzip
 
@@ -162,6 +163,9 @@ export default async function build(config = {
         await buildRoutes(config, results.metafile.inputs, appOutputs);
         if (config.writeMetaFile) writeFile('meta.json', JSON.stringify(results.metafile, null, 2), 'utf8');
         if (typeof config.onEnd === 'function') await config.onEnd(results);
+
+        // write manifest for custom elemenets
+        if (!isDev) await cli({ argv: ['analyze'], cwd: process.cwd() });
       });
     }
   };
