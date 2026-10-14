@@ -28,3 +28,4 @@ import './routes/templating/attributes/index.js';
 import './routes/templating/conditional/index.js';
 import './routes/templating/lists/index.js';
 import './routes/playground/index.js';
+import './routes/sharing-data/index.js';

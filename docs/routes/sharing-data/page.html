@@ -1,0 +1,82 @@
+<article>
+  <header>
+    <h1>Sharing data</h1>
+    <div class="page-subheader mc-font-title-medium">Sharing data across components and pages is simple. You can use Cue's in a seperate module.</div>
+  </header>
+
+  <div class="article-main">
+    <div class="article-content">
+
+      <section>
+        <h2>Example</h2>
+        <p>Update the components input to see the page value change</p>
+
+        <div>
+          <strong>Component control</strong>
+          <div style="margin-top: 6px;">
+            <value-input></value-input>
+          </div>
+        </div>
+
+        <div style="margin-top: 16px;">
+          <strong>Page value</strong>
+          <div style="margin-top: 6px;">${page.pageValue}</div>
+        </div>
+      </section>
+
+      <section id="cue" aria-label="Cue example">
+        <h2>Shared data module</h2>
+        <p class="subheader">Lets create a simple module that provides data.</p>
+
+        <h4>Data module</h4>
+        <code-block language="javascript"><pre>
+${`import { Cue } from '@thewebformula/lithe';
+
+export const value = new Cue.State('some value');`}
+        </pre></code-block>
+
+        <h4>Component</h4>
+        <code-block language="javascript"><pre>
+${`import { Component, html } from '@thewebformula/lithe';
+import { value } from './data.js';
+
+class ValueInput extends Component {
+
+  template() {
+    return html\`
+      <div>
+        <label for="input" style="margin-right: 12px;">Value input:</label>
+        <input name="input" value=\${value} oninput=\${(e) => value.set(e.target.value)}>
+      </div>
+    \`;
+  }
+}
+customElements.define('value-input', ValueInput);`}
+        </pre></code-block>
+
+        <h4>Page</h4>
+        <code-block language="javascript"><pre>
+${`import { Component, html } from '@thewebformula/lithe';
+import { value } from './data.js';
+import './component.js';
+
+
+class SharingDataPage extends Component {
+  static title = 'Sharing data';
+
+  template() {
+    return html\`
+      <strong>Component control</strong>
+      <value-input></value-input>
+
+      <strong>Page value</strong>
+      <div>\${value}</div>
+    \`;
+  }
+}
+customElements.define('sharing-data-page', SharingDataPage);`}
+        </pre></code-block>
+      </section>
+    </div>
+  </div>
+</article>
