@@ -11,6 +11,7 @@ build({
     { from: 'docs/favicon.ico', to: 'dist/' },
     { from: 'docs/icons/*', to: 'dist/icons/' },
     { from: 'docs/manifest.json', to: 'dist/' }
+    // { from: 'docs/test.jpg', to: 'dist/' }
   ],
   esbuildPlugins: [
     prismjsPlugin({
@@ -21,7 +22,9 @@ build({
   sitemap: {
     enable: true,
     host: 'https://lithe.dev'
-  }
+  },
+  // minify: true,
+  // compression: true
   // devServer: {
   //   enable: true,
   //   livereload: false
