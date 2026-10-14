@@ -1,28 +1,40 @@
 <article>
   <header>
-    <h1>Templates lists</h1>
+    <h1>Template lists</h1>
   </header>
 
   <div class="article-main">
     <div class="article-content">
-      <section id="expressions" aria-label="Expressions and binding">
-        <h2 >Templates overview</h2>
-        <p class="subheader">Templates are built using template literals. Simply use the <strong>html</strong> tag function and write some html.</p>
+      <section id="lists" aria-label="Template lists">
+        <h2>Template lists</h2>
+        <p class="subheader">There are multiple options for rendering lists. They can be both static and dynamic.</p>
 
-        <div style="margin: 42px 0px;">
-          <div class="mc-font-title-large" style="margin-bottom: 8px;">Basic list</div>
-          ${html(() => ['One', 'Two', 'Three'].map(item => html`<div>Value: ${item}</div>`))}
+        <h3 style="margin-top: 54px;">Basic static list</h3>
+        <div style="margin-bottom: 18px;">
+          ${['One', 'Two', 'Three'].map(item => html`<div>Value: ${item}</div>`)}
         </div>
 
-        <div style="margin: 42px 0px;">
-          <div class="mc-font-title-large" style="margin-bottom: 8px;">Signal list</div>
-          <mc-textfield id="valueinput" placeholder="...value" style="margin-right: 9px"></mc-textfield>
-          <mc-button onclick="page.addItem(valueinput.value)" style="margin-top: 12px;">Add value</mc-button>
-          ${html(() => page.items.get().map(item => html`<div>Value: ${item.value}</div>`))}
-        </div>
+        <code-block language="javascript">
+          <pre>
+${`import { Component, html } from '@thewebformula/lithe';
 
-        <div style="margin: 42px 0px;">
-          <div class="mc-font-title-large" style="margin-bottom: 8px;">Signal array list</div>
+class TemplateListsPage extends Component {
+  static title = 'Templating lists';
+
+  template() {
+    return html\`
+      \${['One', 'Two', 'Three'].map(item => html\`<div>Value: \${item}</div>\`)}
+    \`;
+  }
+}
+customElements.define('template-lists-page', TemplateListsPage);`}
+          </pre>
+        </code-block>
+
+
+
+        <h3 style="margin-top: 54px;">Dynamic lists with Cue.Array</h3>
+        <div style="margin-bottom: 18px;">
           <mc-checkbox id="selectall" label="Select all" onclick="page.selectAll(event)"></mc-checkbox>
 
           <mc-list id="selection-list">
@@ -35,98 +47,89 @@
           </mc-list>
         </div>
 
-        <code-block language="javascript" class="template-code-override">
+        <code-block language="javascript">
           <pre>
-${`import { Component, Signal, SignalArray, effect } from '@thewebformula/lithe';
-import htmlTemplate from './page.html';
+${`import { Component, html, Cue } from '@thewebformula/lithe';
 
 class TemplateListsPage extends Component {
   static title = 'Templating lists';
-  static htmlTemplate = htmlTemplate;
 
-  items = new Signal([
-    { value: 'One' },
-    { value: 'Two' },
-    { value: 'Three' }
-  ]);
-
-  itemsCheckList = new SignalArray([
+  itemsCheckList = new Cue.Array([
     { label: 'One', checked: false },
     { label: 'Two', checked: false },
     { label: 'Three', checked: true }
   ]);
 
-  #disposeitemsCheckListEffect;
+  #disposeItemsCheckListEffect;
 
   afterRender() {
-    this.#disposeitemsCheckListEffect = effect(() => {
+    this.#disposeItemsCheckListEffect = Cue.effect(() => {
       const element = this.querySelector('#selectall');
-      const allChecked = this.itemsCheckList.value.every(item => item.checked);
-      const someChecked = this.itemsCheckList.value.some(item => item.checked);
+      const allChecked = this.itemsCheckList.get().every(item => item.checked);
+      const someChecked = this.itemsCheckList.get().some(item => item.checked);
       element.indeterminate = !allChecked && someChecked;
       element.checked = allChecked;
     });
   }
 
   disconnectedCallback() {
-    if (this.#disposeitemsCheckListEffect) this.#disposeitemsCheckListEffect();
+    super.disconnectedCallback();
+    if (this.#disposeItemsCheckListEffect) this.#disposeItemsCheckListEffect();
   }
 
-  addItem(value) {
-    this.items.value = [...this.items.value, { value }];
-  }
+  template() {
+    return html\`
+      <mc-checkbox id="selectall" label="Select all" onclick="this.selectAll(event)"></mc-checkbox>
 
-  addItemToSignalArray(value) {
-    this.itemsCheckList.value.push({ value });
-  }
-
-  selectAll(event) {
-    const value = !event.target.checked;
-    event.target.value = value
-    this.itemsCheckList.value.forEach(item => item.checked = value);
+      <mc-list id="selection-list">
+        \${this.itemsCheckList.get().map(item => html\`
+          <mc-list-item value=\${item.label}>
+            <div slot="headline">\${item.label}</div>
+            <mc-checkbox slot="end" checked=\${item.checked} onchange=\${() => item.checked = !item.checked}></mc-checkbox>
+          </mc-list-item>
+        \`)}
+      </mc-list>
+    \`;
   }
 }
 customElements.define('template-lists-page', TemplateListsPage);`}
           </pre>
         </code-block>
-        <br>
-        <code-block language="html" class="template-code-override">
+
+
+
+        <h3 style="margin-top: 54px;">Dynamic lists with Cue.State</h3>
+        <div style="margin-bottom: 18px;">
+          <mc-textfield id="valueinput" placeholder="...value" style="margin-right: 9px"></mc-textfield>
+          <mc-button onclick="page.addItem(valueinput.value)" style="margin-top: 12px;">Add value</mc-button>
+          ${html(() => page.items.get().map(item => html`<div>Value: ${item.value}</div>`))}
+        </div>
+
+        <code-block language="javascript">
           <pre>
-${`<!-- page.html -->
+${`import { Component, html, Cue } from '@thewebformula/lithe';
 
-<div>
-  <div>Basic list</div>
-  \${html(() => (
-    ['One', 'Two', 'Three'].map(item => html\`<div>Value: \${item}</div>\`)
-  ))}
-</div>
+class TemplateListsPage extends Component {
+  static title = 'Templating lists';
 
-<div>
-  <div>Signal list</div>
-  <mc-textfield id="valueinput" placeholder="...value"></mc-textfield>
-  <mc-button onclick="page.addItem(valueinput.value)">Add value</mc-button>
-  \${html(() => (
-    page.items.value.map(item => html\`<div>Value: \${item.value}</div>\`)
-  ))}
-</div>
+  items = new Cue.State([
+    { value: 'One' },
+    { value: 'Two' },
+    { value: 'Three' }
+  ]);
 
-<div>
-  <div>Signal object list</div>
-  <mc-checkbox id="selectall" label="Select all" onclick="page.selectAll(event)"></mc-checkbox>
+  addItem(value) {
+    if (!value) return;
+    this.items.set([...this.items.get(), { value }]);
+  }
 
-  <mc-list id="selection-list">
-    \${html(() => page.itemsCheckList.value.map(item => html\`
-    <mc-list-item>
-      <div slot="headline">\${item.label}</div>
-      <mc-checkbox
-        slot="end"
-        checked="\${item.checked}"
-        onchange="\${() => item.checked = !item.checked}"
-      ></mc-checkbox>
-    </mc-list-item>
-    \`))}
-  </mc-list>
-</div>`}
+  template() {
+    return html\`
+      \${html(() => this.items.get().map(item => html\`<div>Value: \${item.value}</div>\`))}
+    \`;
+  }
+}
+customElements.define('template-lists-page', TemplateListsPage);`}
           </pre>
         </code-block>
       </section>

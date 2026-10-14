@@ -25,5 +25,6 @@ import './routes/view transitions/index.js';
 import './routes/web component/index.js';
 import './routes/templating/overview/index.js';
 import './routes/templating/attributes/index.js';
+import './routes/templating/conditional/index.js';
 import './routes/templating/lists/index.js';
 import './routes/playground/index.js';
