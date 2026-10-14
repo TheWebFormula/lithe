@@ -1,6 +1,7 @@
 import Cue from './Cue.js';
 import { addToQueue } from './queue.js';
 import { policyHTML } from './policy.js';
+import * as debug from './debug.js';
 
 
 const TEMPLATE_VALUE = Symbol('TEMPLATE_VALUE');
@@ -117,7 +118,7 @@ class TemplateInstance {
       let part = this.valueNodes[i];
       for (let j = 0; j < part.valueCount; j++) {
         let value = values[valueIndex + j];
-        part.addValue(value, j);
+        part.addValue(value, valueIndex + j);
         valueIndex++;
       }
       part.update();
@@ -217,6 +218,7 @@ class ValueNode {
     if (Cue.isCue(value)) {
       this.isSignal = true;
       this.signals.push(value);
+      if (debug.enabled && !Cue.isHtml(value)) debug.renderCueUsed(value, index);
 
       queueMicrotask(() => {
         value.watch(this.signalChange);

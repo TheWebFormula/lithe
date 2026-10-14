@@ -1,6 +1,7 @@
 import { getSearchParameters, getUrlParameters } from './router.js';
 import { html, activateComponent, deactivateComponent } from './html.js';
 import { isCss } from './css.js';
+import * as debug from './debug.js';
 
 
 const dashCaseRegex = /-([a-z])/g;
@@ -222,6 +223,7 @@ export default class Component extends HTMLElement {
     if (this.constructor._isPage) this.style.display = 'contents';
 
     activateComponent();
+    if (debug.enabled) debug.componentRenderStaet(this);
     try {
       this.#currentTemplate = this.template();
       if (this.constructor.useShadowRoot) this.shadowRoot.appendChild(this.#currentTemplate.fragment);
@@ -231,6 +233,7 @@ export default class Component extends HTMLElement {
       console.error('There was an error processing the template for', this.constructor.name);
     }
     deactivateComponent();
+    if (debug.enabled) debug.componentRenderEnd();
 
     this.afterRender();
   }

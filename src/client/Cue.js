@@ -1,4 +1,5 @@
 import { addToQueue } from './queue.js';
+import * as debug from './debug.js';
 
 
 const CUE_NODE = Symbol('CUE_NODE');
@@ -13,7 +14,6 @@ const CUE_UNSET = Symbol('CUE_UNSET');
 let epoch = 0;
 let activeConsumer;
 let isTemplating = false;
-
 
 export function beginTemplating() {
   isTemplating = true;
@@ -97,6 +97,7 @@ class CueNode {
 
   get() {
     if (activeConsumer) this.subscribe(activeConsumer);
+    if (debug.enabled && !activeConsumer && !isCueHtml(this)) debug.registerRenderCue(this);
 
     if (this.#value === CUE_ERRORED) throw this.#error;
 
@@ -722,11 +723,6 @@ const Cue = Object.freeze({
   isEffect: isCueEffect,
   isHtml: isCueHtml,
   isErrored: isErrored,
-  isUnset: isUnset,
-
-
-  update: (cue, method) => {
-    cue.set(method());
-  }
+  isUnset: isUnset
 });
 export default Cue;
