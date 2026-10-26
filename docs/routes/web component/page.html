@@ -13,7 +13,6 @@
       </ul>
     </nav>
 
-
     <div class="article-content">
       <section id="example" aria-label="Page example">
         <h2>Standard component</h2>
@@ -21,194 +20,127 @@
 
 
         <h4>Simple button</h4>
-        <code-block language="html"><pre>
-${`<my-button loading=\${this.isLoading}>
-  <i class="load" slot="icon"></i>
-  Load data
-</my-button>`}
-        </pre></code-block>
 
-        <br>
-        <code-block language="javascript"><pre>
-${`import { Component, html, css } from '@thewebformula/lithe';
+        <div class="editor" id="editor">
+          <play-ground preview entry="component.js" view-split="0.7" max-height="600px">
+            <script type="play/html" filename="index.html">
+              <!doctype html>
+              <head>
+                <meta charset="UTF-8">
+                <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-class MyButton extends Component {
-  static useShadowRoot = true;
-  static shadowRootDelegateFocus = true;
-  static styles = css\`
-    button:not(.loading) .loading-text { display: none; }
-    button.loading .text { display: none; }
-  \`;
+                <title>Lithe</title>
 
-  static observedAttributesExtended = {
-    disabled: { type: 'toggle' },
-    loading: { type: 'toggle' }
-  };
+                <script type="importmap">
+                  { "imports": {
+                    "@thewebformula/lithe": "https://unpkg.com/@thewebformula/lithe@0.26.2"
+                  } }
+                &lt;/script>
+                <script type="module" src="app.js" defer>&lt;/script>
+              </head>
+              <body>
+                <!-- root_path = "/" for preview -->
+                <li-route path="__root_path__" component="home-page"></li-route>
 
-  attributeChangedCallbackExtended(name, oldValue, newValue) {
-    this[name] = newValue;
-  }
+                <main id="page-content" role="main"></main>
+              </body>
+            </script>
+            <script type="play/js" filename="app.js">
+              import '@thewebformula/lithe';
+              import './component.js';
+              import './routes/index/index.js';
+            </script>
+            <script type="play/js" filename="routes/index/index.js">
+              import { Component, html } from '@thewebformula/lithe';
 
-  #button;
-  #disabled = false;
-  get disabled() { return this.#disabled; }
-  set disabled(value) {
-    this.#disabled = value;
-    this.#button.disabled = value;
-  }
+              class HomePage extends Component {
+                static title = 'Home';
 
-  #loading = false;
-  get loading() { return this.#loading; }
-  set loading(value) {
-    this.#loading = value;
-    this.#button.classList.toggle('loading', value);
-  }
+                afterRender() {
+                  document.querySelector('async-button').addEventListener('click', (e) => console.log('click', e));
+                  document.querySelector('async-button').addEventListener('state', (e) => console.log('state', e));
+                }
 
-  afterRender() {
-    this.#button = this.shadowRoot.querySelector('button');
-  }
+                loadData = async () => {
+                  console.log('loadData')
+                  return new Promise(resolve => {
+                    setTimeout(() => {
+                      // do some work, get some data
+                      console.log('loaded')
+                      resolve();
+                    }, 2000)
+                  })
+                }
 
-  handleClick(event) {
-    if (this.#loading) {
-      event.stopImmediatePropagation();
-      event.preventDefault();
-    }
-  }
+                stateChange(event) {
+                  console.log(event.detail)
+                }
 
-  template() {
-    return html\`
-      <button disabled=\${this.#disabled} loading=\${this.#loading} onclick=\${(event) => this.handleClick(event)}>
-        <slot name="icon"></slot>
-        <slot class="text"></slot>
-        <span class="loading-text">Loading...</span>
-      </button>
-    \`;
-  }
-}
-customElements.define('my-button', MyButton);`}
-        </pre></code-block>
+                template() {
+                  return html\`<async-button onclickasync=\${this.loadData} onstate=\${e => this.stateChange(e)}>Click me</async-button>\`;
+                }
+              }
+              customElements.define('home-page', HomePage);
+            </script>
+            <script type="play/js" filename="component.js">
+              import { Component, html, css, Cue } from '@thewebformula/lithe';
 
+              class MyButton extends Component {
+                static useShadowRoot = true;
+                static shadowRootDelegateFocus = true;
+                static styles = css\`
+                  :host(:not(.loading)) {
+                    .loading-text { display: none; }
+                  }
+                  :host(.loading) {
+                    opacity: 0.7;
+                    .text { display: none; }
+                  }
+                \`;
 
+                #button;
+                #loading = new Cue.State(false);
 
+                static observedAttributesExtended = {
+                  onclickasync: { type: 'event' },
+                  onstate: { type: 'event' }
+                };
 
-        <h4 id="breakdown">Component breakdown</h4>
-        <code-block language="javascript"><pre>
-${`import { Component } from '@thewebformula/lithe';
+                afterRender() {
+                  this.#button = this.shadowRoot.querySelector('button');
+                }
 
-/** You can import html
-* html imports as a string
-*/
-import htmlTemplate from './component.html';
+                async handleClick(event) {
+                  console.log(this.onstate)
+                  if (this.#loading.get() === true) return;
 
-/** You can import stylesheets
-* Stylesheets imports as modules that export CSSStyleSheet
-* You can add them to the component 'static styles = [styles];'
-*/
-import styles from '../styles.css' assert { type: 'css' };
+                  this.#loading.set(true);
+                  this.classList.add('loading');
+                  this.dispatchEvent(new CustomEvent('state', { detail: 'pending' }));
+                  await this.onclickasync(event);
+                  this.#loading.set(false);
+                  this.classList.remove('loading');
+                  this.dispatchEvent(new CustomEvent('state', { detail: 'resolved' }));
+                }
 
-
-
-class CustomButton extends Component {
-  /**
-    * Pass in HTML string. Use for imported .HTML
-    *   Supports template literals: <div>\${this.var}</div>
-    *   alternative to using the template() method
-    * @type {String}
-    */
-  static htmlTemplate = htmlTemplate;
-
-
-  /**
-    * Hook up shadow root
-    * @type {Boolean}
-    * @default false
-    */
-  static useShadowRoot = false;
-
-
-  /**
-    * @type {Boolean}
-    * @default false
-    */
-  static shadowRootDelegateFocus = false;
-
-
-  /**
-    * Pass in styles.
-    *   StyleSheetTemplate: Can use css tag: css\`h1 { color: blue; }\`
-    *   CSSStyleSheet: Can use imported stylesheets: import styles from '../styles.css' assert { type: 'css' };
-    * @type {CSSStyleSheet | StyleSheetTemplate | (CSSStyleSheet | StyleSheetTemplate)[]}
-    */
-  static styles;
-
-
-  /**
-    * @typedef {String} AttributeType
-    * @value 'string' Convert to a string. null = ''
-    * @value 'number' Convert to a number. isNaN = ''
-    * @value 'int' Convert to a int. isNaN = ''
-    * @value 'toggle' Add / remove attribute
-    * @value 'boolean' Convert to a boolean
-    * @value 'object' Pass in an objecty. This will add teh attribute with no value
-    * @value 'event' Allows code to be executed. Similar to onchange="console.log('test')"
-    */
-  /**
-    * @typedef {Object} AttributeConfig
-    * @property {AttributeType} type - The parsed primitive type of the attribute
-    * @property {Boolean} [reflect=true] - Whether the attribute should be reflected to the DOM (converted to dash case when reflected)
-    */
-  /**
-    * Extended observedAttributes, allowing you to specify types
-    * @static
-    * @type {Record<string, AttributeConfig>}
-    */
-  static observedAttributesExtended = { require: { type: 'toggle' } };
-
-
-  /**
-    * Use with observedAttributesExtended
-    * Attribut names are automatically converted from dashcase to camel case
-    * @function
-    * @param {String} name - Attribute name (converted to camel case)
-    * @param {String} oldValue - Old attribute value
-    * @param {String} newValue - New attribute value
-    */
-  attributeChangedCallbackExtended(name, oldValue, newValue) { }
-
-
-  /**
-    * Method that returns a html template string. This is an alternative to use static htmlTemplate
-    * @name template
-    * @function
-    * @return {TemplateInstance}
-    */
-  template() { return html'<div></div>' }
-
-  connectedCallback() {
-    super.connectedCallback(); // must be called if using connectedCallback
-  }
-
-  // Rendering only happens once unless called manually
-  beforeRender() {}
-  afterRender() {
-    this.#root.querySelector('button').addEventListener('click', this.#onClick_bound);
-  }
-
-  disconnectedCallback() {
-    super.disconnectedCallback(); // must be called if using disconnectedCallback
-    this.#root.querySelector('button').removeEventListener('click', this.#onClick_bound);
-  }
-
-  #onClick() {
-    console.log('Custom button component clicked!');
-  }
-  #onClick_bound = this.#onClick.bind(this);
-}
-
-// define web component
-customElements.define('custom-button', CustomButton);`}
-        </pre></code-block>
+                template() {
+                  return html\`
+                    <button onclick=\${(event) => this.handleClick(event)}>
+                      <slot name="icon"></slot>
+                      <slot class="text"></slot>
+                      <span class="loading-text">Loading...</span>
+                    </button>
+                  \`;
+                }
+              }
+              customElements.define('async-button', MyButton);
+            </script>
+          </play-ground>
+        </div>
       </section>
+
+
     </div>
   </div>
 </article>

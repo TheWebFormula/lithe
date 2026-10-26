@@ -39,7 +39,7 @@
 </head>
 
 <body>
-  <mc-navigation-drawer>
+  <mc-navigation-drawer style="--mc-side-sheet-width: 250px;">
     <div slot="header" class="headline">Lithe</div>
 
     <a href="/">Welcome</a>
@@ -49,6 +49,7 @@
     <a href="/build">Build</a>
     <a href="/binding">Cue's and binding</a>
     <a href="/sharing-data">Sharing data</a>
+    <!--<a href="/async">Async data</a>-->
     <a href="/web-component">Web component</a>
     <mc-anchor-group style="fill: white;">
       <div slot="control">Templating</div>
@@ -74,9 +75,8 @@
     </a>
   </mc-navigation-drawer>
 
-  <mc-pane-container>
-    <mc-pane id="page-content" role="main"></mc-pane>
-  </mc-pane-container>
+
+  <div id="page-content" role="main"></div>
 
   <mc-navigation-bar auto-hide>
     <mc-icon-button onclick="document.querySelector('mc-navigation-drawer').toggle()">

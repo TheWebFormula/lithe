@@ -24,13 +24,13 @@ export function i18n(key, ...variables) {
     return message.replace(valueRegex, function (_, varIndex, formatterName, formatterVarIndex) {
       if (varIndex) {
         const variable = variables[parseInt(varIndex) - 1];
-        if (Cue.isCue(variable)) return variable.getForTemplate();
+        if (Cue.isCue(variable)) return variable.getRaw();
         return variable
       }
       if (formatterName && formatterVarIndex) {
         const formatMethod = translations.get(currentLocal).formatters[formatterName].method;
         const variable = variables[parseInt(formatterVarIndex) - 1];
-        if (Cue.isCue(variable)) return formatMethod(variable.getForTemplate());
+        if (Cue.isCue(variable)) return formatMethod(variable.getRaw());
         return formatMethod(variable);
       }
       return '';
@@ -74,7 +74,7 @@ i18n.format = (formatterName, value) => {
       return '';
     }
 
-    if (Cue.isCue(value)) return formatter.method(value.getForTemplate());
+    if (Cue.isCue(value)) return formatter.method(value.getRaw());
     return formatter.method(value);
   })
   signals.add(compute);

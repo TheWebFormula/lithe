@@ -12,7 +12,7 @@ import '@thewebformula/materially/components/list';
 import '@thewebformula/materially/components/checkbox';
 import '@thewebformula/materially/components/snackbar';
 
-import './code-block.js';
+import './playground/play-ground.js';
 import './routes/index/index.js';
 import './routes/getting started/index.js';
 import './routes/404/index.js';
@@ -29,3 +29,4 @@ import './routes/templating/conditional/index.js';
 import './routes/templating/lists/index.js';
 import './routes/playground/index.js';
 import './routes/sharing-data/index.js';
+// import './routes/async/index.js';

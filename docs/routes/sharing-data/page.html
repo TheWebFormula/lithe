@@ -29,53 +29,59 @@
         <p class="subheader">Lets create a simple module that provides data.</p>
 
         <h4>Data module</h4>
-        <code-block language="javascript"><pre>
-${`import { Cue } from '@thewebformula/lithe';
+        <play-ground>
+          <script type="play/javascript" filename="global-value.js">
+            import { Cue } from '@thewebformula/lithe';
 
-export const value = new Cue.State('some value');`}
-        </pre></code-block>
+            export const value = new Cue.State('some value');
+          </script>
+        </play-ground>
 
         <h4>Component</h4>
-        <code-block language="javascript"><pre>
-${`import { Component, html } from '@thewebformula/lithe';
-import { value } from './data.js';
+        <play-ground>
+          <script type="play/javascript" filename="component.js">
+            import { Component, html } from '@thewebformula/lithe';
+            import { value } from './data.js';
 
-class ValueInput extends Component {
+            class ValueInput extends Component {
 
-  template() {
-    return html\`
-      <div>
-        <label for="input" style="margin-right: 12px;">Value input:</label>
-        <input name="input" value=\${value} oninput=\${(e) => value.set(e.target.value)}>
-      </div>
-    \`;
-  }
-}
-customElements.define('value-input', ValueInput);`}
-        </pre></code-block>
+              template() {
+                return html\`
+                  <div>
+                    <label for="input" style="margin-right: 12px;">Value input:</label>
+                    <input name="input" value=\${value} oninput=\${(e) => value.set(e.target.value)}>
+                  </div>
+                \`;
+              }
+            }
+            customElements.define('value-input', ValueInput);
+          </script>
+        </play-ground>
 
         <h4>Page</h4>
-        <code-block language="javascript"><pre>
-${`import { Component, html } from '@thewebformula/lithe';
-import { value } from './data.js';
-import './component.js';
+        <play-ground>
+          <script type="play/javascript" filename="page.js">
+            import { Component, html } from '@thewebformula/lithe';
+            import { value } from './data.js';
+            import './component.js';
 
 
-class SharingDataPage extends Component {
-  static title = 'Sharing data';
+            class SharingDataPage extends Component {
+              static title = 'Sharing data';
 
-  template() {
-    return html\`
-      <strong>Component control</strong>
-      <value-input></value-input>
+              template() {
+                return html\`
+                  <strong>Component control</strong>
+                  <value-input></value-input>
 
-      <strong>Page value</strong>
-      <div>\${value}</div>
-    \`;
-  }
-}
-customElements.define('sharing-data-page', SharingDataPage);`}
-        </pre></code-block>
+                  <strong>Page value</strong>
+                  <div>\${value}</div>
+                \`;
+              }
+            }
+            customElements.define('sharing-data-page', SharingDataPage);
+          </script>
+        </play-ground>
       </section>
     </div>
   </div>

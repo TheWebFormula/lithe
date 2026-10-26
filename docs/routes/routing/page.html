@@ -19,23 +19,25 @@
         <h2>Directory routing</h2>
         <p class="subheader">Routes are based on the folder names and nesting inside the <strong>routes/</strong> folder. The build process will automatically create and add the <strong>Route</strong> components to index.html for you.</p>
 
-        <code-block language="yaml"><pre>
-${`app/
-└── routes/
-  ├── index/
-  │   └── index.js      # /
-  ├── 404/
-  │   └── index.js      # /404 (or any url that is not found)
-  ├── one/
-  │   └── index.js      # one/
-  ├── two[id?]/
-  │   └── index.js      # two/:id?
-  ├── three/
-  │   └── [id]/
-  │       └── index.js  # three/:id
-  └── four[...all]/
-      └── index.js      # four/*all (four/a/b/)`}
-        </pre></code-block>
+        <play-ground no-line-numbers no-tab-bar>
+          <script type="play/bash" filename="install.sh">
+            app/
+            └── routes/
+              ├── index/
+              │   └── index.js      # /
+              ├── 404/
+              │   └── index.js      # /404 (or any url that is not found)
+              ├── one/
+              │   └── index.js      # one/
+              ├── two[id?]/
+              │   └── index.js      # two/:id?
+              ├── three/
+              │   └── [id]/
+              │       └── index.js  # three/:id
+              └── four[...all]/
+                  └── index.js      # four/*all (four/a/b/)
+          </script>
+        </play-ground>
 
         <div class="route-list">
           <div class="mc-font-body-large route-list-item"><span>app<span class="slash">/</span>routes<span class="slash">/</span>index<span class="slash">/</span>index.js</span><span>→</span><span>/</span></div>
@@ -65,16 +67,18 @@ ${`<body>
         <h2>Component routing</h2>
         <p class="subheader">You can set routes directly using the <strong>Route</strong> component. These can be using with the directory routes.</p>
 
-        <code-block language="html"><pre>
-${`<body>
-  <li-route path="/" component="home-page"></li-route>
-  <li-route path="/one" component="first-page"></li-route>
-  <li-route path="/two/:id" component="second-page"></li-route>
-  <li-route path="/two/:id?" component="second-page"></li-route>
-  <li-route path="/three/*" component="third-page"></li-route>
-  <li-route path="/three/*?" component="third-page"></li-route>
-</body>`}
-        </pre></code-block>
+        <play-ground>
+          <script type="play/html" filename="index.html">
+            <body>
+              <li-route path="/" component="home-page"></li-route>
+              <li-route path="/one" component="first-page"></li-route>
+              <li-route path="/two/:id" component="second-page"></li-route>
+              <li-route path="/two/:id?" component="second-page"></li-route>
+              <li-route path="/three/*" component="third-page"></li-route>
+              <li-route path="/three/*?" component="third-page"></li-route>
+            </body>
+          </script>
+        </play-ground>
       </section>
 
 
@@ -82,30 +86,30 @@ ${`<body>
         <h2>Route parameters</h2>
         <p class="subheader">You can access the route parameters inside your page component.</p>
 
+        <play-ground>
+          <script type="play/javascript" filename="routes/pagename/index.js">
+            import { Component } from '@thewebformula/lithe';
+            import htmlTemplate from './page.html'; // automatically bundles
 
-          <code-block language="javascript"><pre>
-${`import { Component } from '@thewebformula/lithe';
-import htmlTemplate from './page.html'; // automatically bundles
+            class PageClassName extends Component {
+              static title = 'Page title';
+              static htmlTemplate = htmlTemplate;
 
-class PageClassName extends Component {
-  static title = 'Page title';
-  static htmlTemplate = htmlTemplate;
+              connectedCallback() {
+                super.connectedCallback();
 
-  connectedCallback() {
-    super.connectedCallback();
+                // one[id] one/:id one/value
+                console.log(this.urlParameters); // { id: 'value' }
 
-    // one[id] one/:id one/value
-    console.log(this.urlParameters); // { id: 'value' }
+                // two[...rest] two/*rest two/a/b
+                console.log(this.urlParameters); // { rest: 'a/b' }
 
-    // two[...rest] two/*rest two/a/b
-    console.log(this.urlParameters); // { rest: 'a/b' }
-
-    // get search parameters
-    console.log(this.searchParameters);
-  }
-}
-customElements.define('page-component-name', PageClassName);`}
-          </pre></code-block>
+                // get search parameters
+                console.log(this.searchParameters);
+              }
+            }
+            customElements.define('page-component-name', PageClassName);
+          </script>
       </section>
     </div>
   </div>

@@ -7,99 +7,107 @@
   <div class="article-main">
     <div class="article-content">
 
-      <section aria-label="Check out the playground">
+      <!--<section aria-label="Check out the playground">
         <h2>Check out the playground</h2>
         <p class="subheader">You can jump over to our playground to see the quick start tutorial in action.</p>
         <mc-button href="/playground" outlined>Playground <mc-icon>arrow_forward</mc-icon></mc-button>
-      </section>
+      </section>-->
 
 
       <section aria-label="create your first page">
         <h2>Create your first page</h2>
         <p class="subheader">We will create the required files to render your first page. This includes; index.html, page.js, app.js, and build.js</p>
 
-        <code-block language="bash" style="margin-top: 46px;"><pre>
+        <play-ground>
+          <script type="play/bash" filename="install.sh">
+            npm install @thewebformula/lithe
+          </script>
+        </play-ground>
+        <!--<code-block language="bash" style="margin-top: 46px;"><pre>
 npm install @thewebformula/lithe
-        </pre></code-block>
+        </pre></code-block>-->
 
         <h4 class="mc-font-title-large">app/index.html</h4>
         <p class="subheader">Creeate the index html that will be used to load the site.</p>
-        <code-block language="html"><pre>
-${`<!-- app/index.html -->
+        <play-ground>
+          <script type="play/html" filename="index.html">
+            <!doctype html>
+            <html lang="en">
+              <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Default Title</title> <!-- default value, overridden by the component title -->
 
-    <title>Default Title</title> <!-- default value, overridden by the component title -->
+                <link rel="preload" href="/app.css" as="style"> <!--auto handles preload style links -->
+                <script type="module" src="/app.js" defer>&lt;/script> <!-- auto injected if not present -->
+              </head>
 
-    <link rel="preload" href="/app.css" as="style"> <!--auto handles preload style links -->
-    <script type="module" src="/app.js" defer></script> <!-- auto injected if not present -->
-  </head>
-
-  <body>
-    <main id="page-content"></main> <!--render looks for [id="page-content"] -->
-  </body>
-</html>`}
-        </pre></code-block>
+              <body>
+                <main id="page-content"></main> <!--render looks for [id="page-content"] -->
+              </body>
+            </html>
+          </script>
+        </play-ground>
 
         <h4 class="mc-font-title-large">app/routes/index/index.js</h4>
         <p class="subheader">Create the home page. The <strong>routes</strong> folder is the default routing folder and <strong>index</strong> is the root. <a href="/routing">Routing</a></p>
-        <code-block language="javascript"><pre>
-${`// app/routes/index/index.js
+        <play-ground>
+          <script type="play/js" filename="app/routes/index/index.js">
+            import { Component, Cue, html } from '@thewebformula/lithe';
 
-import { Component, Cue, html } from '@thewebformula/lithe';
+            class PageComponent extends Component {
+              static title = 'Page';  // title element value
 
-class PageComponent extends Component {
-  static title = 'Page';  // title element value
+              someVar = new Cue.state('Hello world');
+              shouldShow = new Cue.state(true);
 
-  someVar = new Cue.state('Hello world');
-  shouldShow = new Cue.state(true);
+              toggle() {
+                this.shouldShow.set(!this.shouldShow.get());
+              }
 
-  toggle() {
-    this.shouldShow.set(!this.shouldShow.get());
-  }
+              template() {
+                return html\`
+                  <div>Page Content</div>
+                  <div>\${this.someVar}</div>
 
-  template() {
-    return html\`
-      <div>Page Content</div>
-      <div>\${this.someVar}</div>
+                  <button onclick={() => this.onClick()}>Toggle visibility</button>
+                  \${html(() => this.shouldShow ? html\`<div>Showing</div>\` : '')}
+                \`;
+              }
+            }
+            customElements.define('page-component-name', PageComponent);
+          </script>
+        </play-ground>
 
-      <button onclick={() => this.onClick()}>Toggle visibility</button>
-      \${html(() => this.shouldShow ? html\`<div>Showing</div>\` : '')}
-    \`;
-  }
-}
-customElements.define('page-component-name', PageComponent);`}
-        </pre></code-block>
 
         <h4 class="mc-font-title-large">app/app.js</h4>
         <p class="subheader">Create main app file to load routes and other modules.</p>
-        <code-block language="javascript"><pre>
-${` // /app/app.js
-
-import './routes/index/index.js';`}
-      </pre></code-block>
+        <play-ground>
+          <script type="play/js" filename="app/app.js">
+            import './routes/index/index.js';
+          </script>
+        </play-ground>
 
 
 
         <h4 class="mc-font-title-large">build.js</h4>
         <p class="subheader">This is the build script that handles the bundling and development server. <a href="/build">Build</a></p>
-        <code-block language="javascript"><pre>
-${`// build.js
+        <play-ground>
+          <script type="play/js" filename="build.js">
+            import build from '@thewebformula/lithe/build';
 
-import build from '@thewebformula/lithe/build';
-
-build({ basedir: 'app/' });`}
-      </pre></code-block>
+            build({ basedir: 'app/' });
+          </script>
+        </play-ground>
 
 
         <h4 class="mc-font-title-large">Run it!</h4>
-        <code-block language="bash"><pre>
-node build.js
-      </pre></code-block>
+        <play-ground>
+          <script type="play/bash" filename="Build command">
+            node build.js
+          </script>
+        </play-ground>
     </section>
     </div>
   </div>

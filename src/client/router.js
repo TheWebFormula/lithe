@@ -32,7 +32,10 @@ for (const cssLink of preloadCSS) {
 
 
 export function register(path, component, notFound) {
-  if (routes.has(path)) throw Error('exists');
+  if (routes.has(path)) {
+    // throw Error('exists');
+    return;
+  }
 
   routes.set(path, component);
   const regex = buildPathRegex(path);

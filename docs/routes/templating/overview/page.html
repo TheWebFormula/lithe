@@ -7,11 +7,11 @@
   <div class="article-main">
     <div class="article-content">
       <section id="expressions" aria-label="Expressions and binding">
-        <code-block language="javascript" class="template-code-override">
-          <pre>
-${`html\`<div>Welcome \${page.name}</div>\``}
-          </pre>
-        </code-block>
+        <play-ground>
+          <script type="play/javascript" filename="Template">
+            html\`<div>Welcome \${page.name}</div>\`
+          </script>
+        </play-ground>
 
         <div style="margin-top: 42px;">
           <div class="mc-font-body-large">Lithe template provide support for everything you would expect of a modern framework</div>
@@ -44,40 +44,40 @@ ${`html\`<div>Welcome \${page.name}</div>\``}
         <h3 style="margin-top: 48px;">Templates and components</h3>
         <p>You can add template to a component / page in two ways. Template method or impart a file</p>
 
-        <code-block language="javascript" class="template-code-override">
-          <pre>
-${`import { Component, html } from '@thewebformula/lithe';
+        <play-ground>
+          <script type="play/javascript" filename="Example">
+            import { Component, html } from '@thewebformula/lithe';
 
 
-// --- Template method ---
+            // --- Template method ---
 
-class TemplateListsPage extends Component {
-  static title = 'Templating lists';
+            class TemplateListsPage extends Component {
+              static title = 'Templating lists';
 
-  name = "Bob the builder";
+              name = "Bob the builder";
 
-  template() {
-    return html\`<h2>Welcome \${this.name}</h2>\`;
-  }
-}
-
-
-
-// --- File import ---
-
-import htmlTemplate from './page.html';
-
-class TemplateListsPage extends Component {
-  static title = 'Templating lists';
-  static htmlTemplate = htmlTemplate;
-
-  name = "Bob the builder";
-}
+              template() {
+                return html\`<h2>Welcome \${this.name}</h2>\`;
+              }
+            }
 
 
-customElements.define('template-lists-page', TemplateListsPage);`}
-          </pre>
-        </code-block>
+
+            // --- File import ---
+
+            import htmlTemplate from './page.html';
+
+            class TemplateListsPage extends Component {
+              static title = 'Templating lists';
+              static htmlTemplate = htmlTemplate;
+
+              name = "Bob the builder";
+            }
+
+
+            customElements.define('template-lists-page', TemplateListsPage);
+          </script>
+        </play-ground>
       </section>
     </div>
   </div>

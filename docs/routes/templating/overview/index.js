@@ -1,4 +1,4 @@
-import { Component, Signal } from '@thewebformula/lithe';
+import { Component } from '@thewebformula/lithe';
 import htmlTemplate from './page.html';
 
 class TemplateOverviewPage extends Component {

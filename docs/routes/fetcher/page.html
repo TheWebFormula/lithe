@@ -20,61 +20,67 @@
         <h2>Example: JWT refresh token</h2>
         <p class="subheader">In this example we will create a fetcher instance that automatically handle refreshing short lived JWT access tokens.</p>
 
-        <code-block language="javascript"><pre>
-${`import { Fetcher, Interceptor } from '@thewebformula/lithe';
+        <play-ground>
+          <script type="play/javascript" filename="apiFetcher.js">
+            import { Fetcher, Interceptor } from '@thewebformula/lithe';
 
-// Setup refresh token interceptor
-const refreshToken = new Interceptor({
-  // Only intercept 401 status codes
-  statusCodes: [401],
+            // Setup refresh token interceptor
+            const refreshToken = new Interceptor({
+              // Only intercept 401 status codes
+              statusCodes: [401],
 
-  /**
-  * pause all requests until after handler is resolved
-  * this will prevent other requests from failing and calling the /token endpoint
-  */
-  waitForResoltuion: true,
+              /**
+              * pause all requests until after handler is resolved
+              * this will prevent other requests from failing and calling the /token endpoint
+              */
+              waitForResoltuion: true,
 
-  async after(request, response) {
-    // Get access token from refresh token stored in cookie
-    const resp = await tokenIssuerFetcher.get('/token');
-    const token = await resp.json();
+              async after(request, response) {
+                // Get access token from refresh token stored in cookie
+                const resp = await tokenIssuerFetcher.get('/token');
+                const token = await resp.json();
 
-    // set header on api fetcher
-    apiFetcher.headers.set('Authorization', \`Bearer \${token}\`);
+                // set header on api fetcher
+                apiFetcher.headers.set('Authorization', \`Bearer \${token}\`);
 
-    // rerun original request
-    return request;
-  }
-});
+                // rerun original request
+                return request;
+              }
+            });
 
-export const apiFetcher = new Fetcher({
-  baseURL: 'http://localhost:3002',
-  credentials: 'include',
-  interceptors: [refreshToken]
-});
+            export const apiFetcher = new Fetcher({
+              baseURL: 'http://localhost:3002',
+              credentials: 'include',
+              interceptors: [refreshToken]
+            });
 
-// Setup token issuer instance
-export const tokenIssuerFetcher = new Fetcher({
-  baseURL: 'http://localhost:3001',
-  credentials: 'include'
-});`}
-        </pre></code-block>
+            // Setup token issuer instance
+            export const tokenIssuerFetcher = new Fetcher({
+              baseURL: 'http://localhost:3001',
+              credentials: 'include'
+            });
+          </script>
+        </play-ground>
+
         <br>
-        <code-block language="javascript"><pre>
-${`import { tokenIssuerFetcher, apiFetcher } from './apiFetcher.js';
 
-async function login() {
-  const resp = await tokenIssuerFetcher.post('/login', {
-    headers: { Authorization: \`Basic \${btoa('user:pass')}\` }
-  });
-  if (resp.status !== 201) throw Error('Cannot authenticate');
-}
+        <play-ground>
+          <script type="play/javascript" filename="service.js">
+            import { tokenIssuerFetcher, apiFetcher } from './apiFetcher.js';
 
-async function getData() {
-  const resp = await apiFetcher.get('/token');
-  return resp.json();
-}`}
-        </pre></code-block>
+            async function login() {
+              const resp = await tokenIssuerFetcher.post('/login', {
+                headers: { Authorization: \`Basic \${btoa('user:pass')}\` }
+              });
+              if (resp.status !== 201) throw Error('Cannot authenticate');
+            }
+
+            async function getData() {
+              const resp = await apiFetcher.get('/token');
+              return resp.json();
+            }
+          </script>
+        </play-ground>
       </section>
 
 
@@ -82,49 +88,51 @@ async function getData() {
         <h2>Creating instances</h2>
         <p class="subheader">You can make instances to support needs like multiple domains, auth vs no auth, and more.</p>
 
-        <code-block language="javascript"><pre>
-${`import { Fetcher } from '@thewebformula/lithe';
+        <play-ground>
+          <script type="play/javascript" filename="service.js">
+            import { Fetcher } from '@thewebformula/lithe';
 
-const fetcherInstance = new Fetcher({
-  // base url for all requests
-  baseURL: 'http://localhost:3000',
+            const fetcherInstance = new Fetcher({
+              // base url for all requests
+              baseURL: 'http://localhost:3000',
 
-  // credentials for all requests
-  credentials: 'include',
+              // credentials for all requests
+              credentials: 'include',
 
-  // headers for all requests (you can still add more when making requests)
-  headers: {
-    'api-version': 'v1'
-  }
-});
+              // headers for all requests (you can still add more when making requests)
+              headers: {
+                'api-version': 'v1'
+              }
+            });
 
-// using the instance to make a request
-// uses the same interface as fetch
-const resp = await fetcherInstance.fetch('/send-data', {
-  method: 'POST',
+            // use the instance to make a request
+            // uses the same interface as fetch
+            const resp = await fetcherInstance.fetch('/send-data', {
+              method: 'POST',
 
-  // JSON will automatically be stringified and the Content-Type header will be set to application/json
-  body: {
-    name: 'John Doe',
-    age: 30
-  }
-});
+              // JSON will automatically be stringified and the Content-Type header will be set to application/json
+              body: {
+                name: 'John Doe',
+                age: 30
+              }
+            });
 
 
-// retrive data the same as fetch
-const data = await resp.json();
+            // retrive data the same as fetch
+            const data = await resp.json();
 
-// Convenience methods
-await fetcherInstance.get('/get-data', {...});
-await fetcherInstance.post('/send-data', {...});
-await fetcherInstance.put('/send-data', {...});
-await fetcherInstance.patch('/send-data', {...});
-await fetcherInstance.delete('/send-data', {...});
-await fetcherInstance.head('/send-data', {...});
+            // Convenience methods
+            await fetcherInstance.get('/get-data', {...});
+            await fetcherInstance.post('/send-data', {...});
+            await fetcherInstance.put('/send-data', {...});
+            await fetcherInstance.patch('/send-data', {...});
+            await fetcherInstance.delete('/send-data', {...});
+            await fetcherInstance.head('/send-data', {...});
 
-// Update headers on instance
-fetcherInstance.headers.set('Authorization', \`Bearer \${token}\`);`}
-        </pre></code-block>
+            // Update headers on instance
+            fetcherInstance.headers.set('Authorization', \`Bearer \${token}\`);
+          </script>
+        </play-ground>
       </section>
 
 
@@ -132,54 +140,56 @@ fetcherInstance.headers.set('Authorization', \`Bearer \${token}\`);`}
         <h2>Fetcher interceptors</h2>
         <p class="subheader">Interceptors allow you to handle items like authentication refresh, pre-processing data, header manipulation and more.</p>
 
-        <code-block language="javascript"><pre>
-${`import { Fetcher, Interceptor } from '@thewebformula/lithe';
+        <play-ground>
+          <script type="play/javascript" filename="service.js">
+            import { Fetcher, Interceptor } from '@thewebformula/lithe';
 
-// Setup refresh token interceptor
-const setUserHeader = new Interceptor({
-  // Runs before fetch passing in the Request object https://developer.mozilla.org/en-US/docs/Web/API/Request
-  async before(request) {
-    // set headers
-    request.headers.set('user-id', userId);
-    return request; // will use passed in request if none returned
+            // Setup refresh token interceptor
+            const setUserHeader = new Interceptor({
+              // Runs before fetch passing in the Request object https://developer.mozilla.org/en-US/docs/Web/API/Request
+              async before(request) {
+                // set headers
+                request.headers.set('user-id', userId);
+                return request; // will use passed in request if none returned
 
-    // You can build a new Request object and return that also
-    // return new Request({ headers: { 'user-id': userId } });
-  }
-});
+                // You can build a new Request object and return that also
+                // return new Request({ headers: { 'user-id': userId } });
+              }
+            });
 
 
-// Error handler
-const setUserHeader = new Interceptor({
-  // Only intercept listed status codes
-  // If not set then all requests are intercepted
-  statusCodes: [500, 403],
+            // Error handler
+            const setUserHeader = new Interceptor({
+              // Only intercept listed status codes
+              // If not set then all requests are intercepted
+              statusCodes: [500, 403],
 
-  // pause all requests until after handler is resolved
-  // includes the request run from the return
-  // this will prevent other requests from failing and calling the /token endpoint
-  waitForResoltuion: false,
+              // pause all requests until after handler is resolved
+              // includes the request run from the return
+              // this will prevent other requests from failing and calling the /token endpoint
+              waitForResoltuion: false,
 
-  async after(request, response) {
-    if (response.status === 403) {
-      // do something
-    } else if (response.status === 500) {
-      // do something else
-    }
+              async after(request, response) {
+                if (response.status === 403) {
+                  // do something
+                } else if (response.status === 500) {
+                  // do something else
+                }
 
-    // if you return nothing that will be the end of the request
+                // if you return nothing that will be the end of the request
 
-    // if you return a Request object then that will be run
-    // this allowes you to handle things like refreshing expired tokens
-    // return new Request();
-  }
-});
+                // if you return a Request object then that will be run
+                // this allowes you to handle things like refreshing expired tokens
+                // return new Request();
+              }
+            });
 
-const fetcherInstance = new Fetcher({
-  baseURL: 'http://localhost:3000',
-  interceptors: [setUserHeader, errorHandler],
-});`}
-        </pre></code-block>
+            const fetcherInstance = new Fetcher({
+              baseURL: 'http://localhost:3000',
+              interceptors: [setUserHeader, errorHandler],
+            });
+          </script>
+        </play-ground>
       </section>
     </div>
   </div>

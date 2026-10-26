@@ -9,8 +9,6 @@ const capitalizedRegex = /[A-Z]/g;
 let walker = document.createTreeWalker(document, NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT | NodeFilter.SHOW_COMMENT);
 let templates = new Map();
 let toRemove = [];
-let bulkTextUpdate = [];
-let bulkAttrUpdate = [];
 let isTemplating = false;
 
 
@@ -45,9 +43,12 @@ class Template {
       isTemplating = true;
     }
 
+
+    // TODO for availableInstnaces to work we need top know the parent node this is being run for. Otherwise we can end up overriding nested repeated elements.
+    //      We only want to uise an elements if they will go back to the same parent
     if (this.cleaned) {
       this.cleaned = false;
-      this.availableInstnaces = this.instances.values().toArray().filter(i => i.disconnected).reverse();
+      // this.availableInstnaces = this.instances.values().toArray().filter(i => i.disconnected).reverse();
     }
 
     let instance;
@@ -63,7 +64,8 @@ class Template {
 
   // remove any unused old instances and transfer active ones
   cleanup() {
-    this.cleaned = true;
+    if (this.cleaned) return;
+
     for (let oldInstance of this.availableInstnaces) {
       oldInstance.destroy();
       this.instances.delete(oldInstance);
@@ -76,6 +78,8 @@ class Template {
         this.instances.delete(instance);
       }
     }
+
+    this.cleaned = true;
   }
 }
 
@@ -107,6 +111,7 @@ class TemplateInstance {
         this._fragment.appendChild(n);
       }
     }
+
     return this._fragment;
   }
 
@@ -180,14 +185,14 @@ class ValueNode {
   attrName;
   attrType;
   attrIndex;
-  isSignal = false;
+  isCue = false;
   hasTemplate = false;
   templateData = [];
   values = [];
   valueCount = 0;
   initialized = false;
   destroyed = false;
-  signals = [];
+  cues = [];
   templateInstances = [];
 
 
@@ -215,20 +220,22 @@ class ValueNode {
   addValue(value, index) {
     this.values.push(value);
     if (Cue.isCue(value)) {
-      this.isSignal = true;
-      this.signals.push(value);
+      // let defer = this.node.parentElement?.closest('defer-render');
+      // if (defer) defer.watch(value);
+      this.isCue = true;
+      this.cues.push(value);
 
       queueMicrotask(() => {
-        value.watch(this.signalChange);
+        value.watch(this.cueChange);
       });
     }
   }
 
-  signalChange = (signal) => {
+  cueChange = (cue) => {
     if (!this.initialized) return;
 
-    // if node is an html compute then a signal update means re rendering
-    this.disconnectTemplateInstances();
+    // if node is an html compute then a cue update means re rendering
+    // this.disconnectTemplateInstances(); // TODO figure out template availableInstnaces
     this.update(true);
   }
 
@@ -262,12 +269,12 @@ class ValueNode {
   }
 
   disconnect() {
-    for (let i = 0; i < this.signals.length; i++) {
-      this.signals[i].unwatch(this.signalChange);
+    for (let i = 0; i < this.cues.length; i++) {
+      this.cues[i].unwatch(this.cueChange);
     }
-    this.signals.length = 0;
+    this.cues.length = 0;
     this.values.length = 0;
-    this.isSignal = false;
+    this.isCue = false;
     for (let instance of this.templateInstances) {
       instance.disconnect();
     }
@@ -276,16 +283,16 @@ class ValueNode {
   destroy() {
     this.destroyed = true;
     this.node = undefined;
-    for (let i = 0; i < this.signals.length; i++) {
-      this.signals[i].unwatch(this.signalChange);
+    for (let i = 0; i < this.cues.length; i++) {
+      this.cues[i].unwatch(this.cueChange);
     }
 
     toRemove.push(...this.templateInstances);
     this.templateInstances.lengh = 0;
     this.values.length = 0;
-    this.signals.length = 0;
+    this.cues.length = 0;
     this.templateData.length = 0;
-    this.isSignal = false;
+    this.isCue = false;
     this.initialized = false;
   }
 }
@@ -352,12 +359,12 @@ function buildTemplate(templateStr) {
       for (let i = 0; i < length; i++) {
         // inset static text
         if (nodeText[i] !== '') {
-          node.parentNode.insertBefore(new Text(nodeText[i]), node);
+          node.before(new Text(nodeText[i]));
           nodeIndex++;
         }
 
         // insert expression text placeholder
-        node.parentNode.insertBefore(new Text(expressionStr), node);
+        node.before(new Text(expressionStr))
         parts.push({ type: node.nodeType, nodeIndex });
         nodeIndex++;
       }
@@ -431,7 +438,7 @@ function setNodeFragmentValue(value, node) {
     }
   } else combinedFrag = value.fragment;
 
-  node.parentElement.insertBefore(combinedFrag, node);
+  node.before(combinedFrag);
 }
 
 // TODO implament reflect and aria
@@ -442,10 +449,11 @@ function setAttrValue(ownerNode, attrName, attrType, value, update = false) {
     if (update) { // we do not want to change the rendered state
       ownerNode[attrName] = value;
     } else {
-      if (value === true && !!attrNode) ownerNode.setAttribute(attrName, '')
+      if (value === true && !!attrNode) ownerNode.setAttribute(attrName, '');
       else if (attrNode) ownerNode.removeAttributeNode(attrNode);
     }
   } else if (attrType === 'event' && typeof value === 'function') {
+    ownerNode[attrName] = value;
     if (attrNode.value !== '') attrNode.value = '';
     ownerNode[attrName] = value;
   } else if (attrType === 'object' || (attrName === 'style' && typeof value === 'object')) {
@@ -477,7 +485,7 @@ function getValue(value) {
     console.error(value.error);
     return '';
   }
-  return isValueSignal ? value.getForTemplate() : value;
+  return isValueSignal ? value.getRaw() : value;
 }
 
 

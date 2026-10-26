@@ -14,29 +14,29 @@
           ${html(() => page.shouldShow.get() ? 'Showing' : 'hiding')}
         </div>
 
-        <code-block language="javascript" class="template-code-override">
-          <pre>
-${`import { Component, html, Cue } from '@thewebformula/lithe';
+        <play-ground>
+          <script type="play/javascript" filename="page.js">
+            import { Component, html, Cue } from '@thewebformula/lithe';
 
-class TemplateConditionalPage extends Component {
-  static title = 'Templating conditionals';
+            class TemplateConditionalPage extends Component {
+              static title = 'Templating conditionals';
 
-  shouldShow = new Cue.State(true);
+              shouldShow = new Cue.State(true);
 
-  toggleShow() {
-    this.shouldShow.set(!this.shouldShow.get());
-  }
+              toggleShow() {
+                this.shouldShow.set(!this.shouldShow.get());
+              }
 
-  template() {
-    return html\`
-      // wrapping the expression in html() will act like a compute
-      \${html(() => this.shouldShow.get() ? 'Showing' : 'hiding')}
-    \`;
-  }
-}
-customElements.define('template-lists-page', TemplateConditionalPage);`}
-          </pre>
-        </code-block>
+              template() {
+                return html\`
+                  // wrapping the expression in html() will act like a compute
+                  \${html(() => this.shouldShow.get() ? 'Showing' : 'hiding')}
+                \`;
+              }
+            }
+            customElements.define('template-lists-page', TemplateConditionalPage);
+          </script>
+        </play-ground>
       </section>
 
 
@@ -51,32 +51,32 @@ customElements.define('template-lists-page', TemplateConditionalPage);`}
           )}
         </div>
 
-        <code-block language="javascript" class="template-code-override">
-          <pre>
-${`import { Component, html, Cue } from '@thewebformula/lithe';
+        <play-ground>
+          <script type="play/javascript" filename="page.js">
+            import { Component, html, Cue } from '@thewebformula/lithe';
 
-class TemplateConditionalPage extends Component {
-  static title = 'Templating conditionals';
+            class TemplateConditionalPage extends Component {
+              static title = 'Templating conditionals';
 
-  switchOneTwo = new Cue.State(true);
+              switchOneTwo = new Cue.State(true);
 
-  switch() {
-    this.switchOneTwo.set(!this.switchOneTwo.get());
-  }
+              switch() {
+                this.switchOneTwo.set(!this.switchOneTwo.get());
+              }
 
-  template() {
-    return html\`
-      // wrapping the expression in html() will act like a compute
-      \$html(() => this.switchOneTwo.get()
-        ? html\`<mc-button filled onclick=${() => this.switch()}>Switch: one</mc-button>\`
-        : html\`<mc-button filled-tonal onclick=${() => this.switch()}>Switch: two</mc-button>\`
-      )}
-    \`;
-  }
-}
-customElements.define('template-lists-page', TemplateConditionalPage);`}
-          </pre>
-        </code-block>
+              template() {
+                return html\`
+                  // wrapping the expression in html() will act like a compute
+                  \$html(() => this.switchOneTwo.get()
+                    ? html\`<mc-button filled onclick=${() => this.switch()}>Switch: one</mc-button>\`
+                    : html\`<mc-button filled-tonal onclick=${() => this.switch()}>Switch: two</mc-button>\`
+                  )}
+                \`;
+              }
+            }
+            customElements.define('template-lists-page', TemplateConditionalPage);
+          </script>
+        </play-ground>
       </section>
     </div>
   </div>

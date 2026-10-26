@@ -62,6 +62,8 @@ export default async function build(config = {
     fontSrc: [self, "https://fonts.gstatic.com"]
   },
 
+  secondaryEntryPoints: [],
+
   devWarnings: true,
   securityLevel: 1,
   onStart: () => { },
@@ -103,6 +105,7 @@ export default async function build(config = {
   config.compressionLabel = config.compressionConfig.type === 'brd' ? 'br' : 'gz';
   config.compressionExt = `.${config.compressionLabel}`;
   config.sitemap = config.sitemap || {};
+  config.secondaryEntryPoints = config.secondaryEntryPoints || [];
 
   if (typeof config.devServer === 'object') {
     if (typeof config.devServer.enable === 'undefined') config.devServer.enable = isDev;
@@ -317,7 +320,6 @@ export default async function build(config = {
     name: 'compress',
     setup(build) {
       build.onEnd(async result => {
-        let p = performance.now();
         const files = Object.keys(result.metafile.outputs);
         let prs = [];
         for (let file of files) {
@@ -337,6 +339,10 @@ export default async function build(config = {
     entryPoints.push({ in: config.entryPointCSS, out: config.appCSSFilename });
   }
 
+  if (config.secondaryEntryPoints.length > 0) {
+    entryPoints.push(...config.secondaryEntryPoints);
+  }
+
   let ctx = await esbuild.context({
     entryPoints: entryPoints,
     bundle: true,
@@ -353,6 +359,7 @@ export default async function build(config = {
       '.webp': 'file',
       '.png': 'file'
     },
+    dropLabels: isDev ? [] : ['DEBUG'],
     plugins: [
       buildPlugin,
       ...(config.esbuildPlugins || []),

@@ -1,4 +1,7 @@
 import { addToQueue } from './queue.js';
+import debug from './debug.js';
+
+// TODO error states
 
 
 const CUE_NODE = Symbol('CUE_NODE');
@@ -10,181 +13,195 @@ const CUE_EFFECT = Symbol('CUE_EFFECT');
 const CUE_HTML = Symbol('CUE_HTML');
 const CUE_ERRORED = Symbol('CUE_ERRORED');
 const CUE_UNSET = Symbol('CUE_UNSET');
-let epoch = 0;
+const ARRAY_MUTATION_METHODS = new Set([
+  'pop', 'push', 'reverse',
+  'shift', 'splice', 'unshift'
+]);
+const ARRAY_GETTER_METHODS = new Set([
+  Symbol.iterator, 'concat', 'entries', 'every',
+  'filter', 'find', 'findIndex', 'flat',
+  'flatMap', 'forEach', 'includes', 'indexOf',
+  'join', 'keys', 'lastIndexOf', 'map',
+  'reduce', 'reduceRight', 'slice', 'some', 'values'
+]);
 let activeConsumer;
 let isTemplating = false;
 
+function isCue(node) { return node?.[CUE_NODE] === true; }
+function isCueObject(node) { return node?.[CUE_OBJECT] === true; }
+function isCueArray(node) { return node?.[CUE_ARRAY] === true; }
+function isCueCompute(node) { return node?.[CUE_COMPUTE] === true; }
+function isCueEffect(node) { return node?.[CUE_EFFECT] === true; }
+function isCueHtml(node) { return node?.[CUE_HTML] === true; }
+function isCueComputable(node) { return isCueCompute(node) || isCueEffect(node) || isCueHtml(node); }
+function isErrored(node) { return node?.[CUE_ERRORED] === true; }
+function isUnset(node) { return node?.[CUE_UNSET] === true; }
 
-export function beginTemplating() {
-  isTemplating = true;
+function setActiveConsumer(consumer) {
+  const previous = activeConsumer;
+  activeConsumer = consumer;
+  return previous;
 }
-
-export function endTemplating() {
-  isTemplating = false;
-}
-
-function isCue(node) {
-  return node?.[CUE_NODE] === true;
-}
-
-function isCueObject(node) {
-  return node?.[CUE_OBJECT] === true;
-}
-
-function isCueArray(node) {
-  return node?.[CUE_ARRAY] === true;
-}
-
-function isCueCompute(node) {
-  return node?.[CUE_COMPUTE] === true;
-}
-
-function isCueEffect(node) {
-  return node?.[CUE_EFFECT] === true;
-}
-
-function isCueHtml(node) {
-  return node?.[CUE_HTML] === true;
-}
-
-function isErrored(node) {
-  return node?.[CUE_ERRORED] === true;
-}
-
-function isUnset(node) {
-  return node?.[CUE_UNSET] === true;
-}
-
 
 
 class CueNode {
   [CUE_NODE] = true;
 
-  #producers = [];
-  #producerVersions = [];
-  #consumers = [];
   #dirty = false;
-  #version = 0;
-  #lastCleanEpoch = -1;
-  #value = CUE_UNSET;
-  #pendingValue;
-  #error;
-  #watchers = new Set();
-  #pendingState;
-  #pendingDelay;
-  #isPending = false;
-
-
   get dirty() { return this.#dirty; }
   set dirty(value) { this.#dirty = value; }
 
-  get version() { return this.#version; }
-  set version(value) { this.#version = value; }
+  #consumers = new Set();
+  #producers = new Set();
+  #watchers = new Set();
+  #value = CUE_UNSET;
+  #isPending;
+  #pendingCue;
+  #valueLast;
 
-  get lastCleanEpoch() { return this.#lastCleanEpoch; }
-  set lastCleanEpoch(value) { this.#lastCleanEpoch = value; }
+  constructor() {
+    DEBUG: {
+      this.getProducers = () => this.#producers;
+      this.getConsumers = () => this.#consumers;
+      this.getGraph = () => {
+        return {
+          producer: debug.getCueGraph(this, true),
+          consumer: debug.getCueGraph(this),
+        };
+      }
+      debug.trackCue(this);
+    }
+  }
 
-  get producerVersions() { return this.#producerVersions; }
-  get producers() { return this.#producers; }
 
-  get error() { return this.#error; }
-  set error(value) { this.#error = value; }
+  get isPending() {
+    this.#addConsumer();
+    this.#setPending();
+    if (!this.#pendingCue) this.#pendingCue = new CuePending(this.#isPending);
 
-  get pendingDelay() { return this.#pendingDelay; }
-  set pendingDelay(value) {
-    this.#pendingDelay = parseInt(value);
+    return this.#pendingCue.get();
+  }
+
+  get isPendingRaw() {
+    this.#setPending();
+    return this.#isPending;
   }
 
   get() {
-    if (activeConsumer) this.subscribe(activeConsumer);
-
-    if (this.#value === CUE_ERRORED) throw this.#error;
+    this.#addConsumer();
 
     // return the instance of the Cue for templating. This is needed for the template tag function to recognize it as a Cue
-    if (isTemplating && !isCueHtml(this) && !isCueHtml(activeConsumer)) return this;
+    if (isTemplating && !isCueCompute(activeConsumer)) return this;
 
-    if (this.#isPending) return this.#pendingValue;
+    if (this.#isPending) return this.#valueLast;
+    return this.#value;
+  }
+
+  getRaw() {
+    this.#addConsumer();
+    this.#setPending();
+    // if (this.#isPending) return this.#valueLast;
     return this.#value;
   }
 
   set(value) {
     if (this.#value === value) return;
 
-    const previousValue = this.#value;
+    this.#valueLast = this.#value;
     this.#value = value;
-    epoch++;
-    this.notify();
+    this.#setPending();
 
-    this.#setPendingState(this.#value instanceof Promise);
-
-    if (this.#isPending) {
-      this.#pendingValue = previousValue;
-      this.#value
-        .then((v) => {
-          this.#value = v;
-          epoch++;
-          this.notify();
-          this.#setPendingState(false);
-        })
-        .catch(e => {
-          this.error = e;
-          // this.#value = CUE_ERRORED;
-          // super.set(CUE_ERRORED);
-          this.#setPendingState(false);
-        });
-    }
+    if (this.#isPending && !isCueComputable(this)) {
+      this.#value.then(v => {
+        this.#value = v;
+        this.#valueLast = undefined;
+        this.#setPending();
+        this.#notifyConsumers();
+      });
+    } else this.#valueLast = undefined;
+    this.#notifyConsumers();
   }
 
-  setRaw(value) {
+  setNotify(value) {
     if (this.#value === value) return;
-
     this.#value = value;
-    epoch++;
-    this.notify();
+    this.#notifyConsumers();
   }
 
-  get isPending() {
-    if (activeConsumer) this.subscribe(activeConsumer);
+  markDirty() {
+    this.#dirty = true;
+    this.#notifyConsumers();
+  }
 
-    this.#setPendingState(this.#value instanceof Promise);
-    if (isTemplating && !this.#pendingState) this.#pendingState = new CuePending(this.#isPending);
+  subscribe(producer) {
+    if (producer === this) return;
+    this.#producers.add(producer);
+  }
 
-    if (this.#pendingState) {
-      return this.#pendingState.get();
-    } else {
-      return this.#isPending;
+  // Currently works in both direction
+  // subcribe is consumer -> producer
+  // #addConsumer is how we register locally
+  unsubscribe(node) {
+    this.#producers.delete(node);
+    this.#consumers.delete(node);
+  }
+
+  watch(callback) {
+    this.#watchers.add(callback);
+  }
+
+  unwatch(callback) {
+    this.#watchers.delete(callback);
+    // TODO The garbage collector does clean these up, do i want to still call this? The issue is global Cue's;
+    // if (this.#watchers.size === 0) this.dispose();
+  }
+
+  dispose() {
+    for (const consumer of this.#consumers) {
+      consumer.unsubscribe(this);
     }
+    this.#consumers.clear();
+
+    for (const producer of this.#producers) {
+      producer.unsubscribe(this);
+    }
+    this.#producers.clear();
+    if (this.#pendingCue) {
+      this.#pendingCue.dispose();
+      this.#pendingCue = undefined;
+    }
+    this.#value = undefined;
+    this.#valueLast = undefined;
+    DEBUG: debug.untrackCue(this);
   }
 
-  #setPendingState(isPending) {
-    this.#isPending = this.#value instanceof Promise;
-    if (!this.#pendingState) return;
+  #setPending() {
+    if (isCueComputable(this)) {
+      this.#isPending = false;
+      for (let producer of this.#producers) {
+        if (producer.isPendingRaw) {
+          // this.#value = new Promise(resolve => setTimeout(resolve, 1000))
+          // this.#value = producer.getRaw();
+          this.#isPending = true;
+          break;
+        }
+      }
+    } else {
+      this.#isPending = this.#value instanceof Promise;
+    }
 
-    if (this.#isPending && this.#pendingDelay) {
-      setTimeout(() => {
-        this.#pendingState.set(this.#isPending);
-      }, 100);
-    } else this.#pendingState.set(this.#isPending);
+    if (!this.#pendingCue) return;
+    this.#pendingCue.set(this.#isPending);
   }
 
-  get isPendingRaw() {
-    this.#isPending = this.#value instanceof Promise;
-    return this.#isPending;
+  #addConsumer() {
+    if (!activeConsumer) return;
+    this.#consumers.add(activeConsumer);
+    activeConsumer.subscribe(this);
   }
 
-  // this allows the "value" getter to return the signal object if ".value" is used in a template expression
-  getForTemplate() {
-    if (activeConsumer) this.subscribe(activeConsumer);
-    if (this.#value === CUE_ERRORED) throw this.#error;
-    if (this.#isPending) return this.#pendingValue;
-    return this.#value;
-  }
 
-  getRawValue() {
-    return this.#value;
-  }
-
-  notify() {
+  #notifyConsumers() {
     for (const consumer of this.#consumers) {
       if (!consumer.dirty) {
         consumer.markDirty();
@@ -194,71 +211,9 @@ class CueNode {
     addToQueue(this.#notifyWatchers);
   }
 
-  subscribe(consumer) {
-    if (this.#producers.includes(consumer) || consumer === this) return;
-
-    this.#producers.push(consumer);
-    this.#producerVersions.push(consumer.version);
-
-    if (isCueCompute(consumer) || isCueEffect(consumer)) {
-      this.#consumers.push(consumer);
-      consumer.subscribe(this);
-    }
-  }
-
-  unsubscribe(node) {
-    const index = this.#producers.indexOf(node);
-    if (index > -1) {
-      this.#producers[index] = this.#producers[this.#producers.length - 1];
-      this.#producerVersions[index] = this.#producerVersions[this.#producerVersions.length - 1];
-      this.#producers.length--;
-      this.#producerVersions.length--;
-    }
-
-    if (isCueCompute(node)) {
-      const index = this.#consumers.indexOf(node);
-      if (index > -1) {
-        this.#consumers[index] = this.#consumers[this.#consumers.length - 1];
-        this.#consumers.length--;
-        node.unsubscribe(this);
-      }
-    }
-  }
-
-  markDirty() {
-    this.#dirty = true;
-    this.notify();
-  }
-
-  dispose() {
-    let i;
-    for (i = 0; i < this.#producers.length; i++) {
-      this.#producers[i].unsubscribe(this);
-    }
-    this.#producers.length = 0;
-
-    for (i = 0; i < this.#consumers.length; i++) {
-      this.#consumers[i].unsubscribe(this);
-    }
-    this.#consumers.length = 0;
-    this.#watchers.clear();
-  }
-
-  watch(callback) {
-    this.#watchers.add(callback);
-  }
-
-  unwatch(callback) {
-    this.#watchers.delete(callback);
-  }
-
   #notifyWatchers = () => {
     for (const watcher of this.#watchers) {
       watcher(this);
-    }
-
-    for (const consumer of this.#consumers) {
-      if (consumer.dirty) consumer.notify();
     }
   }
 }
@@ -267,7 +222,6 @@ class CueNode {
 class CueState extends CueNode {
   [CUE] = true;
 
-
   constructor(value) {
     super();
     super.set(value);
@@ -275,111 +229,114 @@ class CueState extends CueNode {
 
   // block
   set dirty(_) { }
-  set lastCleanEpoch(_) { }
-  set version(_) { }
-
-
-  set(value) {
-    if (super.getRawValue() === value) return;
-    super.set(value);
-  }
+  setNotify() { }
 }
-
 
 class CuePending extends CueNode {
   [CUE] = true;
+  #value;
 
 
   constructor(value) {
     super();
-    super.setRaw(value);
+    this.#value = value;
   }
 
   // block
   set dirty(_) { }
-  set lastCleanEpoch(_) { }
   set version(_) { }
+  setNotify() { }
 
   get() {
     if (activeConsumer) this.subscribe(activeConsumer);
-    if (isTemplating && !isCueHtml(activeConsumer)) return this;
-    return super.getRawValue();
+    // if (isTemplating && !isCueHtml(activeConsumer)) return this;
+    return this.#value
   }
 
   set(value) {
-    if (super.getRawValue() === value) return;
-    super.setRaw(value);
+    if (this.#value === value) return;
+
+    this.#value = value;
+    super.setNotify(value);
   }
 }
 
 
 class CueCompute extends CueNode {
   [CUE_COMPUTE] = true;
-
   #callback;
-
 
   constructor(callback) {
     super();
 
     if (arguments[1]) this[CUE_HTML] = true;
     this.#callback = callback;
-    this.#compute();
-    if (super.error) throw super.error;
+    super.dirty = true;
   }
 
   // block
   set dirty(_) { }
-  set lastCleanEpoch(_) { }
-  set version(_) { }
-  set value(_) { }
-  get error() { return super.error; }
+  set() { throw Error('Cannot use set with compute') }
+  setNotify() { }
 
   get() {
     this.#compute();
     return super.get();
   }
 
-  getForTemplate() {
+  getRaw() {
     this.#compute();
-    return super.getForTemplate();
+    return super.getRaw();
   }
 
+  // dispose() {
+  //   if (this.#onDisposeCallback) this.#onDisposeCallback();
+  //   this.#onDisposeCallback = undefined;
+  //   this.callback = undefined;
+  //   super.dispose();
+  // }
+
+  // #onDisposeCallback;
+  // onDispose(callback) {
+  //   this.#onDisposeCallback = callback;
+  // }
+
   #compute() {
-    if (!super.dirty && super.lastCleanEpoch === epoch) return;
+    if (!super.dirty) return;
 
-    if (super.getRawValue() === CUE_UNSET || super.dirty) {
-      let nextValue;
-      let changed = false;
-      const lastValue = super.get();
-      const previousConsumer = beginConsumerCompute(this);
+    let nextValue;
+    let changed = false;
+    const lastValue = super.get();
+    const previousConsumer = setActiveConsumer(this);
 
-      super.error = undefined;
-      try {
-        nextValue = this.#callback();
-        changed = nextValue !== lastValue;
-      } catch (e) {
+
+    super.error = undefined;
+    try {
+      nextValue = this.#callback();
+      changed = nextValue !== lastValue;
+    } catch (e) {
+      if (super.isPendingRaw === false) {
+        console.error(e)
         super.error = e;
         super.set(CUE_ERRORED);
-      } finally {
-        afterConsumerCompute(previousConsumer);
+      }
+    } finally {
+      setActiveConsumer(previousConsumer);
+    }
+
+    if (changed) {
+      // TODO verify this is correct
+      if (this[CUE_HTML]) {
+        lastValue?.elements?.forEach(el => el.remove());
       }
 
-      if (changed) {
-        // TODO verify this is correct
-        if (this[CUE_HTML]) {
-          lastValue?.elements?.forEach(el => el.remove());
-        }
-
-        super.set(nextValue);
-        super.version++;
-      }
+      super.set(nextValue);
     }
 
     super.dirty = false;
-    super.lastCleanEpoch = epoch;
   }
 }
+
 
 class CueHTML extends CueCompute {
   constructor(callback) {
@@ -398,100 +355,63 @@ class CueEffect extends CueNode {
     super();
 
     this.#callback = callback;
+    super.dirty = true;
     this.#effect();
   }
 
-  get() {
-    this.#effect();
-    return super.get();
-  }
-
-
+  // Effects automatically run on dirty, unlike computes that only run on get()
   markDirty() {
+    super.dirty = true;
     addToQueue(this.#effect, 1);
   }
 
   #effect = () => {
-    const previousConsumer = beginConsumerCompute(this);
+    if (super.dirty === false) return;
+
+    const previousConsumer = setActiveConsumer(this);
 
     try {
       this.#callback();
     } catch (e) {
       console.error(e)
     } finally {
-      afterConsumerCompute(previousConsumer);
+      setActiveConsumer(previousConsumer);
+      super.dirty = false;
     }
   }
 }
 
 
-const ARRAY_MUTATION_METHODS = new Set([
-  'push',
-  'unshift',
-  'pop',
-  'shift',
-  'splice',
-  'reverse'
-]);
-
-const ARRAY_GETTER_METHODS = new Set([
-  Symbol.iterator,
-  'concat',
-  'entries',
-  'every',
-  'filter',
-  'find',
-  'findIndex',
-  'flat',
-  'flatMap',
-  'forEach',
-  'includes',
-  'indexOf',
-  'join',
-  'keys',
-  'lastIndexOf',
-  'map',
-  'reduce',
-  'reduceRight',
-  'slice',
-  'some',
-  'values'
-]);
-
-
-
 
 class CueArray extends CueNode {
   [CUE_ARRAY] = true;
-
-  #cues = new Map();
-  #proxies = new Map();
-  #methods = new Map();
   #compute;
-  #rootProxy;
   #target;
-
+  #rootProxy;
+  #methods = new Map();
+  #proxies = new Map();
+  #cues = new Map();
 
   constructor(value) {
     super();
 
-    super.value = value;
+    super.set(value);
     this.#target = super.isPendingRaw ? [] : value || [];
     this.#rootProxy = this.#createProxy(this.#target);
   }
 
   // block
   set dirty(_) { }
-  set lastCleanEpoch(_) { }
   set version(_) { }
+  setNotify() { }
 
   get() {
-    if (activeConsumer) this.subscribe(activeConsumer);
+    super.getRaw();
     return this.#rootProxy;
   }
 
   set(value) {
-    if (super.get() === value) return;
+    if (super.getRaw() === value) return;
 
     super.set(value);
     if (super.isPendingRaw) {
@@ -512,11 +432,28 @@ class CueArray extends CueNode {
       for (let i = 0; i < length; i++) {
         result[i] = callback(this.#rootProxy[i], i, this.#rootProxy);
       }
-
       return result;
     });
+    // this.#compute.onDispose(() => this.dispose());
     return this.#compute;
   }
+
+//   dispose() {
+//     for (let cueMap of this.#cues.values()) {
+//       for (let cue of cueMap.values()) {
+//         cue.dispose();
+//       }
+//       cueMap.clear();
+//     }
+//     this.#cues.clear();
+//
+//     this.#compute = undefined;
+//     this.#methods.clear();
+//     this.#proxies.clear();
+//     this.#target = undefined;
+//     this.#rootProxy = undefined;
+//     super.dispose();
+//   }
 
   #createProxy(value) {
     let self = this;
@@ -526,9 +463,6 @@ class CueArray extends CueNode {
         if (prop === CUE_NODE) return true;
         if (prop === CUE_ARRAY) return true;
         if (prop === CUE_HTML) return false;
-        if (prop === '__cue') return self;
-        if (prop === '__raw') return target;
-        if (prop === '__isProxy') return true;
 
         const val = target[prop];
         if (prop === 'fragment') return val;
@@ -536,7 +470,6 @@ class CueArray extends CueNode {
 
         if (ARRAY_MUTATION_METHODS.has(prop)) {
           let fn = self.#methods.get(prop);
-
           if (fn === undefined) {
             fn = (...args) => {
               const v = target[prop](...args);
@@ -590,37 +523,32 @@ class CueObject extends CueNode {
 
   constructor(value) {
     super();
-    super.value = value;
+    super.set(value);
     this.#rootProxy = this.#createProxy(super.isPendingRaw ? {} : value || {});
   }
 
   // block
   set dirty(_) { }
-  set lastCleanEpoch(_) { }
   set version(_) { }
+  setNotify() { }
 
   get() {
-    if (activeConsumer) this.subscribe(activeConsumer);
+    super.getRaw();
     return this.#rootProxy;
   }
 
   set(value) {
-    if (super.get() === value) return;
+    if (super.getRaw() === value) return;
 
     super.set(value);
     if (super.isPendingRaw) {
-      value
-        .then((v) => {
-          for (const key of Reflect.ownKeys(this.#rootProxy)) {
-            delete this.#rootProxy[key];
-          }
+      value.then((v) => {
+        for (const key of Reflect.ownKeys(this.#rootProxy)) {
+          delete this.#rootProxy[key];
+        }
 
-          Object.assign(this.#rootProxy, v);
-        })
-
-        // .catch(e => {
-        //   console.log('----', e)
-        // });
+        Object.assign(this.#rootProxy, v);
+      });
     } else {
       for (const key of Reflect.ownKeys(this.#rootProxy)) {
         delete this.#rootProxy[key];
@@ -629,6 +557,30 @@ class CueObject extends CueNode {
       Object.assign(this.#rootProxy, value);
     }
   }
+
+//   dispose() {
+//     for (let cueArray of this.#cueArrays.values()) {
+//       cueArray.dispose();
+//     }
+//     this.#cueArrays.clear();
+//
+//     for (let cueArray of this.#cueObjects.values()) {
+//       cueArray.dispose();
+//     }
+//     this.#cueObjects.clear();
+//
+//     for (let cueArray of this.#cues.values()) {
+//       cueArray.dispose();
+//     }
+//     this.#cues.clear();
+//
+//     for (let cueArray of this.#pendingComputes.values()) {
+//       cueArray.dispose();
+//     }
+//     this.#pendingComputes.clear();
+//     this.#rootProxy = undefined;
+//     super.dispose();
+//   }
 
   #createProxy(value, path = []) {
     if (value === undefined || value === null || typeof value !== 'object' || value.__isProxy) return value;
@@ -639,7 +591,6 @@ class CueObject extends CueNode {
         if (prop === CUE_NODE) return true;
         if (prop === CUE_OBJECT) return true;
         if (prop === CUE_HTML) return false;
-        if (prop === '__cue') return self;
         if (prop === 'valueOf' || prop === 'toJSON') return () => target;
 
         // wrap in comput when dealing with a promise
@@ -672,13 +623,10 @@ class CueObject extends CueNode {
       set(target, prop, value, receiver) {
         if (Array.isArray(target[prop]) || Array.isArray(value)) {
           if (self.#cueArrays.has(prop)) self.#cueArrays.get(prop).set(value);
-          // return true;
         } else if ((typeof value === 'object' && value !== null) || (typeof target[prop] === 'object' && target[prop] !== null)) {
           if (self.#cueObjects.has(prop)) self.#cueObjects.get(prop).set(value);
-          // return true;
         } else if (self.#cues.has(prop)) {
           self.#cues.get(prop).set(value);
-          // return true;
         }
 
         return Reflect.set(target, prop, value, receiver);
@@ -688,22 +636,9 @@ class CueObject extends CueNode {
 }
 
 
-function setActiveConsumer(consumer) {
-  const previous = activeConsumer;
-  activeConsumer = consumer;
-  return previous;
-}
-
-function beginConsumerCompute(consumer) {
-  return setActiveConsumer(consumer);
-}
-
-function afterConsumerCompute(previousConsumer) {
-  setActiveConsumer(previousConsumer);
-}
-
-
-const Cue = Object.freeze({
+export function beginTemplating() { isTemplating = true; }
+export function endTemplating() { isTemplating = false; }
+export default Object.freeze({
   State: CueState,
   Array: CueArray,
   Object: CueObject,
@@ -722,11 +657,5 @@ const Cue = Object.freeze({
   isEffect: isCueEffect,
   isHtml: isCueHtml,
   isErrored: isErrored,
-  isUnset: isUnset,
-
-
-  update: (cue, method) => {
-    cue.set(method());
-  }
+  isUnset: isUnset
 });
-export default Cue;

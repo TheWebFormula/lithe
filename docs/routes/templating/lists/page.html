@@ -14,22 +14,22 @@
           ${['One', 'Two', 'Three'].map(item => html`<div>Value: ${item}</div>`)}
         </div>
 
-        <code-block language="javascript">
-          <pre>
-${`import { Component, html } from '@thewebformula/lithe';
+        <play-ground>
+          <script type="play/javascript" filename="page.js">
+            import { Component, html } from '@thewebformula/lithe';
 
-class TemplateListsPage extends Component {
-  static title = 'Templating lists';
+            class TemplateListsPage extends Component {
+              static title = 'Templating lists';
 
-  template() {
-    return html\`
-      \${['One', 'Two', 'Three'].map(item => html\`<div>Value: \${item}</div>\`)}
-    \`;
-  }
-}
-customElements.define('template-lists-page', TemplateListsPage);`}
-          </pre>
-        </code-block>
+              template() {
+                return html\`
+                  \${['One', 'Two', 'Three'].map(item => html\`<div>Value: \${item}</div>\`)}
+                \`;
+              }
+            }
+            customElements.define('template-lists-page', TemplateListsPage);
+          </script>
+        </play-ground>
 
 
 
@@ -47,54 +47,54 @@ customElements.define('template-lists-page', TemplateListsPage);`}
           </mc-list>
         </div>
 
-        <code-block language="javascript">
-          <pre>
-${`import { Component, html, Cue } from '@thewebformula/lithe';
+        <play-ground>
+          <script type="play/javascript" filename="page.js">
+            import { Component, html, Cue } from '@thewebformula/lithe';
 
-class TemplateListsPage extends Component {
-  static title = 'Templating lists';
+            class TemplateListsPage extends Component {
+              static title = 'Templating lists';
 
-  itemsCheckList = new Cue.Array([
-    { label: 'One', checked: false },
-    { label: 'Two', checked: false },
-    { label: 'Three', checked: true }
-  ]);
+              itemsCheckList = new Cue.Array([
+                { label: 'One', checked: false },
+                { label: 'Two', checked: false },
+                { label: 'Three', checked: true }
+              ]);
 
-  #disposeItemsCheckListEffect;
+              #disposeItemsCheckListEffect;
 
-  afterRender() {
-    this.#disposeItemsCheckListEffect = Cue.effect(() => {
-      const element = this.querySelector('#selectall');
-      const allChecked = this.itemsCheckList.get().every(item => item.checked);
-      const someChecked = this.itemsCheckList.get().some(item => item.checked);
-      element.indeterminate = !allChecked && someChecked;
-      element.checked = allChecked;
-    });
-  }
+              afterRender() {
+                this.#disposeItemsCheckListEffect = Cue.effect(() => {
+                  const element = this.querySelector('#selectall');
+                  const allChecked = this.itemsCheckList.get().every(item => item.checked);
+                  const someChecked = this.itemsCheckList.get().some(item => item.checked);
+                  element.indeterminate = !allChecked && someChecked;
+                  element.checked = allChecked;
+                });
+              }
 
-  disconnectedCallback() {
-    super.disconnectedCallback();
-    if (this.#disposeItemsCheckListEffect) this.#disposeItemsCheckListEffect();
-  }
+              disconnectedCallback() {
+                super.disconnectedCallback();
+                if (this.#disposeItemsCheckListEffect) this.#disposeItemsCheckListEffect();
+              }
 
-  template() {
-    return html\`
-      <mc-checkbox id="selectall" label="Select all" onclick="this.selectAll(event)"></mc-checkbox>
+              template() {
+                return html\`
+                  <mc-checkbox id="selectall" label="Select all" onclick="this.selectAll(event)"></mc-checkbox>
 
-      <mc-list id="selection-list">
-        \${this.itemsCheckList.get().map(item => html\`
-          <mc-list-item value=\${item.label}>
-            <div slot="headline">\${item.label}</div>
-            <mc-checkbox slot="end" checked=\${item.checked} onchange=\${() => item.checked = !item.checked}></mc-checkbox>
-          </mc-list-item>
-        \`)}
-      </mc-list>
-    \`;
-  }
-}
-customElements.define('template-lists-page', TemplateListsPage);`}
-          </pre>
-        </code-block>
+                  <mc-list id="selection-list">
+                    \${this.itemsCheckList.get().map(item => html\`
+                      <mc-list-item value=\${item.label}>
+                        <div slot="headline">\${item.label}</div>
+                        <mc-checkbox slot="end" checked=\${item.checked} onchange=\${() => item.checked = !item.checked}></mc-checkbox>
+                      </mc-list-item>
+                    \`)}
+                  </mc-list>
+                \`;
+              }
+            }
+            customElements.define('template-lists-page', TemplateListsPage);
+          </script>
+        </play-ground>
 
 
 
@@ -105,33 +105,33 @@ customElements.define('template-lists-page', TemplateListsPage);`}
           ${html(() => page.items.get().map(item => html`<div>Value: ${item.value}</div>`))}
         </div>
 
-        <code-block language="javascript">
-          <pre>
-${`import { Component, html, Cue } from '@thewebformula/lithe';
+        <play-ground>
+          <script type="play/javascript" filename="page.js">
+            import { Component, html, Cue } from '@thewebformula/lithe';
 
-class TemplateListsPage extends Component {
-  static title = 'Templating lists';
+            class TemplateListsPage extends Component {
+              static title = 'Templating lists';
 
-  items = new Cue.State([
-    { value: 'One' },
-    { value: 'Two' },
-    { value: 'Three' }
-  ]);
+              items = new Cue.State([
+                { value: 'One' },
+                { value: 'Two' },
+                { value: 'Three' }
+              ]);
 
-  addItem(value) {
-    if (!value) return;
-    this.items.set([...this.items.get(), { value }]);
-  }
+              addItem(value) {
+                if (!value) return;
+                this.items.set([...this.items.get(), { value }]);
+              }
 
-  template() {
-    return html\`
-      \${html(() => this.items.get().map(item => html\`<div>Value: \${item.value}</div>\`))}
-    \`;
-  }
-}
-customElements.define('template-lists-page', TemplateListsPage);`}
-          </pre>
-        </code-block>
+              template() {
+                return html\`
+                  \${html(() => this.items.get().map(item => html\`<div>Value: \${item.value}</div>\`))}
+                \`;
+              }
+            }
+            customElements.define('template-lists-page', TemplateListsPage);
+          </script>
+        </play-ground>
       </section>
     </div>
   </div>

@@ -6,7 +6,8 @@ import htmlMinifyNext from 'html-minifier-next';
 import * as sitemapGen from './sitemap.js';
 
 const routePathParamRegex = /\/?\[(\.{3})?([^\[]+)\]/g;
-const pageElementNameRegex = /customElements.define\(['"`]([^'"`]*)['"`],/;
+const pageClassNameRegex = /class\s+(\w+)\s+extends\s+Component/;
+// const pageElementNameRegex = /customElements.define\(['"`]([^'"`]*)['"`],/;
 const routeComponentAttrsRegex = /<li-route(?:\s(?<attrs>.*?))?(\s?\/)?>/gm;
 const routeComponentAttrIndividualRegex = /(\w+)="(.+?)"/gm;
 const stripCommentsRegex = /<!--([.\S\s]*?)-->/g
@@ -26,7 +27,8 @@ export default async function build({ basedir, outdir, entryPoint, entryPointCSS
     const componentPath = path.join(basedir, route.importPath);
     const pageComponent = await readFile(componentPath, 'utf-8');
 
-    const match = pageComponent.match(pageElementNameRegex);
+    const pageClassName = pageComponent.match(pageClassNameRegex);
+    const match = pageComponent.match(new RegExp(`customElements.define\\(['"\`]([^'"\`]*)['"\`],\\s*${pageClassName[1]}`));
     if (!match) return console.error(`Cannot find component name for route: ${path}. customElements.define('component-name', Page);`);
     const componentName = match[1];
 

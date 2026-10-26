@@ -104,9 +104,10 @@ class AttrTest extends Component {
             <mc-slider min="0" max="1" value="${this._percent}" step="0.1" onchange=${(e) => this.#percentChange(e)} >Percent (number)</mc-slider>
           </div>
         </div>
-        <code-block language="html" placeholder>
-          <pre></pre>
-          <div placeholder>${html(() => {
+        <play-ground>
+          <!-- TODO make playground look for changes -->
+          <script type="play/html" filename="page.html">
+          ${html(() => {
             const str = this._str.get();
             const disabled = this._disabled.get();
             const enable = this._enable.get();
@@ -121,8 +122,9 @@ class AttrTest extends Component {
   percent="${percent}"
   data
 ></attr-test>`;
-      })}</div>
-        </code-block>
+      })}
+          </script>
+        </play-ground>
       </div>
     `;
   }

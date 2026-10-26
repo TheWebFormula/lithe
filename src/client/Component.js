@@ -148,6 +148,9 @@ export default class Component extends HTMLElement {
       if (newValue) {
         this.#attributeEvents.set(name, this.#attributeDescriptorTypeConverter(newValue, attrConfig.type));
         this.addEventListener(name.replace(onRegex, ''), this.#attributeEvents.get(name));
+      } else if (typeof this?.[name] === 'function') {
+        this.#attributeEvents.set(name, this.#attributeDescriptorTypeConverter(this[name], attrConfig.type));
+        this.addEventListener(name.replace(onRegex, ''), this.#attributeEvents.get(name));
       }
     } else {
       this.attributeChangedCallbackExtended(
@@ -213,6 +216,8 @@ export default class Component extends HTMLElement {
    */
   template() { }
 
+  #rendered = false;
+  get rendered() { return this.#rendered; }
   _render() {
     if (!this.#prepared) this.#prepareRender();
     if (this.#noTemplates) return;
@@ -232,6 +237,7 @@ export default class Component extends HTMLElement {
     }
     deactivateComponent();
 
+    this.#rendered = true;
     this.afterRender();
   }
 
@@ -298,6 +304,7 @@ export default class Component extends HTMLElement {
         // return JSON.parse(value);
       case 'event':
         const that = this.constructor._isPage ? this : page || this;
+        if (typeof value === 'function') return !value ? null : value;
         return !value ? null : () => new Function('page', value).call(that, that);
       default:
         return value;

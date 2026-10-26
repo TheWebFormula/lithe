@@ -21,84 +21,82 @@
         <h2 >Attribute basic</h2>
         <p class="subheader">You can insert values into any attribute. You can also use signals to automatically update the element</p>
 
-        <code-block language="html">
-          <pre>
-${`<!-- input-wrapper usage -->
-<input-wrapper
-  label=\${this.label}
-  value="Test"
-  disabled=\${this.disabled}
-></input-wrapper>
-`}
-          </pre>
-        </code-block>
+        <play-ground>
+          <script type="play/html" filename="page.html">
+            <!-- input-wrapper usage -->
+            <input-wrapper
+              label=\${this.label}
+              value="Test"
+              disabled=\${this.disabled}
+            ></input-wrapper>
+          </script>
+        </play-ground>
+
         <br>
-        <code-block language="javascript">
-          <pre>
-${`import { Component, html, Cue } from '@thewebformula/lithe';
 
-class InputWrapper extends Component {
-  label;
-  name;
+        <play-ground>
+          <script type="play/javascript" filename="component.js">
+            import { Component, html, Cue } from '@thewebformula/lithe';
 
-  /* Cue's will automatically update the element
-     No need to manually render */
-  #disabled = new Cue.State(false);
-  #value = new Cue.State('');
+            class InputWrapper extends Component {
+              label;
+              name;
 
-  /* use extended observer for advanced config
-     This is a wrapper for static get observedAttributes() { } */
-  static observedAttributesExtended = {
-    label: { type: 'string' },
-    name: { type: 'string' },
-    value: { type: 'string' },
-    disabled: { type: 'boolean' }
-  };
+              /* Cue's will automatically update the element
+                 No need to manually render */
+              #disabled = new Cue.State(false);
+              #value = new Cue.State('');
 
-  /* use extended change callback
-     - converts dash casing to camel casing
-     - return correct type
-     This is a wrapper for attributeChangedCallback() { } */
-  attributeChangedCallbackExtended(name, oldValue, newValue) {
-    this[name] = newValue
-  }
+              /* use extended observer for advanced config
+                 This is a wrapper for static get observedAttributes() { } */
+              static observedAttributesExtended = {
+                label: { type: 'string' },
+                name: { type: 'string' },
+                value: { type: 'string' },
+                disabled: { type: 'boolean' }
+              };
 
-  // use to get / set from signal
-  get disabled() { return this.#disabled.get() }
-  set disabled(value) { this.#disabled.set(value); }
+              /* use extended change callback
+                 - converts dash casing to camel casing
+                 - return correct type
+                 This is a wrapper for attributeChangedCallback() { } */
+              attributeChangedCallbackExtended(name, oldValue, newValue) {
+                this[name] = newValue
+              }
 
-  get value() { return this.#value.get() }
-  set value(value) { this.#value.set(value); }
+              // use to get / set from signal
+              get disabled() { return this.#disabled.get() }
+              set disabled(value) { this.#disabled.set(value); }
 
-  #onInput(event) {
-    // do work
-  }
+              get value() { return this.#value.get() }
+              set value(value) { this.#value.set(value); }
+
+              #onInput(event) {
+                // do work
+              }
 
 
-  constructor() {
-    super();
-  }
+              constructor() {
+                super();
+              }
 
-  template() {
-    return html\``}
-    </pre></code-block><code-block language="html" linked><pre>
-      ${`<div>
-        <label>\${this.label}</label>
-        <input
-          name=\${this.name}
-          disabled=\${this.#disabled}
-          oninput=\${this.#onInput}
-          value=\${this.#value}
-        />
-      </div>`}
-    </pre></code-block><code-block language="javascript" linked><pre>
-    ${`\`;
-  }
-}
-customElements.define('input-wrapper', InputWrapper);
-`}
-        </pre>
-        </code-block>
+              template() {
+                return html\`
+                  <div>
+                    <label>\${this.label}</label>
+                    <input
+                      name=\${this.name}
+                      disabled=\${this.#disabled}
+                      oninput=\${this.#onInput}
+                      value=\${this.#value}
+                    />
+                  </div>
+                \`;
+              }
+            }
+            customElements.define('input-wrapper', InputWrapper);
+          </script>
+        </play-ground>
       </section>
 
 
@@ -127,71 +125,71 @@ customElements.define('input-wrapper', InputWrapper);
           percent=${0.1}
           data=${{ three: 'three' }}></attr-test>
         <br>
-        <code-block language="html">
-          <pre>
-${`<!-- attr-test usage -->
-<attr-test
-  str="value"
-  disable=\${false}
-  enable=\${true}
-  counter=\${1}
-  percent=\${0.1}
-  data=\${true}
-  enable=\${{ three: 'three' }}
-></attr-test>`}
-          </pre>
-        </code-block>
+
+        <play-ground>
+          <script type="play/html" filename="page.html">
+            <!-- attr-test usage -->
+            <attr-test
+              str="value"
+              disable=\${false}
+              enable=\${true}
+              counter=\${1}
+              percent=\${0.1}
+              data=\${true}
+              enable=\${{ three: 'three' }}
+            ></attr-test>
+          </script>
+        </play-ground>
+
         <br>
-        <code-block language="javascript">
-          <pre>
-${`import { Component, html, Cue } from '@thewebformula/lithe';
 
-class AttrTest extends Component {
-  str = new Cue.State('value');
-  disable = new Cue.State(false);
-  enable = new Cue.State(true);
-  counter = new Cue.State(1);
-  percent = new Cue.State(0.1);
-  data = new Cue.State({ one: 'one', two: 2 });
+        <play-ground>
+          <script type="play/javascript" filename="component.js">
+            import { Component, html, Cue } from '@thewebformula/lithe';
+
+            class AttrTest extends Component {
+              str = new Cue.State('value');
+              disable = new Cue.State(false);
+              enable = new Cue.State(true);
+              counter = new Cue.State(1);
+              percent = new Cue.State(0.1);
+              data = new Cue.State({ one: 'one', two: 2 });
 
 
-  static observedAttributesExtended = {
-    str: { type: 'string' },
-    disabled: { type: 'toggle' },
-    enable: { type: 'boolean' },
-    counter: { type: 'int' },
-    percent: { type: 'number' },
-    data: { type: 'object' }
-  };
+              static observedAttributesExtended = {
+                str: { type: 'string' },
+                disabled: { type: 'toggle' },
+                enable: { type: 'boolean' },
+                counter: { type: 'int' },
+                percent: { type: 'number' },
+                data: { type: 'object' }
+              };
 
-  attributeChangedCallbackExtended(name, oldValue, newValue) {
-    // all variables are Cue's so we can just use .set()
-    this[name].set(newValue);
-  }
+              attributeChangedCallbackExtended(name, oldValue, newValue) {
+                // all variables are Cue's so we can just use .set()
+                this[name].set(newValue);
+              }
 
-  constructor() {
-    super();
-  }
+              constructor() {
+                super();
+              }
 
-  template() {
-    return html\``}
-    </pre></code-block><code-block language="html" linked><pre>
-      ${`<div>
-        <div><strong>str</strong> \${this.str}</div>
-        <div><strong>disabled</strong> \${this.disabled}</div>
-        <div><strong>enable</strong> \${this.enable}</div>
-        <div><strong>counter</strong> \${this.counter}</div>
-        <div><strong>percent</strong> \${this.percent}</div>
-        <div><strong>data</strong> \${this.data}</div>
-      </div>`}
-    </pre></code-block><code-block language="javascript" linked><pre>
-    ${`\`;
-  }
-}
-customElements.define('attr-test', AttrTest);
-`}
-        </pre>
-        </code-block>
+              template() {
+                return html\`
+                  <div>
+                    <div><strong>str</strong> \${this.str}</div>
+                    <div><strong>disabled</strong> \${this.disabled}</div>
+                    <div><strong>enable</strong> \${this.enable}</div>
+                    <div><strong>counter</strong> \${this.counter}</div>
+                    <div><strong>percent</strong> \${this.percent}</div>
+                    <div><strong>data</strong> \${this.data}</div>
+                  </div>
+                \`;
+              }
+            }
+            customElements.define('attr-test', AttrTest);
+          </script>
+        </play-ground>
       </section>
 
 
@@ -200,47 +198,41 @@ customElements.define('attr-test', AttrTest);
         <h2>Events</h2>
         <p class="subheader">You can bind methods to event handlers in your components</p>
 
-        <code-block language="javascript">
-          <pre>
-${`import { Component, html, Cue } from '@thewebformula/lithe';
+        <play-ground>
+          <script type="play/javascript" filename="component.js">
+            import { Component, html, Cue } from '@thewebformula/lithe';
 
-class EventExample extends Component {
-  #onInput_bound = this.#onInput.bind(this);
+            class EventExample extends Component {
+              #onInput_bound = this.#onInput.bind(this);
 
-  #onInput(event) {
-    // do work
-  }
+              #onInput(event) {
+                // do work
+              }
 
-  #onInput2 = (event) => {
-    // do work
-  }
+              #onInput2 = (event) => {
+                // do work
+              }
 
-  template() {
-    return html\``}
-    </pre></code-block><code-block language="html" linked>
-      <pre>
-      ${`<!-- Bound using .bind() -->
-      <input id="one" oninput=\${this.#onInput_bound} />
+              template() {
+                return html\`
+                  <!-- Bound using .bind() -->
+                  <input id="one" oninput=\${this.#onInput_bound} />
 
-      <!-- Bound using variable function -->
-      <input id="two" oninput=\${this.#onInput2} />
+                  <!-- Bound using variable function -->
+                  <input id="two" oninput=\${this.#onInput2} />
 
-      <!-- Bound using arrow function wrapper -->
-      <input id="three" oninput="\${(event) => this.#onInput(event)}" />
+                  <!-- Bound using arrow function wrapper -->
+                  <input id="three" oninput="\${(event) => this.#onInput(event)}" />
 
-      <!-- page methods can be called normally.
-           "page" is a global representing the page component instance -->
-      <input id="three" oninput="page.onInput" />
-      `}</pre>
-    </code-block>
-    <code-block language="javascript" linked>
-      <pre>
-    ${`\`;
-  }
-}
-customElements.define('event-example', EventExample);`}
-        </pre>
-        </code-block>
+                  <!-- page methods can be called normally.
+                       "page" is a global representing the page component instance -->
+                  <input id="three" oninput="page.onInput" />
+                \`;
+              }
+            }
+            customElements.define('event-example', EventExample);
+          </script>
+        </play-ground>
       </section>
 
 
@@ -273,23 +265,23 @@ customElements.define('event-example', EventExample);`}
           </div>
         </div>
 
-        <code-block language="html">
-          <pre>
-${`<div
-  style="color: white; background-color: #3f51b5; padding: 12px; border-radius: 4px;"
->Normal style attribute</div>
+        <play-ground>
+          <script type="play/html" filename="page.html">
+            <div
+              style="color: white; background-color: #3f51b5; padding: 12px; border-radius: 4px;"
+            >Normal style attribute</div>
 
-<!-- attributes should use camel case -->
-<div style="\${{
-  color: 'white',
-  backgroundColor: '#3f51b5',
-  padding: '12px',
-  borderRadius: '4px'
-}}">Styled using object</div>
+            <!-- attributes should use camel case -->
+            <div style="\${{
+              color: 'white',
+              backgroundColor: '#3f51b5',
+              padding: '12px',
+              borderRadius: '4px'
+            }}">Styled using object</div>
 
-<div style=\${this.styleState}>Styled using signal</div>`}
-          </pre>
-        </code-block>
+            <div style=\${this.styleState}>Styled using signal</div>
+          </script>
+        </play-ground>
       </section>
     </div>
   </div>

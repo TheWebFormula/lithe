@@ -1,0 +1,182 @@
+.prism-code-editor {
+	font-family: Consolas, Monaco, "Andale Mono", "Ubuntu Mono", monospace;
+	--pce-cursor: #a6accd;
+	--pce-bg: #292d3e;
+	--pce-widget-border: #1b1e2b;
+	--pce-widget-bg: #1b1e2b;
+	--pce-widget-color: #a6accd;
+	--pce-widget-color-active: #ffffff;
+	--pce-widget-color-options: #676e95;
+	--pce-widget-bg-input: #202331;
+	--pce-widget-bg-hover: #343b5180;
+	--pce-widget-bg-active: #80cbc440;
+	--pce-widget-focus: #80cbc4;
+	--pce-search-match: #ffcb6b4d;
+	--pce-widget-bg-error: #ff537033;
+	--pce-widget-error: #ff5370;
+	--pce-bg-highlight: #343b51;
+	--pce-selection-match: #343b5199;
+	--pce-line-number: #4a4d6d;
+	--pce-scrollbar: 228, 15%, 35%;
+	--pce-bg-fold: #676e95;
+	--pce-guide-indent: #373b4d;
+	--pce-ac-icon-class: #ffcb6b;
+	--pce-ac-icon-enum: #ffcb6b;
+	--pce-ac-icon-event: #ffcb6b;
+	--pce-ac-icon-function: #82aaff;
+	--pce-ac-icon-interface: #89ddff;
+	--pce-ac-icon-variable: #eeffff;
+	--pce-selection: #3c435e;
+	color-scheme: dark;
+}
+
+.match-highlight {
+	--pce-bg-highlight: #202331;
+}
+
+.pce-match {
+	--pce-search-match: #ffcb6b4d;
+}
+
+.active-line {
+	--pce-line-number: #a6accd;
+}
+
+.active-indent {
+	--pce-guide-indent: #676e95;
+}
+
+[class*="language-"],
+.token.punctuation,
+.token.attr-equals {
+	color: #89ddff;
+}
+
+[class*="language-"] {
+  color: #a6accd;
+}
+
+.token.comment,
+.token.block-comment,
+.token.prolog,
+.token.doctype,
+.token.cdata {
+	color: #7981ae;
+	font-style: italic;
+}
+
+.token.tag,
+.token.attr-name,
+.token.namespace,
+.token.deleted {
+	color: #f07178;
+}
+
+.token.function-name,
+.token.function {
+	color: #82AAFF;
+}
+
+.token.boolean,
+.token.number {
+	color: #f78c6c;
+}
+
+.token.property,
+.token.class-name,
+.token.maybe-class-name,
+.token.constant,
+.token.symbol {
+	color: #ffcb6b;
+}
+
+.token.literal-property,
+.token.property {
+  color: #a6accd;
+}
+
+.token.property-access {
+
+}
+
+.token.keyword.keyword-this {
+  color: #cdd3f2;
+}
+
+.token.selector,
+.token.important,
+.token.atrule,
+.token.keyword,
+.token.builtin {
+	color: #c792ea;
+}
+
+.token.string,
+.token.char,
+.token.attr-value,
+.token.regex,
+.language-regex,
+.token.variable {
+	color: #c3e88d;
+}
+
+.token.operator,
+.token.entity,
+.token.url {
+	color: #89ddff;
+}
+
+.token.important,
+.token.bold {
+	font-weight: bold;
+}
+.token.italic {
+	font-style: italic;
+}
+
+.token.inserted {
+	color: #c3e88d;
+}
+
+/* Brackets */
+
+.token.bracket-level-0,
+.token.bracket-level-3,
+.token.bracket-level-6,
+.token.bracket-level-9 {
+	color: #ffcb6b;
+	color: #68acbb;
+}
+
+.token.bracket-level-1,
+.token.bracket-level-4,
+.token.bracket-level-7,
+.token.bracket-level-10 {
+	color: #c792ea;
+	color: #68bba4;
+}
+
+.token.bracket-level-2,
+.token.bracket-level-5,
+.token.bracket-level-8,
+.token.bracket-level-11 {
+	color: #89ddff;
+	color: #dec37b;
+}
+
+.token.bracket-error {
+	color: #ff5370cc;
+}
+
+.token.markup-bracket {
+	color: inherit;
+}
+
+.active-bracket {
+	box-shadow: inset 0 0 0 1px #676e95, inset 0 0 0 9in #82aaff1a;
+}
+
+.active-tagname,
+.word-matches span {
+	background: #343b51b8;
+}
