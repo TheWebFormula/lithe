@@ -14,19 +14,6 @@ mc-pane {
   --mc-surface-container-color: var(--mc-surface-container);
 }
 
-#page-content {
-  grid-area: main;
-  position: relative;
-  flex: 1;
-  padding: 16px;
-  margin: 16px;
-  margin-left: 12px;
-  box-sizing: border-box;
-  border-radius: var(--mc-shape-large);
-  background-color: var(--mc-surface-container-color, var(--mc-surface));
-  background-color: var(--mc-surface-container);
-}
-
 body p,
 body p > a {
   font-family: var(--mc-font-large-body-font);
@@ -53,6 +40,13 @@ h2 {
   letter-spacing: var(--mc-font-small-headline-tracking);
 }
 
+h3 {
+  font-weight: 500;
+  margin-top: 42px;
+  margin-bottom: 16px;
+  font-size: 20px;
+}
+
 h4 {
   margin-top: 48px;
   margin-bottom: 12px;
@@ -62,137 +56,212 @@ h4 {
   }
 }
 
-.subheader {
- margin: 0;
- margin-bottom: 20px;
- font-size: 17px;
- line-height: 22px;
-
- a {
-   font-size: 17px;
-   line-height: 22px;
- }
+body {
+  max-width: 1600px;
+  margin: 0 auto !important;
 }
 
-section > ul,
-section > ul li ul {
-  padding-left: 32px;
-  margin: 0;
+h1.main-title {
+  font-size: clamp(24px, 7vw, 46px);
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  line-height: 1.05;
+  margin-bottom: 32px;
+  background: linear-gradient(180deg, #fff 0%, #a0a0a8 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-wrap: balance;
 
-  > li:not(:last-child) {
-    margin-bottom: 12px;
+  p {
+    padding: 0;
+    margin: 0;
+    font-size: 32px;
+    margin-top: 8px;
+  }
+
+  .gradient-text {
+    font-size: clamp(48px, 7vw, 64px);
+    background: linear-gradient(135deg, #a78bfa 0%, #60a5fa 50%, #34d399 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
   }
 }
 
-section > ul li ul {
-  margin-top: 12px;
+.page-subheader {
+  margin-top: 8px;
 }
 
-mc-pane-container {
-  padding-left: 12px;
-  padding-top: 16px;
+.subheader {
+   margin: 0;
+   margin-bottom: 20px;
+   font-size: 17px;
+   line-height: 22px;
+
+   a {
+     font-size: 17px;
+     line-height: 22px;
+   }
 }
 
-body.no-padding mc-pane {
+input[type="color"] {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  padding: 0;
+  background-color: transparent;
+
+  border: 2px solid #333333;
+  border-radius: 8px;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+input[type="color"]::-webkit-color-swatch-wrapper {
   padding: 0;
 }
 
-section {
-  margin-top: 64px;
+input[type="color"]::-webkit-color-swatch {
+  border: none;
 }
 
-code-block {
-  display: block;
-  position: relative;
+input[type="color"]::-moz-color-swatch {
+  border: none;
 }
 
-code-block pre {
-  position: relative;
-  margin: 0;
-  white-space: pre-wrap;
-  font-family: monospace;
-  font-weight: bold;
-  unicode-bidi: isolate;
-  padding-top: 18px;
-  padding-left: 22px;
-  padding-bottom: 18px;
-  border-radius: 16px;
-}
 
-@supports (corner-shape: squircle) {
-  code-block pre {
-    border-radius: 30px;
-    corner-shape: squircle;
+#page-content {
+  margin: auto;
+  grid-area: main;
+  flex: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) min-content;
+  grid-template-rows: min-content;
+  /*justify-content: space-between;*/
+  grid-template-areas:
+    "pageheader aside"
+    "page aside";
+  box-sizing: border-box;
+  background-color: var(--mc-surface-container);
+  margin: 16px;
+  border-radius: 12px;
+
+  aside {
+    display: flex;
+    grid-area: aside;
+    position: sticky;
+    top: 0;
+    min-width: 240px;
+    height: fit-content;
+    margin-top: 32px;
+
+    nav {
+      margin-left: 12px;
+
+      ul {
+        list-style-type: none;
+        padding-left: 0px;
+        /*margin-top: -2px;*/
+      }
+    }
+  }
+
+  header {
+    grid-area: pageheader;
+    padding: 16px 32px;
+  }
+
+  .main-content {
+    grid-area: page;
+    padding: 0 32px;
+    padding-bottom: 32px;
+
+    section {
+      margin-top: 64px;
+
+      &:first-child {
+        margin-top: 32px;
+      }
+
+      h2 a {
+        color: inherit;
+        font-size: inherit;
+        font-weight: inherit;
+        line-height: inherit;
+        letter-spacing: inherit;
+
+        &:not(:hover) {
+          text-decoration: none;
+        }
+
+        &:hover::before {
+          content: "#";
+          margin-left: -1em;
+          padding-right: 1em;
+          font-size: 0.8em;
+          margin-top: 2px;
+          position: absolute;
+        }
+      }
+
+      ol, ul, p {
+        font-size: 14px;
+      }
+
+      ul, ol {
+        line-height: 1.5rem;
+        margin-top: 0;
+
+        &:has(+ play-ground) {
+          margin-bottom: 24px;
+        }
+      }
+    }
   }
 }
 
-code-block [placeholder] {
-  display: none;
+
+.route-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 18px;
+  margin-bottom: 42px;
+
+  .route-list-item {
+    display: grid;
+    grid-template-columns: 300px 54px 1fr;
+    padding: 8px 16px;
+    background-color: rgba(255,255,255,0.1);
+    background-color: var(--mc-secondary-container);
+    border-radius: 8px;
+
+    .slash {
+      margin: 0 3px;
+    }
+  }
+
+  .end-note {
+    display: inline;
+    font-size: 13px;
+    color: #aaa;
+    margin-left: 12px;
+  }
 }
 
-code-block button {
-  position: absolute;
-  right: 16px;
-  top: 14px;
-  outline: 0;
-  background-color: transparent;
-  color: white;
-  border: 2px solid rgba(255,255,255,0.4);
-  border-radius: 4px;
-  padding: 4px 8px;
-  font-size: 13px;
-  font-weight: bold;
-  cursor: pointer;
-  z-index: 1;
+table {
+  border-collapse: collapse;
 }
 
-code-block button:hover {
-  background-color: rgba(255,255,255,0.2);
-}
-
-body.window-compact code-block pre {
-  font-size: 12px;
-  max-width: 358px;
-}
-
-mc-card code-block pre {
-  margin: 0 -16px;
-}
-
-mc-card > code-block:first-of-type pre {
-  margin-top: 24px;
-}
-
-mc-card > code-block:last-of-type pre {
-  border-radius: 0 0 var(--mc-shape-medium) var(--mc-shape-medium);
-}
-
-mc-card > code-block:last-of-type:has(+ *) pre {
-  border-radius: 0;
-}
-
-mc-card > code-block:last-child pre {
-  margin-bottom: -16px;
+td, th {
+  border: 1px solid #999;
+  padding: 0.5rem;
+  text-align: left;
 }
 
 
-code-block[linked] pre {
- padding-top: 0 !important;
- border-radius: 0 0 20px 20px;
-}
-
-code-block:not(:last-child)[linked] pre {
- padding-bottom: 0 !important;
-}
-
-code-block:has(+ [linked]) pre {
-  padding-bottom: 0 !important;
-  border-radius: 20px 20px 0 0;
-}
-
-code-block[linked]:has(+ [linked]) pre {
-  border-radius: 0;
-}
+/*
 
 .article-main {
   --width: clamp(100px, 1400px, 100%);
@@ -246,6 +315,41 @@ code-block[linked]:has(+ [linked]) pre {
 }
 
 
+
+
+
+
+
+
+
+
+
+
+
+section > ul,
+section > ul li ul {
+  padding-left: 32px;
+  margin: 0;
+
+  > li:not(:last-child) {
+    margin-bottom: 12px;
+  }
+}
+
+section > ul li ul {
+  margin-top: 12px;
+}
+
+mc-pane-container {
+  padding-left: 12px;
+  padding-top: 16px;
+}
+
+body.no-padding mc-pane {
+  padding: 0;
+}
+
+
 iframe {
   border: 1px solid var(--mc-outline-alpha-30);
   border-radius: 16px;
@@ -271,10 +375,6 @@ iframe {
   margin-right: 2px;
 }
 
-.page-subheader {
-  margin-top: 8px;
-}
-
 .page-secondary-header {
   margin-bottom: 18px;
   margin-top: 28px;
@@ -294,8 +394,6 @@ iframe {
   background-color: rgba(255,255,255,0.1);
   background-color: var(--mc-secondary-container);
   border-radius: 8px;
-  /*color: var(--mc-on-tertiary-container);*/
-  /*color: white;*/
 
   .slash {
     margin: 0 3px;
@@ -348,66 +446,4 @@ input[disabled] {
 
 .snackbar-fix mc-icon-button {
   line-height: 0;
-}
-
-
-input[type="color"] {
-  -webkit-appearance: none; /* Strips default browser styling */
-  -moz-appearance: none;
-  appearance: none;
-  /*width: 50px;*/
-  /*height: 50px;*/
-  padding: 0;
-  background-color: transparent;
-
-  /* Change or remove the outer border here */
-  border: 2px solid #333333;
-  border-radius: 8px;
-  cursor: pointer;
-  overflow: hidden; /* Ensures the internal swatch respects border-radius */
-}
-
-/* 2. Remove default internal padding for Webkit (Chrome/Safari/Edge) */
-input[type="color"]::-webkit-color-swatch-wrapper {
-  padding: 0;
-}
-
-/* 3. Style or remove the internal swatch border */
-input[type="color"]::-webkit-color-swatch {
-  border: none; /* Removes the inner border */
-}
-
-input[type="color"]::-moz-color-swatch {
-  border: none; /* Removes the inner border for Firefox */
-}
-
-
-
-
-h1.main-title {
-  font-size: clamp(24px, 7vw, 46px);
-  font-weight: 800;
-  letter-spacing: -0.035em;
-  line-height: 1.05;
-  margin-bottom: 32px;
-  background: linear-gradient(180deg, #fff 0%, #a0a0a8 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  text-wrap: balance;
-
-  p {
-    padding: 0;
-    margin: 0;
-    font-size: 32px;
-    margin-top: 8px;
-  }
-
-  .gradient-text {
-    font-size: clamp(48px, 7vw, 64px);
-    background: linear-gradient(135deg, #a78bfa 0%, #60a5fa 50%, #34d399 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
-}
+}*/

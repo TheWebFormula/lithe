@@ -1,116 +1,116 @@
-<article>
-  <header>
-    <h1>Routing</h1>
-    <div class="page-subheader mc-font-title-medium">There are 2 methods for setting up routes. By default routes will be based on the folder strucutre and naming conventions. You can also directly set the routes using <strong>Route</strong> component.</div>
-  </header>
+<header>
+  <h1>Routing</h1>
+  <div class="page-subheader mc-font-title-medium">There are 2 methods for setting up routes. By default routes will be based on the folder strucutre and naming conventions. You can also directly set the routes using <strong>Route</strong> component.</div>
+</header>
 
-  <div class="article-main">
-    <nav class="links-nav">
-      <h2>Links</h2>
-      <ul class="links">
-        <li><a href="#directoy">Directory routing</a></li>
-        <li><a href="#component">Component routing</a></li>
-        <li><a href="#pageexample">Route parameters</a></li>
-      </ul>
-    </nav>
-
-    <div class="article-content">
-      <section id="directoy" aria-label="Directory routing">
-        <h2>Directory routing</h2>
-        <p class="subheader">Routes are based on the folder names and nesting inside the <strong>routes/</strong> folder. The build process will automatically create and add the <strong>Route</strong> components to index.html for you.</p>
-
-        <play-ground no-line-numbers no-tab-bar>
-          <script type="play/bash" filename="install.sh">
-            app/
-            └── routes/
-              ├── index/
-              │   └── index.js      # /
-              ├── 404/
-              │   └── index.js      # /404 (or any url that is not found)
-              ├── one/
-              │   └── index.js      # one/
-              ├── two[id?]/
-              │   └── index.js      # two/:id?
-              ├── three/
-              │   └── [id]/
-              │       └── index.js  # three/:id
-              └── four[...all]/
-                  └── index.js      # four/*all (four/a/b/)
-          </script>
-        </play-ground>
-
-        <div class="route-list">
-          <div class="mc-font-body-large route-list-item"><span>app<span class="slash">/</span>routes<span class="slash">/</span>index<span class="slash">/</span>index.js</span><span>→</span><span>/</span></div>
-          <div class="mc-font-body-large route-list-item"><span>app<span class="slash">/</span>routes<span class="slash">/</span>404<span class="slash">/</span>index.js</span><span>→</span><span>404 page</span></div>
-          <div class="mc-font-body-large route-list-item"><span>app<span class="slash">/</span>routes<span class="slash">/</span>one<span class="slash">/</span>index.js</span><span>→</span><span>/one</span></div>
-          <div class="mc-font-body-large route-list-item"><span>app<span class="slash">/</span>routes<span class="slash">/</span>two[id]<span class="slash">/</span>index.js</span><span>→</span><span>/two/:id</span></div>
-          <div class="mc-font-body-large route-list-item"><span>app<span class="slash">/</span>routes<span class="slash">/</span>two[id?]<span class="slash">/</span>index.js</span><span>→</span><div style="display: flex;">/two/:id? <span class="end-note"">(optional)</span></div></div>
-          <div class="mc-font-body-large route-list-item"><span>app<span class="slash">/</span>routes<span class="slash">/</span>three/[id]<span class="slash">/</span>index.js</span><span>→</span><span>/three/:id</span></div>
-          <div class="mc-font-body-large route-list-item"><span>app<span class="slash">/</span>routes<span class="slash">/</span>three/[id?]<span class="slash">/</span>index.js</span><span>→</span><div style="display: flex;">/three/:id? <span class="end-note"">(optional)</span></div></div>
-          <div class="mc-font-body-large route-list-item"><span>app<span class="slash">/</span>routes<span class="slash">/</span>four[...rest]<span class="slash">/</span>index.js</span><span>→</span><span>four/*</span></div>
-          <div class="mc-font-body-large route-list-item"><span>app<span class="slash">/</span>routes<span class="slash">/</span>four[...rest?]<span class="slash">/</span>index.js</span><span>→</span><div style="display: flex;">four/*? <span class="end-note"">(optional)</span></div></div>
-        </div>
-
-        <p>You will see the built index.html has <strong>Route</strong> components added.</p>
-        <code-block language="html"><pre>
-${`<body>
-  <li-route path="/" component="home-page"></li-route>
-  <li-route path="/two" component="second-page"></li-route>
-</body>`}
-        </pre></code-block>
-      </section>
+<aside>
+  <nav class="links-nav">
+    <h2>Links</h2>
+    <ul class="links">
+      <li><a href="#directoy">Directory routing</a></li>
+      <li><a href="#component">Component routing</a></li>
+      <li><a href="#pageexample">Route parameters</a></li>
+    </ul>
+  </nav>
+</aside>
 
 
 
+<div class="main-content">
+  <section aria-labelledby="directoy">
+    <h2 id="directoy"><a href="#directoy">Directory routing</a></h2>
+    <p>Routes are based on the folder names and nesting inside the <strong>routes/</strong> folder. The build process will automatically create and add the <strong>Route</strong> components to index.html for you.</p>
 
-      <section id="component" aria-label="Component routing">
-        <h2>Component routing</h2>
-        <p class="subheader">You can set routes directly using the <strong>Route</strong> component. These can be using with the directory routes.</p>
+    <play-ground no-line-numbers no-tab-bar>
+      <script type="play/bash" filename="install.sh">
+        app/
+        └── routes/
+          ├── index/
+          │   └── index.js      # /
+          ├── 404/
+          │   └── index.js      # /404 (or any url that is not found)
+          ├── one/
+          │   └── index.js      # one/
+          ├── two[id?]/
+          │   └── index.js      # two/:id?
+          ├── three/
+          │   └── [id]/
+          │       └── index.js  # three/:id
+          └── four[...all]/
+              └── index.js      # four/*all (four/a/b/)
+      </script>
+    </play-ground>
 
-        <play-ground>
-          <script type="play/html" filename="index.html">
-            <body>
-              <li-route path="/" component="home-page"></li-route>
-              <li-route path="/one" component="first-page"></li-route>
-              <li-route path="/two/:id" component="second-page"></li-route>
-              <li-route path="/two/:id?" component="second-page"></li-route>
-              <li-route path="/three/*" component="third-page"></li-route>
-              <li-route path="/three/*?" component="third-page"></li-route>
-            </body>
-          </script>
-        </play-ground>
-      </section>
-
-
-      <section id="pageexample" aria-label="Route parameters">
-        <h2>Route parameters</h2>
-        <p class="subheader">You can access the route parameters inside your page component.</p>
-
-        <play-ground>
-          <script type="play/javascript" filename="routes/pagename/index.js">
-            import { Component } from '@thewebformula/lithe';
-            import htmlTemplate from './page.html'; // automatically bundles
-
-            class PageClassName extends Component {
-              static title = 'Page title';
-              static htmlTemplate = htmlTemplate;
-
-              connectedCallback() {
-                super.connectedCallback();
-
-                // one[id] one/:id one/value
-                console.log(this.urlParameters); // { id: 'value' }
-
-                // two[...rest] two/*rest two/a/b
-                console.log(this.urlParameters); // { rest: 'a/b' }
-
-                // get search parameters
-                console.log(this.searchParameters);
-              }
-            }
-            customElements.define('page-component-name', PageClassName);
-          </script>
-      </section>
+    <div class="route-list">
+      <div class="mc-font-body-large route-list-item"><span>app<span class="slash">/</span>routes<span class="slash">/</span>index<span class="slash">/</span>index.js</span><span>→</span><span>/</span></div>
+      <div class="mc-font-body-large route-list-item"><span>app<span class="slash">/</span>routes<span class="slash">/</span>404<span class="slash">/</span>index.js</span><span>→</span><span>404 page</span></div>
+      <div class="mc-font-body-large route-list-item"><span>app<span class="slash">/</span>routes<span class="slash">/</span>one<span class="slash">/</span>index.js</span><span>→</span><span>/one</span></div>
+      <div class="mc-font-body-large route-list-item"><span>app<span class="slash">/</span>routes<span class="slash">/</span>two[id]<span class="slash">/</span>index.js</span><span>→</span><span>/two/:id</span></div>
+      <div class="mc-font-body-large route-list-item"><span>app<span class="slash">/</span>routes<span class="slash">/</span>two[id?]<span class="slash">/</span>index.js</span><span>→</span><div style="display: flex;">/two/:id? <span class="end-note"">(optional)</span></div></div>
+      <div class="mc-font-body-large route-list-item"><span>app<span class="slash">/</span>routes<span class="slash">/</span>three/[id]<span class="slash">/</span>index.js</span><span>→</span><span>/three/:id</span></div>
+      <div class="mc-font-body-large route-list-item"><span>app<span class="slash">/</span>routes<span class="slash">/</span>three/[id?]<span class="slash">/</span>index.js</span><span>→</span><div style="display: flex;">/three/:id? <span class="end-note"">(optional)</span></div></div>
+      <div class="mc-font-body-large route-list-item"><span>app<span class="slash">/</span>routes<span class="slash">/</span>four[...rest]<span class="slash">/</span>index.js</span><span>→</span><span>four/*</span></div>
+      <div class="mc-font-body-large route-list-item"><span>app<span class="slash">/</span>routes<span class="slash">/</span>four[...rest?]<span class="slash">/</span>index.js</span><span>→</span><div style="display: flex;">four/*? <span class="end-note"">(optional)</span></div></div>
     </div>
-  </div>
-</article>
+
+    <p>The build process will automatically inject the <strong>li-route</strong> tags into the document body</p>
+    <play-ground>
+      <script type="play/html" filename="route">
+        <li-route path="/" component="home-page"></li-route>
+        <li-route path="/two" component="second-page"></li-route>
+      </script>
+    </play-ground>
+  </section>
+
+
+
+
+  <section aria-labelledby="component">
+    <h2 id="component"><a href="#component">Component routing</a></h2>
+    <p>You can set routes directly using the <strong>Route</strong> component. These can be using with the directory routes.</p>
+
+    <play-ground>
+      <script type="play/html" filename="index.html">
+        <body>
+          <li-route path="/" component="home-page"></li-route>
+          <li-route path="/one" component="first-page"></li-route>
+          <li-route path="/two/:id" component="second-page"></li-route>
+          <li-route path="/two/:id?" component="second-page"></li-route>
+          <li-route path="/three/*" component="third-page"></li-route>
+          <li-route path="/three/*?" component="third-page"></li-route>
+        </body>
+      </script>
+    </play-ground>
+  </section>
+
+
+  <section aria-labelledby="pageexample">
+    <h2 id="pageexample"><a href="#pageexample">Route parameters</a></h2>
+    <p>You can access the route parameters inside your page component.</p>
+
+    <play-ground>
+      <script type="play/javascript" filename="routes/pagename/index.js">
+        import { Component } from '@thewebformula/lithe';
+        import htmlTemplate from './page.html'; // automatically bundles
+
+        class PageClassName extends Component {
+          static title = 'Page title';
+          static htmlTemplate = htmlTemplate;
+
+          connectedCallback() {
+            super.connectedCallback();
+
+            // one[id] one/:id one/value
+            console.log(this.urlParameters); // { id: 'value' }
+
+            // two[...rest] two/*rest two/a/b
+            console.log(this.urlParameters); // { rest: 'a/b' }
+
+            // get search parameters
+            console.log(this.searchParameters);
+          }
+        }
+        customElements.define('page-component-name', PageClassName);
+      </script>
+  </section>
+</div>

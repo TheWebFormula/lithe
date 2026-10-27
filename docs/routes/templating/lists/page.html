@@ -1,138 +1,135 @@
-<article>
-  <header>
-    <h1>Template lists</h1>
-  </header>
-
-  <div class="article-main">
-    <div class="article-content">
-      <section id="lists" aria-label="Template lists">
-        <h2>Template lists</h2>
-        <p class="subheader">There are multiple options for rendering lists. They can be both static and dynamic.</p>
-
-        <h3 style="margin-top: 54px;">Basic static list</h3>
-        <div style="margin-bottom: 18px;">
-          ${['One', 'Two', 'Three'].map(item => html`<div>Value: ${item}</div>`)}
-        </div>
-
-        <play-ground>
-          <script type="play/javascript" filename="page.js">
-            import { Component, html } from '@thewebformula/lithe';
-
-            class TemplateListsPage extends Component {
-              static title = 'Templating lists';
-
-              template() {
-                return html\`
-                  \${['One', 'Two', 'Three'].map(item => html\`<div>Value: \${item}</div>\`)}
-                \`;
-              }
-            }
-            customElements.define('template-lists-page', TemplateListsPage);
-          </script>
-        </play-ground>
+<header>
+  <h1>Template lists</h1>
+</header>
 
 
+<div class="main-content">
+  <section aria-labelledby="lists">
+    <h2 id="lists"><a href="#lists">Template lists</a></h2>
+    <p>There are multiple options for rendering lists. They can be both static and dynamic.</p>
 
-        <h3 style="margin-top: 54px;">Dynamic lists with Cue.Array</h3>
-        <div style="margin-bottom: 18px;">
-          <mc-checkbox id="selectall" label="Select all" onclick="page.selectAll(event)"></mc-checkbox>
-
-          <mc-list id="selection-list">
-            ${page.itemsCheckList.get().map(item => { return html`
-              <mc-list-item value="${item.label}">
-                <div slot="headline">${item.label}</div>
-                <mc-checkbox slot="end" checked="${item.checked}" onchange=${() => item.checked = !item.checked}></mc-checkbox>
-              </mc-list-item>
-            `})}
-          </mc-list>
-        </div>
-
-        <play-ground>
-          <script type="play/javascript" filename="page.js">
-            import { Component, html, Cue } from '@thewebformula/lithe';
-
-            class TemplateListsPage extends Component {
-              static title = 'Templating lists';
-
-              itemsCheckList = new Cue.Array([
-                { label: 'One', checked: false },
-                { label: 'Two', checked: false },
-                { label: 'Three', checked: true }
-              ]);
-
-              #disposeItemsCheckListEffect;
-
-              afterRender() {
-                this.#disposeItemsCheckListEffect = Cue.effect(() => {
-                  const element = this.querySelector('#selectall');
-                  const allChecked = this.itemsCheckList.get().every(item => item.checked);
-                  const someChecked = this.itemsCheckList.get().some(item => item.checked);
-                  element.indeterminate = !allChecked && someChecked;
-                  element.checked = allChecked;
-                });
-              }
-
-              disconnectedCallback() {
-                super.disconnectedCallback();
-                if (this.#disposeItemsCheckListEffect) this.#disposeItemsCheckListEffect();
-              }
-
-              template() {
-                return html\`
-                  <mc-checkbox id="selectall" label="Select all" onclick="this.selectAll(event)"></mc-checkbox>
-
-                  <mc-list id="selection-list">
-                    \${this.itemsCheckList.get().map(item => html\`
-                      <mc-list-item value=\${item.label}>
-                        <div slot="headline">\${item.label}</div>
-                        <mc-checkbox slot="end" checked=\${item.checked} onchange=\${() => item.checked = !item.checked}></mc-checkbox>
-                      </mc-list-item>
-                    \`)}
-                  </mc-list>
-                \`;
-              }
-            }
-            customElements.define('template-lists-page', TemplateListsPage);
-          </script>
-        </play-ground>
-
-
-
-        <h3 style="margin-top: 54px;">Dynamic lists with Cue.State</h3>
-        <div style="margin-bottom: 18px;">
-          <mc-textfield id="valueinput" placeholder="...value" style="margin-right: 9px"></mc-textfield>
-          <mc-button onclick="page.addItem(valueinput.value)" style="margin-top: 12px;">Add value</mc-button>
-          ${html(() => page.items.get().map(item => html`<div>Value: ${item.value}</div>`))}
-        </div>
-
-        <play-ground>
-          <script type="play/javascript" filename="page.js">
-            import { Component, html, Cue } from '@thewebformula/lithe';
-
-            class TemplateListsPage extends Component {
-              static title = 'Templating lists';
-
-              items = new Cue.State([
-                { value: 'One' },
-                { value: 'Two' },
-                { value: 'Three' }
-              ]);
-
-              addItem(value) {
-                if (!value) return;
-                this.items.set([...this.items.get(), { value }]);
-              }
-
-              template() {
-                return html\`
-                  \${html(() => this.items.get().map(item => html\`<div>Value: \${item.value}</div>\`))}
-                \`;
-              }
-            }
-            customElements.define('template-lists-page', TemplateListsPage);
-          </script>
-        </play-ground>
-      </section>
+    <h3 style="margin-top: 54px;">Basic static list</h3>
+    <div style="margin-bottom: 18px;">
+      ${['One', 'Two', 'Three'].map(item => html`<div>Value: ${item}</div>`)}
     </div>
-  </div>
-</article>
+
+    <play-ground>
+      <script type="play/javascript" filename="page.js">
+        import { Component, html } from '@thewebformula/lithe';
+
+        class TemplateListsPage extends Component {
+          static title = 'Templating lists';
+
+          template() {
+            return html\`
+              \${['One', 'Two', 'Three'].map(item => html\`<div>Value: \${item}</div>\`)}
+            \`;
+          }
+        }
+        customElements.define('template-lists-page', TemplateListsPage);
+      </script>
+    </play-ground>
+
+
+
+    <h3 style="margin-top: 54px;">Dynamic lists with Cue.Array</h3>
+    <div style="margin-bottom: 18px;">
+      <mc-checkbox id="selectall" label="Select all" onclick="page.selectAll(event)"></mc-checkbox>
+
+      <mc-list id="selection-list">
+        ${page.itemsCheckList.get().map(item => { return html`
+          <mc-list-item value="${item.label}">
+            <div slot="headline">${item.label}</div>
+            <mc-checkbox slot="end" checked="${item.checked}" onchange=${() => item.checked = !item.checked}></mc-checkbox>
+          </mc-list-item>
+        `})}
+      </mc-list>
+    </div>
+
+    <play-ground>
+      <script type="play/javascript" filename="page.js">
+        import { Component, html, Cue } from '@thewebformula/lithe';
+
+        class TemplateListsPage extends Component {
+          static title = 'Templating lists';
+
+          itemsCheckList = new Cue.Array([
+            { label: 'One', checked: false },
+            { label: 'Two', checked: false },
+            { label: 'Three', checked: true }
+          ]);
+
+          #disposeItemsCheckListEffect;
+
+          afterRender() {
+            this.#disposeItemsCheckListEffect = Cue.effect(() => {
+              const element = this.querySelector('#selectall');
+              const allChecked = this.itemsCheckList.get().every(item => item.checked);
+              const someChecked = this.itemsCheckList.get().some(item => item.checked);
+              element.indeterminate = !allChecked && someChecked;
+              element.checked = allChecked;
+            });
+          }
+
+          disconnectedCallback() {
+            super.disconnectedCallback();
+            if (this.#disposeItemsCheckListEffect) this.#disposeItemsCheckListEffect();
+          }
+
+          template() {
+            return html\`
+              <mc-checkbox id="selectall" label="Select all" onclick="this.selectAll(event)"></mc-checkbox>
+
+              <mc-list id="selection-list">
+                \${this.itemsCheckList.get().map(item => html\`
+                  <mc-list-item value=\${item.label}>
+                    <div slot="headline">\${item.label}</div>
+                    <mc-checkbox slot="end" checked=\${item.checked} onchange=\${() => item.checked = !item.checked}></mc-checkbox>
+                  </mc-list-item>
+                \`)}
+              </mc-list>
+            \`;
+          }
+        }
+        customElements.define('template-lists-page', TemplateListsPage);
+      </script>
+    </play-ground>
+
+
+
+    <h3 style="margin-top: 54px;">Dynamic lists with Cue.State</h3>
+    <div style="margin-bottom: 18px;">
+      <mc-textfield id="valueinput" placeholder="...value" style="margin-right: 9px"></mc-textfield>
+      <mc-button onclick="page.addItem(valueinput.value)" style="margin-top: 12px;">Add value</mc-button>
+      ${html(() => page.items.get().map(item => html`<div>Value: ${item.value}</div>`))}
+    </div>
+
+    <play-ground>
+      <script type="play/javascript" filename="page.js">
+        import { Component, html, Cue } from '@thewebformula/lithe';
+
+        class TemplateListsPage extends Component {
+          static title = 'Templating lists';
+
+          items = new Cue.State([
+            { value: 'One' },
+            { value: 'Two' },
+            { value: 'Three' }
+          ]);
+
+          addItem(value) {
+            if (!value) return;
+            this.items.set([...this.items.get(), { value }]);
+          }
+
+          template() {
+            return html\`
+              \${html(() => this.items.get().map(item => html\`<div>Value: \${item.value}</div>\`))}
+            \`;
+          }
+        }
+        customElements.define('template-lists-page', TemplateListsPage);
+      </script>
+    </play-ground>
+  </section>
+</div>

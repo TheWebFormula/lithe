@@ -53,7 +53,7 @@
 }
 
 [class*="language-"] {
-  color: #a6accd;
+  color: #c2c8e6;
 }
 
 .token.comment,
@@ -61,7 +61,7 @@
 .token.prolog,
 .token.doctype,
 .token.cdata {
-	color: #7981ae;
+	color: #929aca;
 	font-style: italic;
 }
 

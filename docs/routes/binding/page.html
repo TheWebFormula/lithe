@@ -1,341 +1,339 @@
-<article>
-  <header>
-    <h1>Cue's and binding</h1>
-    <div class="page-subheader mc-font-title-medium">Bind variables to templates using Cue's. Cue's are modeled after signals.</div>
-  </header>
+<header>
+  <h1>Cue's and binding</h1>
+  <div class="page-subheader mc-font-title-medium">Bind variables to templates using Cue's. Cue's are modeled after signals.</div>
+</header>
 
-  <div class="article-main">
-    <nav class="links-nav">
-      <h2>Links</h2>
-      <ul class="links">
-        <li><a href="#cue">Cue</a></li>
-        <li><a href="#array">Cue array</a></li>
-        <li><a href="#object">Cue object</a></li>
-        <li><a href="#compute">Cue compute</a></li>
-        <li><a href="#effect">Cue effect</a></li>
-      </ul>
-    </nav>
+<aside>
+  <nav class="links-nav">
+    <h2>Links</h2>
+    <ul class="links">
+      <li><a href="#cue">Cue</a></li>
+      <li><a href="#array">Cue array</a></li>
+      <li><a href="#object">Cue object</a></li>
+      <li><a href="#compute">Cue compute</a></li>
+      <li><a href="#effect">Cue effect</a></li>
+    </ul>
+  </nav>
+</aside>
 
-    <div class="article-content">
+<div class="main-content">
 
-      <section id="cue" aria-label="Cue example">
-        <h2>Cue's</h2>
-        <p class="subheader">A Cue is a wrapper around a value that can notify interested consumers when that value changes</p>
+  <section aria-labelledby="cue">
+    <h2 id="cue"><a href="#cue">Cue's</a></h2>
+    <p>A Cue is a wrapper around a value that can notify interested consumers when that value changes</p>
 
-        <div style="display: flex; align-items: center;">
-          <mc-textfield class="mc-raise-label" style="margin-top: 24px;" label="Type something" value="${page.basicBind.get()}"
-            oninput="page.basicBind.set(this.value)">
-          </mc-textfield>
+    <div style="display: flex; align-items: center;">
+      <mc-textfield class="mc-raise-label" style="margin-top: 24px;" label="Type something" value="${page.basicBind.get()}"
+        oninput="page.basicBind.set(this.value)">
+      </mc-textfield>
 
-          <div style="margin-left: 32px;">Value: ${page.basicBind}</div>
-          <mc-button style="margin-left: auto" onclick="page.updateValue()">Set value to Updated</mc-button>
-        </div>
+      <div style="margin-left: 32px;">Value: ${page.basicBind}</div>
+      <mc-button style="margin-left: auto" onclick="page.updateValue()">Set value to Updated</mc-button>
+    </div>
 
-        <play-ground>
-          <script type="play/html" filename="page.html">
-            <mc-textfield
-              label="Type something"
-              value="\${page.basicBind.get()}"
-              oninput="page.basicBind.set(this.value)"
-            ></mc-textfield>
+    <play-ground>
+      <script type="play/html" filename="page.html">
+        <mc-textfield
+          label="Type something"
+          value="\${page.basicBind.get()}"
+          oninput="page.basicBind.set(this.value)"
+        ></mc-textfield>
 
-            <div>Value: \${page.basicBind}</div>
-            <mc-button onclick="page.updateValue()">Set value to Updated</mc-button>
-          </script>
-        </play-ground>
+        <div>Value: \${page.basicBind}</div>
+        <mc-button onclick="page.updateValue()">Set value to Updated</mc-button>
+      </script>
+    </play-ground>
 
-        <br>
+    <br>
 
-        <play-ground>
-          <script type="play/javascript" filename="index.js">
-            import { Component, Cue } from '@thewebformula/lithe';
-            import htmlTemplate from './page.html';
+    <play-ground>
+      <script type="play/javascript" filename="index.js">
+        import { Component, Cue } from '@thewebformula/lithe';
+        import htmlTemplate from './page.html';
 
-            class PageClass extends Component {
-              static title = 'Cue';
-              static htmlTemplate = htmlTemplate;
+        class PageClass extends Component {
+          static title = 'Cue';
+          static htmlTemplate = htmlTemplate;
 
-              basicBind = new Cue.State('');
+          basicBind = new Cue.State('');
 
-              constructor() {
-                super();
+          constructor() {
+            super();
+          }
+
+          updateValue() {
+            // HTML will automatically update
+            this.basicBind.set('Updated');
+          }
+        }
+        customElements.define('page-component-name', PageClass);
+      </script>
+    </play-ground>
+
+    <br>
+
+    <play-ground>
+      <script type="play/javascript" filename="index.js">
+        // example of using Cue.State, Cue.Compute, and Cue.effect
+
+        import { Component, Cue } from '@thewebformula/lithe';
+        import htmlTemplate from './page.html';
+
+        class PageClass extends Component {
+          static title = 'Cue: State Compute effect';
+          static htmlTemplate = htmlTemplate;
+
+          one = new Cue.State(1);
+          // Compute will run when first created
+          two = new Cue.Compute(() => {
+            return this.one.get() * 2;
+          });
+
+          constructor() {
+            super();
+
+            // runs when any state or computes contained inside change
+            // effect will run when first created
+            const dispose = Cue.effect(() => {
+              if (this.two.get() > 10) {
+                // do some work
               }
+            });
 
-              updateValue() {
-                // HTML will automatically update
-                this.basicBind.set('Updated');
-              }
-            }
-            customElements.define('page-component-name', PageClass);
-          </script>
-        </play-ground>
-
-        <br>
-
-        <play-ground>
-          <script type="play/javascript" filename="index.js">
-            // example of using Cue.State, Cue.Compute, and Cue.effect
-
-            import { Component, Cue } from '@thewebformula/lithe';
-            import htmlTemplate from './page.html';
-
-            class PageClass extends Component {
-              static title = 'Cue: State Compute effect';
-              static htmlTemplate = htmlTemplate;
-
-              one = new Cue.State(1);
-              // Compute will run when first created
-              two = new Cue.Compute(() => {
-                return this.one.get() * 2;
-              });
-
-              constructor() {
-                super();
-
-                // runs when any state or computes contained inside change
-                // effect will run when first created
-                const dispose = Cue.effect(() => {
-                  if (this.two.get() > 10) {
-                    // do some work
-                  }
-                });
-
-                // dispose effect
-                dispose();
-              }
-            }
-            customElements.define('page-component-name', PageClass);
-          </script>
-        </play-ground>
-      </section>
+            // dispose effect
+            dispose();
+          }
+        }
+        customElements.define('page-component-name', PageClass);
+      </script>
+    </play-ground>
+  </section>
 
 
-      <section id="array" aria-label="Cue array example">
-        <h2>Cue array</h2>
-        <p class="subheader">Cue arrays are helpful for handling lists, they simplyfy managing and rendering.</p>
+  <section aria-labelledby="array">
+    <h2 id="array"><a href="#array">Cue array</a></h2>
+    <p>Cue arrays are helpful for handling lists, they simplyfy managing and rendering.</p>
 
+    <fieldset>
+      <legend>Select:</legend>
+      ${page.itemsCheckList.map(item => { return html`
+        <input type="checkbox" checked=${item.checked} name=${item.label} value=${item.label} onchange=${(event) => item.checked = event.target.checked}>
+        <label for=${item.label}>${item.label}</label><br>
+      `})}
+    </fieldset>
+    <mc-button onclick=${() => page.addToCheckList()}>Add option</mc-button>
+
+    <play-ground>
+      <script type="play/html" filename="page.html">
         <fieldset>
           <legend>Select:</legend>
-          ${page.itemsCheckList.map(item => { return html`
-            <input type="checkbox" checked=${item.checked} name=${item.label} value=${item.label} onchange=${(event) => item.checked = event.target.checked}>
-            <label for=${item.label}>${item.label}</label><br>
-          `})}
+          \${page.itemsCheckList.map(item => { return html\`
+            <input type="checkbox"
+              checked="\${item.checked}"
+              name="\${item.label}"
+              value="\${item.label}"
+              onchange="\${(event) => item.checked = event.target.checked}">
+            <label for=\${item.label}>\${item.label}</label><br>
+          \`})}
         </fieldset>
         <mc-button onclick=${() => page.addToCheckList()}>Add option</mc-button>
+      </script>
+    </play-ground>
 
-        <play-ground>
-          <script type="play/html" filename="page.html">
-            <fieldset>
-              <legend>Select:</legend>
-              \${page.itemsCheckList.map(item => { return html\`
-                <input type="checkbox"
-                  checked="\${item.checked}"
-                  name="\${item.label}"
-                  value="\${item.label}"
-                  onchange="\${(event) => item.checked = event.target.checked}">
-                <label for=\${item.label}>\${item.label}</label><br>
-              \`})}
-            </fieldset>
-            <mc-button onclick=${() => page.addToCheckList()}>Add option</mc-button>
-          </script>
-        </play-ground>
+    <br>
 
-        <br>
+    <play-ground>
+      <script type="play/javascript" filename="page.js">
+        import { Component, Cue } from '@thewebformula/lithe';
+        import htmlTemplate from './page.html';
 
-        <play-ground>
-          <script type="play/javascript" filename="page.js">
-            import { Component, Cue } from '@thewebformula/lithe';
-            import htmlTemplate from './page.html';
+        class PageClass extends Component {
+          static title = 'Cue object';
+          static htmlTemplate = htmlTemplate;
 
-            class PageClass extends Component {
-              static title = 'Cue object';
-              static htmlTemplate = htmlTemplate;
+          itemsCheckList = new Cue.Array([
+            { label: 'One', checked: false },
+            { label: 'Two', checked: false },
+            { label: 'Three', checked: true }
+          ]);
 
-              itemsCheckList = new Cue.Array([
-                { label: 'One', checked: false },
-                { label: 'Two', checked: false },
-                { label: 'Three', checked: true }
-              ]);
-
-              addToCheckList() {
-                this.itemsCheckList.get().push({
-                  label: 'New Item',
-                  checked: false
-                });
-              }
-            }
-            customElements.define('page-component-name', PageClass);
-          </script>
-        </play-ground>
-      </section>
+          addToCheckList() {
+            this.itemsCheckList.get().push({
+              label: 'New Item',
+              checked: false
+            });
+          }
+        }
+        customElements.define('page-component-name', PageClass);
+      </script>
+    </play-ground>
+  </section>
 
 
-      <section id="object" aria-label="Cue object example">
-        <h2>Cue object</h2>
-        <p class="subheader">A cue that works with object properties, useful for items like forms</p>
+  <section aria-labelledby="object">
+    <h2 id="object"><a href="#object">Cue object</a></h2>
+    <p>A cue that works with object properties, useful for items like forms</p>
 
+    <table>
+      <thead>
+        <tr>
+          <th>Property</th>
+          <th>Value</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>obj.one</td>
+          <td>${page.obj.get().one}</td>
+        </tr>
+        <tr>
+          <td>obj.nested.two</td>
+          <td>${page.obj.get().nested.get().two}</td>
+        </tr>
+        <tr>
+          <td>obj.count</td>
+          <td>${page.obj.get().count}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div style="margin: 12px 0;">
+      <mc-button onclick="page.obj.get().count += 1">Increment count</mc-button>
+    </div>
+
+    <play-ground>
+      <script type="play/html" filename="page.html">
         <table>
           <thead>
             <tr>
               <th>Property</th>
-              <th>Value</th>
-            </tr>
-          </thead>
+              <th>Value</th></tr></thead>
           <tbody>
             <tr>
               <td>obj.one</td>
-              <td>${page.obj.get().one}</td>
-            </tr>
+              <td>\${page.obj.get().one}</td></tr>
             <tr>
               <td>obj.nested.two</td>
-              <td>${page.obj.get().nested.get().two}</td>
-            </tr>
+              <td>\${page.obj.get().nested.get().two}</td></tr>
             <tr>
               <td>obj.count</td>
-              <td>${page.obj.get().count}</td>
-            </tr>
-          </tbody>
-        </table>
+              <td>\${page.obj.get().count}</td></tr>
+          </tbody></table>
 
-        <div style="margin: 12px 0;">
-          <mc-button onclick="page.obj.get().count += 1">Increment count</mc-button>
-        </div>
+        <mc-button onclick="page.obj.get().count += 1">Increment count</mc-button>
+      </script>
+    </play-ground>
 
-        <play-ground>
-          <script type="play/html" filename="page.html">
-            <table>
-              <thead>
-                <tr>
-                  <th>Property</th>
-                  <th>Value</th></tr></thead>
-              <tbody>
-                <tr>
-                  <td>obj.one</td>
-                  <td>\${page.obj.get().one}</td></tr>
-                <tr>
-                  <td>obj.nested.two</td>
-                  <td>\${page.obj.get().nested.get().two}</td></tr>
-                <tr>
-                  <td>obj.count</td>
-                  <td>\${page.obj.get().count}</td></tr>
-              </tbody></table>
+    <br>
 
-            <mc-button onclick="page.obj.get().count += 1">Increment count</mc-button>
-          </script>
-        </play-ground>
+    <play-ground>
+      <script type="play/javascript" filename="page.js">
+        import { Component, Cue } from '@thewebformula/lithe';
+        import htmlTemplate from './page.html';
 
-        <br>
+        class PageClass extends Component {
+          static title = 'Cue object';
+          static htmlTemplate = htmlTemplate;
 
-        <play-ground>
-          <script type="play/javascript" filename="page.js">
-            import { Component, Cue } from '@thewebformula/lithe';
-            import htmlTemplate from './page.html';
-
-            class PageClass extends Component {
-              static title = 'Cue object';
-              static htmlTemplate = htmlTemplate;
-
-              obj = new Cue.Object({
-                one: 'one',
-                count: 1,
-                nested: {
-                  two: 'two'
-                }
-              });
-
-              constructor() { super(); }
+          obj = new Cue.Object({
+            one: 'one',
+            count: 1,
+            nested: {
+              two: 'two'
             }
-            customElements.define('page-component-name', PageClass);
-          </script>
-        </play-ground>
-      </section>
+          });
+
+          constructor() { super(); }
+        }
+        customElements.define('page-component-name', PageClass);
+      </script>
+    </play-ground>
+  </section>
 
 
-      <section id="compute" aria-label="Compute example">
-        <h2>Cue compute</h2>
-        <p class="subheader">Compute provides a way to interact with multiple Cue states to provide a single value</p>
+  <section aria-labelledby="compute">
+    <h2 id="compute"><a href="#compute">Cue compute</a></h2>
+    <p>Compute provides a way to interact with multiple Cue states to provide a single value</p>
 
-        <div style="display: flex; align-items: center;">
-          <mc-textfield b class="mc-raise-label" type="number" style="margin-top: 24px;" label="Type something" value="${page.number.get()}"
-            oninput="page.number.set(this.value)">
-          </mc-textfield>
+    <div style="display: flex; align-items: center;">
+      <mc-textfield b class="mc-raise-label" type="number" style="margin-top: 24px;" label="Type something" value="${page.number.get()}"
+        oninput="page.number.set(this.value)">
+      </mc-textfield>
 
-          <div style="margin-left: 32px;">Value <span style="font-size: 12px; font-weight: bold;">(Input x 2)</span>: ${page.numberTimesTwo.get()}</div>
-        </div>
-
-
-        <play-ground>
-          <script type="play/html" filename="page.html">
-            <mc-textfield
-              type="number"
-              label="Type something"
-              value="\${page.number.get()}"
-              oninput="page.number.set(this.value)">
-            </mc-textfield>
-
-            <div>Value (Input x 2): \${page.numberTimesTwo.get()}</div>
-          </script>
-        </play-ground>
-
-        <br>
-
-        <play-ground>
-          <script type="play/javascript" filename="page.js">
-            import { Component, Cue } from '@thewebformula/lithe';
-            import html from './page.html';
-
-            class PageClass extends Component {
-              static title = 'Compute';
-              static htmlTemplate = html;
-
-              number = new Cue.State(1);
-              numberTimesTwo = new Cue.Compute(() => {
-                return this.number.get() * 2;
-              });
-            }
-            customElements.define('page-component-name', PageClass);
-          </script>
-        </play-ground>
-      </section>
-
-
-      <section id="effect" aria-label="Effect example">
-        <h2>Cue effect</h2>
-        <p class="subheader">Effects allows you to run code based on any changes for Cue states or computes it contains. The difference between effect and compute
-            is that effects do not return values.</p>
-
-        <play-ground>
-          <script type="play/javascript" filename="page.js">
-            import { Component, Cue } from '@thewebformula/lithe';
-            import html from './page.html';
-
-            class PageClass extends Component {
-              static title = 'Effect';
-              static htmlTemplate = html;
-
-              one = new Cue.State(1);
-              two = new Cue.State(2);
-              disposeEffect;
-
-              constructor() {
-                super();
-
-                this.disposeEffect = Cue.effect(() => {
-                  if (this.one.get() < this.two.get()) {
-                    // do some work
-                  }
-                });
-              }
-
-              disconnectedCallback() {
-                super.disconnectedCallback();
-                this.disposeEffect();
-              }
-            }
-            customElements.define('page-component-name', PageClass);
-          </script>
-        </play-ground>
-      </section>
+      <div style="margin-left: 32px;">Value <span style="font-size: 12px; font-weight: bold;">(Input x 2)</span>: ${page.numberTimesTwo.get()}</div>
     </div>
-  </div>
-</article>
+
+
+    <play-ground>
+      <script type="play/html" filename="page.html">
+        <mc-textfield
+          type="number"
+          label="Type something"
+          value="\${page.number.get()}"
+          oninput="page.number.set(this.value)">
+        </mc-textfield>
+
+        <div>Value (Input x 2): \${page.numberTimesTwo.get()}</div>
+      </script>
+    </play-ground>
+
+    <br>
+
+    <play-ground>
+      <script type="play/javascript" filename="page.js">
+        import { Component, Cue } from '@thewebformula/lithe';
+        import html from './page.html';
+
+        class PageClass extends Component {
+          static title = 'Compute';
+          static htmlTemplate = html;
+
+          number = new Cue.State(1);
+          numberTimesTwo = new Cue.Compute(() => {
+            return this.number.get() * 2;
+          });
+        }
+        customElements.define('page-component-name', PageClass);
+      </script>
+    </play-ground>
+  </section>
+
+
+  <section aria-labelledby="effect">
+    <h2 id="effect"><a href="#effect">Cue effect</a></h2>
+    <p>Effects allows you to run code based on any changes for Cue states or computes it contains. The difference between effect and compute
+        is that effects do not return values.</p>
+
+    <play-ground>
+      <script type="play/javascript" filename="page.js">
+        import { Component, Cue } from '@thewebformula/lithe';
+        import html from './page.html';
+
+        class PageClass extends Component {
+          static title = 'Effect';
+          static htmlTemplate = html;
+
+          one = new Cue.State(1);
+          two = new Cue.State(2);
+          disposeEffect;
+
+          constructor() {
+            super();
+
+            this.disposeEffect = Cue.effect(() => {
+              if (this.one.get() < this.two.get()) {
+                // do some work
+              }
+            });
+          }
+
+          disconnectedCallback() {
+            super.disconnectedCallback();
+            this.disposeEffect();
+          }
+        }
+        customElements.define('page-component-name', PageClass);
+      </script>
+    </play-ground>
+  </section>
+</div>

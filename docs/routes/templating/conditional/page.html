@@ -1,83 +1,79 @@
-<article>
-  <header>
-    <h1>Template conditionals</h1>
-  </header>
+<header>
+  <h1>Template conditionals</h1>
+</header>
 
-  <div class="article-main">
-    <div class="article-content">
-      <section id="overview" aria-label="Overview">
-        <h2>HTML function wrapper</h2>
-        <p class="subheader">You can use multiple mechanisms to handle conditionals. The simplest being the html function.</p>
+<div class="main-content">
+  <section aria-labelledby="overview">
+    <h2 id="overview"><a href="#overview">HTML function wrapper</a></h2>
+    <p>You can use multiple mechanisms to handle conditionals. The simplest being the html function.</p>
 
-        <div style="margin-bottom: 18px;">
-          <mc-button onclick=${() => page.toggleShow()}>Toggle</mc-button>
-          ${html(() => page.shouldShow.get() ? 'Showing' : 'hiding')}
-        </div>
-
-        <play-ground>
-          <script type="play/javascript" filename="page.js">
-            import { Component, html, Cue } from '@thewebformula/lithe';
-
-            class TemplateConditionalPage extends Component {
-              static title = 'Templating conditionals';
-
-              shouldShow = new Cue.State(true);
-
-              toggleShow() {
-                this.shouldShow.set(!this.shouldShow.get());
-              }
-
-              template() {
-                return html\`
-                  // wrapping the expression in html() will act like a compute
-                  \${html(() => this.shouldShow.get() ? 'Showing' : 'hiding')}
-                \`;
-              }
-            }
-            customElements.define('template-lists-page', TemplateConditionalPage);
-          </script>
-        </play-ground>
-      </section>
-
-
-      <section id="overview" aria-label="Overview">
-        <h2>Conditional html</h2>
-        <p class="subheader">You can use multiple mechanisms to handle conditionals. The simplest being the html function.</p>
-
-        <div style="margin-bottom: 18px;">
-          ${html(() => page.switchOneTwo.get()
-            ? html`<mc-button filled onclick=${() => page.switch()}>Switch: one</mc-button>`
-            : html`<mc-button filled-tonal onclick=${() => page.switch()}>Switch: two</mc-button>`
-          )}
-        </div>
-
-        <play-ground>
-          <script type="play/javascript" filename="page.js">
-            import { Component, html, Cue } from '@thewebformula/lithe';
-
-            class TemplateConditionalPage extends Component {
-              static title = 'Templating conditionals';
-
-              switchOneTwo = new Cue.State(true);
-
-              switch() {
-                this.switchOneTwo.set(!this.switchOneTwo.get());
-              }
-
-              template() {
-                return html\`
-                  // wrapping the expression in html() will act like a compute
-                  \$html(() => this.switchOneTwo.get()
-                    ? html\`<mc-button filled onclick=${() => this.switch()}>Switch: one</mc-button>\`
-                    : html\`<mc-button filled-tonal onclick=${() => this.switch()}>Switch: two</mc-button>\`
-                  )}
-                \`;
-              }
-            }
-            customElements.define('template-lists-page', TemplateConditionalPage);
-          </script>
-        </play-ground>
-      </section>
+    <div style="margin-bottom: 18px;">
+      <mc-button onclick=${() => page.toggleShow()}>Toggle</mc-button>
+      ${html(() => page.shouldShow.get() ? 'Showing' : 'hiding')}
     </div>
-  </div>
-</article>
+
+    <play-ground>
+      <script type="play/javascript" filename="page.js">
+        import { Component, html, Cue } from '@thewebformula/lithe';
+
+        class TemplateConditionalPage extends Component {
+          static title = 'Templating conditionals';
+
+          shouldShow = new Cue.State(true);
+
+          toggleShow() {
+            this.shouldShow.set(!this.shouldShow.get());
+          }
+
+          template() {
+            return html\`
+              // wrapping the expression in html() will act like a compute
+              \${html(() => this.shouldShow.get() ? 'Showing' : 'hiding')}
+            \`;
+          }
+        }
+        customElements.define('template-lists-page', TemplateConditionalPage);
+      </script>
+    </play-ground>
+  </section>
+
+
+  <section aria-labelledby="overview">
+    <h2 id="overview"><a href="#overview">Conditional html</a></h2>
+    <p>You can use multiple mechanisms to handle conditionals. The simplest being the html function.</p>
+
+    <div style="margin-bottom: 18px;">
+      ${html(() => page.switchOneTwo.get()
+        ? html`<mc-button filled onclick=${() => page.switch()}>Switch: one</mc-button>`
+        : html`<mc-button filled-tonal onclick=${() => page.switch()}>Switch: two</mc-button>`
+      )}
+    </div>
+
+    <play-ground>
+      <script type="play/javascript" filename="page.js">
+        import { Component, html, Cue } from '@thewebformula/lithe';
+
+        class TemplateConditionalPage extends Component {
+          static title = 'Templating conditionals';
+
+          switchOneTwo = new Cue.State(true);
+
+          switch() {
+            this.switchOneTwo.set(!this.switchOneTwo.get());
+          }
+
+          template() {
+            return html\`
+              // wrapping the expression in html() will act like a compute
+              \$html(() => this.switchOneTwo.get()
+                ? html\`<mc-button filled onclick=${() => this.switch()}>Switch: one</mc-button>\`
+                : html\`<mc-button filled-tonal onclick=${() => this.switch()}>Switch: two</mc-button>\`
+              )}
+            \`;
+          }
+        }
+        customElements.define('template-lists-page', TemplateConditionalPage);
+      </script>
+    </play-ground>
+  </section>
+</div>

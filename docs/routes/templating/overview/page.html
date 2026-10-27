@@ -1,84 +1,81 @@
-<article>
-  <header>
-    <h1>Templates overview</h1>
-    <div class="page-subheader mc-font-title-medium">Templates are built using template literals. Simply use the <strong>html</strong> tag function and write some html.</div>
-  </header>
-
-  <div class="article-main">
-    <div class="article-content">
-      <section id="expressions" aria-label="Expressions and binding">
-        <play-ground>
-          <script type="play/javascript" filename="Template">
-            html\`<div>Welcome \${page.name}</div>\`
-          </script>
-        </play-ground>
-
-        <div style="margin-top: 42px;">
-          <div class="mc-font-body-large">Lithe template provide support for everything you would expect of a modern framework</div>
-          <ul>
-            <li>
-              <a href="/templating/attributes">Attributes</a>:
-              You can configure attributes with a range of types
-            </li>
-            <li>
-              <a href="">Event attributes</a>:
-              You can bind component methods or use it natively
-            </li>
-            <li>
-              <a href="">Expressions</a>:
-              Template literals provide robust expression, the only requirement is to return html
-            </li>
-            <li>
-              <a href="">Iteration</a>:
-              the html template tag can be used as a function providing the ability to handle iterations
-            </li>
-            <li>
-              <a href="">Variable binding</a>:
-              Signals provide all you need for realtime updates
-            </li>
-          </ul>
-        </div>
+<header>
+  <h1>Templates overview</h1>
+  <div class="page-subheader mc-font-title-medium">Templates are built using template literals. Simply use the <strong>html</strong> tag function and write some html.</div>
+</header>
 
 
+<div class="main-content">
+  <section aria-label="Expressions and binding">
+    <play-ground>
+      <script type="play/javascript" filename="Template">
+        html\`<div>Welcome \${this.name}</div>\`
+      </script>
+    </play-ground>
 
-        <h3 style="margin-top: 48px;">Templates and components</h3>
-        <p>You can add template to a component / page in two ways. Template method or impart a file</p>
-
-        <play-ground>
-          <script type="play/javascript" filename="Example">
-            import { Component, html } from '@thewebformula/lithe';
-
-
-            // --- Template method ---
-
-            class TemplateListsPage extends Component {
-              static title = 'Templating lists';
-
-              name = "Bob the builder";
-
-              template() {
-                return html\`<h2>Welcome \${this.name}</h2>\`;
-              }
-            }
-
-
-
-            // --- File import ---
-
-            import htmlTemplate from './page.html';
-
-            class TemplateListsPage extends Component {
-              static title = 'Templating lists';
-              static htmlTemplate = htmlTemplate;
-
-              name = "Bob the builder";
-            }
-
-
-            customElements.define('template-lists-page', TemplateListsPage);
-          </script>
-        </play-ground>
-      </section>
+    <div style="margin-top: 42px;">
+      <div class="mc-font-body-large">Lithe template provide support for everything you would expect of a modern framework</div>
+      <ul>
+        <li>
+          <a href="/templating/attributes">Attributes</a>:
+          You can configure attributes with a range of types
+        </li>
+        <li>
+          <a href="">Event attributes</a>:
+          You can bind component methods or use it natively
+        </li>
+        <li>
+          <a href="">Expressions</a>:
+          Template literals provide robust expression, the only requirement is to return html
+        </li>
+        <li>
+          <a href="">Iteration</a>:
+          the html template tag can be used as a function providing the ability to handle iterations
+        </li>
+        <li>
+          <a href="">Variable binding</a>:
+          Signals provide all you need for realtime updates
+        </li>
+      </ul>
     </div>
-  </div>
-</article>
+
+
+
+    <h3 style="margin-top: 48px;">Templates and components</h3>
+    <p>You can add template to a component / page in two ways. Template method or impart a file</p>
+
+    <play-ground>
+      <script type="play/javascript" filename="Example">
+        import { Component, html } from '@thewebformula/lithe';
+
+
+        // --- Template method ---
+
+        class TemplateListsPage extends Component {
+          static title = 'Templating lists';
+
+          name = "Bob the builder";
+
+          template() {
+            return html\`<h2>Welcome \${this.name}</h2>\`;
+          }
+        }
+
+
+
+        // --- File import ---
+
+        import htmlTemplate from './page.html';
+
+        class TemplateListsPage extends Component {
+          static title = 'Templating lists';
+          static htmlTemplate = htmlTemplate;
+
+          name = "Bob the builder";
+        }
+
+
+        customElements.define('template-lists-page', TemplateListsPage);
+      </script>
+    </play-ground>
+  </section>
+</div>

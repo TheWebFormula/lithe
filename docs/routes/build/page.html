@@ -1,10 +1,10 @@
-<article>
+
   <header>
     <h1>Build</h1>
     <div class="page-subheader mc-font-title-medium">The build system includes everything you need. It handles develoment and production bundling and tooling.</div>
   </header>
 
-  <div class="article-main">
+  <aside>
     <nav class="links-nav">
       <h2>Links</h2>
       <ul class="links">
@@ -12,232 +12,231 @@
         <li><a href="#indexhtml">Script injection: index.html</a></li>
       </ul>
     </nav>
+  </aside>
 
 
-    <div class="article-content"">
-      <section id="build" aria-label="Build">
-        <h2 style="margin-bottom: 18px;">Features</h2>
+<div class="main-content"">
+  <section aria-labelledby="build">
+    <h2 id="build"><a href="#build">Features</a></h2>
+    <ul>
+      <li>
+        Development server
         <ul>
-          <li>
-            Development server
-            <ul>
-              <li>Live reload</li>
-              <li>CSS hot swapping</li>
-              <li>Sourcemaps</li>
-              <li>HTTPS</li>
-            </ul>
-          </li>
-          <li>Minification</li>
-          <li>Chunking</li>
-          <li>Compression (Brotli, GZip)</li>
-          <li>File copying</li>
-          <li>Environment variable injection</li>
-          <li>CSP html meta tag (Content-Security-Policy)</li>
-          <li>Extendable (uses esbuild underneath)</li>
+          <li>Live reload</li>
+          <li>CSS hot swapping</li>
+          <li>Sourcemaps</li>
+          <li>HTTPS</li>
         </ul>
+      </li>
+      <li>Minification</li>
+      <li>Chunking</li>
+      <li>Compression (Brotli, GZip)</li>
+      <li>File copying</li>
+      <li>Environment variable injection</li>
+      <li>CSP html meta tag (Content-Security-Policy)</li>
+      <li>Extendable (uses esbuild underneath)</li>
+    </ul>
 
 
-        <h4>Behavior</h4>
-        <p>By default the build will automaticly adjust itself based on <strong>NODE_ENV</strong>.</p>
+    <h4>Behavior</h4>
+    <p>By default the build will automaticly adjust itself based on <strong>NODE_ENV</strong>.</p>
+    <ul>
+      <li>
+        NODE_ENV = <strong>production</strong>
         <ul>
-          <li>
-            NODE_ENV = <strong>production</strong>
-            <ul>
-              <li>Minification enabled</li>
-              <li>Dev-server disabled</li>
-              <li>Sourcemaps disabled</li>
-            </ul>
-          </li>
-          <li>
-            NODE_ENV = <strong>other_value</strong>
-            <ul>
-              <li>Minification disabled</li>
-              <li>Dev-server enabled (with livereload)</li>
-              <li>Sourcemaps enabled</li>
-            </ul>
-          </li>
+          <li>Minification enabled</li>
+          <li>Dev-server disabled</li>
+          <li>Sourcemaps disabled</li>
         </ul>
+      </li>
+      <li>
+        NODE_ENV = <strong>other_value</strong>
+        <ul>
+          <li>Minification disabled</li>
+          <li>Dev-server enabled (with livereload)</li>
+          <li>Sourcemaps enabled</li>
+        </ul>
+      </li>
+    </ul>
 
-        <h4>Basic setup</h4>
-        <play-ground>
-          <script type="play/javascript" filename="build.js">
-            import build from '@thewebformula/lithe/build';
+    <h4>Basic setup</h4>
+    <play-ground>
+      <script type="play/javascript" filename="build.js">
+        import build from '@thewebformula/lithe/build';
 
-            build({
-              entryPoint: 'app/app.js', // "app/app.js" is the default
-              entryPointCSS: 'app/app.css', // no entry css bundling if not specified
-              copy: [
-                { from: 'app/sitemap.xml', to: 'dist/' },
-                { from: 'app/favicon.ico', to: 'dist/' }
-              ]
-            });
-          </script>
-        </play-ground>
-
-
-        <h4>All options</h4>
-        <play-ground>
-          <script type="play/javascript" filename="build.js">
-            import build from '@thewebformula/lithe/build';
-
-            build({
-              // App javascript file : Default 'app/app.js'
-              entryPoint: 'app/app.js',
-
-              /** App styles file
-               * If you add a path, the file will be bundled and output as a single .css file
-               * Default: undefined
-               */
-              entryPointCSS: 'app/app.css',
-
-              // index.html file : Default '[entryPoint root folder]/index.html'
-              indexHTML: 'app/index.html',
-
-              // output folder : Default 'dist/'
-              outdir: 'dist/',
-
-              /** Minify code
-              * 'true' when 'NODE_ENV=production' otherwise is 'false'
-              */
-              minify: true,
-
-              /** Create source maps
-              * 'false' when 'NODE_ENV=production' otherwise is 'true'
-              */
-              sourcemap: false,
-
-              // Auto generate sitemap.xml
-              sitemap: {
-                enable: true, // default: false
-                host: 'https://lithe.dev'
-              },
-
-              // Compress files with Brotli or Gzip
-              compression: false,
-              compressionConfig: {
-                type: 'brd',
-                level: 19
-              },
-
-              // inject env vars
-              define: {
-                'process.env.SOME_VAR': process.env.SOME_VAR
-              },
-
-              // supports regex's with wildcards (*, **)
-              copy: [
-                {
-                  from: 'app/image.jpg',
-                  to: 'dist/'
-                },
-                {
-                  from: 'app/routes/**/(?!page)*.html',
-                  to: 'dist/routes'
-                }
-              ],
-
-              /** Dev-server
-              * 'false' when 'NODE_ENV=production' otherwise is 'true'
-              */
-              devServer: {
-                enable: true,
-
-                // 'false' when 'NODE_ENV=production' otherwise is 'true'
-                livereload: true,
-
-                host: 'localhost',
-                port: 3000,
-                cacheHeaders: false,
-
-                // SSL options for local https
-                keyfile: '/tmp/ssl/dev.local.key',
-                certfile: '/tmp/ssl/dev.local.crt',
-
-                cors: {
-                  origin: 'https://localhost'
-                }
-              },
-
-              /** Content security policy settings
-              * This will inject a meta tag into the index.html file with the specified settings
-              * defaults to 'false'
-              */
-              csp: {
-                enable: false,
-                requireTrustedTypes: false,
-                // There is a built in li-html policy that will auto inject
-                trustedTypes: [],
-                styleSrc: [self, "https://fonts.googleapis.com"],
-                fontSrc: [self, "https://fonts.gstatic.com"]
-              },
-
-              /** devWarnings
-              * Enable console warning
-              * only html sanitization currently
-              * defaults to 'false'
-              */
-              devWarnings: false,
-
-              /** securityLevel
-              * Set security level warnings for html
-              * Default: 1
-              * values: 0,1,2
-              */
-              securityLevel: 1,
-
-              // callback before bundle
-              onStart: () => {},
-
-              // callback after bundle
-              onEnd: () => {}
-            });
-          </script>
-        </play-ground>
-      </section>
+        build({
+          entryPoint: 'app/app.js', // "app/app.js" is the default
+          entryPointCSS: 'app/app.css', // no entry css bundling if not specified
+          copy: [
+            { from: 'app/sitemap.xml', to: 'dist/' },
+            { from: 'app/favicon.ico', to: 'dist/' }
+          ]
+        });
+      </script>
+    </play-ground>
 
 
+    <h4>All options</h4>
+    <play-ground>
+      <script type="play/javascript" filename="build.js">
+        import build from '@thewebformula/lithe/build';
+
+        build({
+          // App javascript file : Default 'app/app.js'
+          entryPoint: 'app/app.js',
+
+          /** App styles file
+            * If you add a path, the file will be bundled and output as a single .css file
+            * Default: undefined
+            */
+          entryPointCSS: 'app/app.css',
+
+          // index.html file : Default '[entryPoint root folder]/index.html'
+          indexHTML: 'app/index.html',
+
+          // output folder : Default 'dist/'
+          outdir: 'dist/',
+
+          /** Minify code
+          * 'true' when 'NODE_ENV=production' otherwise is 'false'
+          */
+          minify: true,
+
+          /** Create source maps
+          * 'false' when 'NODE_ENV=production' otherwise is 'true'
+          */
+          sourcemap: false,
+
+          // Auto generate sitemap.xml
+          sitemap: {
+            enable: true, // default: false
+            host: 'https://lithe.dev'
+          },
+
+          // Compress files with Brotli or Gzip
+          compression: false,
+          compressionConfig: {
+            type: 'brd',
+            level: 19
+          },
+
+          // inject env vars
+          define: {
+            'process.env.SOME_VAR': process.env.SOME_VAR
+          },
+
+          // supports regex's with wildcards (*, **)
+          copy: [
+            {
+              from: 'app/image.jpg',
+              to: 'dist/'
+            },
+            {
+              from: 'app/routes/**/(?!page)*.html',
+              to: 'dist/routes'
+            }
+          ],
+
+          /** Dev-server
+          * 'false' when 'NODE_ENV=production' otherwise is 'true'
+          */
+          devServer: {
+            enable: true,
+
+            // 'false' when 'NODE_ENV=production' otherwise is 'true'
+            livereload: true,
+
+            host: 'localhost',
+            port: 3000,
+            cacheHeaders: false,
+
+            // SSL options for local https
+            keyfile: '/tmp/ssl/dev.local.key',
+            certfile: '/tmp/ssl/dev.local.crt',
+
+            cors: {
+              origin: 'https://localhost'
+            }
+          },
+
+          /** Content security policy settings
+          * This will inject a meta tag into the index.html file with the specified settings
+          * defaults to 'false'
+          */
+          csp: {
+            enable: false,
+            requireTrustedTypes: false,
+            // There is a built in li-html policy that will auto inject
+            trustedTypes: [],
+            styleSrc: [self, "https://fonts.googleapis.com"],
+            fontSrc: [self, "https://fonts.gstatic.com"]
+          },
+
+          /** devWarnings
+          * Enable console warning
+          * only html sanitization currently
+          * defaults to 'false'
+          */
+          devWarnings: false,
+
+          /** securityLevel
+          * Set security level warnings for html
+          * Default: 1
+          * values: 0,1,2
+          */
+          securityLevel: 1,
+
+          // callback before bundle
+          onStart: () => {},
+
+          // callback after bundle
+          onEnd: () => {}
+        });
+      </script>
+    </play-ground>
+  </section>
 
 
-      <section id="indexhtml" aria-label="Loading app scripts: index.html">
-        <h2>Loading app scripts: index.html</h2>
-        <p class="subheader">The build system will automatically hanlde script and style loading. You can specify them yourself.</p>
-
-        <h4>index.html</h4>
-        <play-ground>
-          <script type="play/html" filename="index.html">
-            <!doctype html>
-            <html lang="en">
-              <head>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-                <title>Default Title</title>
 
 
-                <!-- Option A - specify nothing and the build will inject them -->
+  <section aria-labelledby="indexhtml">
+    <h2 id="indexhtml"><a href="#indexhtml">Loading app scripts: index.html</a></h2>
+    <p>The build system will automatically hanlde script and style loading. You can specify them yourself.</p>
 
-                <!-- Option B - add the scripts pointing at the source files
-                                the build will auto update the file names to match the bundled outputs
-                                the tags will stay in the same location you added them
-                -->
-                <link rel="stylesheet" href="/app.css">
-                <script type="module" src="/app.js" defer>&lt;/script>
+    <h4>index.html</h4>
+    <play-ground>
+      <script type="play/html" filename="index.html">
+        <!doctype html>
+        <html lang="en">
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+            <title>Default Title</title>
 
 
-                <!-- Preloading styles
-                     The build will automatically hook up preloaded style sheets.
-                     This means you only need to specify the preload
-                -->
-                <link rel="preload" href="/app.css" as="style">
-              </head>
+            <!-- Option A - specify nothing and the build will inject them -->
 
-              <body>
-                <main id="page-content"></main> <!--render looks for [id="page-content"] -->
-              </body>
-            </html>
-          </script>
-        </play-ground>
-      </section>
-    </div>
-  </div>
-</article>
+            <!-- Option B - add the scripts pointing at the source files
+                            the build will auto update the file names to match the bundled outputs
+                            the tags will stay in the same location you added them
+            -->
+            <link rel="stylesheet" href="/app.css">
+            <script type="module" src="/app.js" defer>&lt;/script>
+
+
+            <!-- Preloading styles
+                  The build will automatically hook up preloaded style sheets.
+                  This means you only need to specify the preload
+            -->
+            <link rel="preload" href="/app.css" as="style">
+          </head>
+
+          <body>
+            <main id="page-content"></main> <!--render looks for [id="page-content"] -->
+          </body>
+        </html>
+      </script>
+    </play-ground>
+  </section>
+</div>

@@ -1,114 +1,199 @@
-<article>
-  <header>
-    <h1>Getting started</h1>
-    <div class="page-subheader mc-font-title-medium">Quick start guide to build your first app. This will introduce you to most of the concepts needed.</div>
-  </header>
+<header>
+  <h1>Getting started</h1>
+  <div class="page-subheader mc-font-title-medium">Welcome! To get you moving we will start with a basic application that will introduce you to the fundementals. You can see the application running in the playground at the bottom of this page.</div>
+</header>
 
-  <div class="article-main">
-    <div class="article-content">
+<aside>
+  <nav class="links-nav">
+    <h2>Links</h2>
+    <ul class="links">
+      <li><a href="#quickstart">Quick start</a></li>
+      <li><a href="#playground">Playground</a></li>
+    </ul>
+  </nav>
+</aside>
 
-      <!--<section aria-label="Check out the playground">
-        <h2>Check out the playground</h2>
-        <p class="subheader">You can jump over to our playground to see the quick start tutorial in action.</p>
-        <mc-button href="/playground" outlined>Playground <mc-icon>arrow_forward</mc-icon></mc-button>
-      </section>-->
+<div class="main-content">
+  <section id="quickstart" aria-labelledby="quickstart">
+    <h2 id="quickstart"><a href="#quickstart">Create simple app</a></h2>
+    <p>We will walk through creating a basic app with a single page</p>
+
+    <h3>Install Lithe</h3>
+    <play-ground>
+      <script type="play/bash" filename="npm">
+        npm install @thewebformula/lithe
+      </script>
+
+      <script type="play/bash" filename="pnpm">
+        pnpm install @thewebformula/lithe
+      </script>
+
+      <script type="play/bash" filename="bun">
+        bun install @thewebformula/lithe
+      </script>
+    </play-ground>
+
+    <h3>Create folder structure</h3>
+    <play-ground no-line-numbers no-tab-bar>
+      <script type="play/bash" filename="install.sh">
+        app/
+        └── routes/
+          └── index/ # route (/)
+        package.json
+      </script>
+    </play-ground>
+
+    <h3>Create index.html</h3>
+    <p>We will add the basics needed to render a page</p>
+    <ol>
+      <li>Create <strong><i>index.html</i></strong> and place it in <strong><i>app/</i></strong></li>
+      <li>Inject application script</li>
+      <li>Add main tag for page to render in</li>
+    </ol>
+    <play-ground>
+      <script type="play/html" filename="index.html">
+        <!doctype html>
+        <html lang="en">
+          <head>
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+            <title>Default Title</title>
+
+            <script type="module" src="/app.js" defer>&lt;/script> <!-- auto injected if not present -->
+          </head>
+
+          <body>
+            <main id="page-content"></main> <!--render looks for [id="page-content"] -->
+          </body>
+        </html>
+      </script>
+    </play-ground>
 
 
-      <section aria-label="create your first page">
-        <h2>Create your first page</h2>
-        <p class="subheader">We will create the required files to render your first page. This includes; index.html, page.js, app.js, and build.js</p>
+    <h3>Create page component</h3>
+    <p>Using the Component class inside the routing folders will automatically handle the route.</p>
+    <ol>
+      <li>Create <strong><i>index.js</i></strong> and place it in <strong><i>app/routes/index/</i></strong></li>
+      <li>Set document title</li>
+      <li>Add styling</li>
+      <li>Add a Cue variable for tracking clicks</li>
+      <li>Add template for rendering</li>
+      <li>Register custom element</li>
+    </ol>
+    <play-ground>
+      <script type="play/js" filename="app/routes/index/index.js">
+        import { Component, html, css, Cue } from '@thewebformula/lithe';
 
-        <play-ground>
-          <script type="play/bash" filename="install.sh">
-            npm install @thewebformula/lithe
-          </script>
-        </play-ground>
-        <!--<code-block language="bash" style="margin-top: 46px;"><pre>
-npm install @thewebformula/lithe
-        </pre></code-block>-->
-
-        <h4 class="mc-font-title-large">app/index.html</h4>
-        <p class="subheader">Creeate the index html that will be used to load the site.</p>
-        <play-ground>
-          <script type="play/html" filename="index.html">
-            <!doctype html>
-            <html lang="en">
-              <head>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-                <title>Default Title</title> <!-- default value, overridden by the component title -->
-
-                <link rel="preload" href="/app.css" as="style"> <!--auto handles preload style links -->
-                <script type="module" src="/app.js" defer>&lt;/script> <!-- auto injected if not present -->
-              </head>
-
-              <body>
-                <main id="page-content"></main> <!--render looks for [id="page-content"] -->
-              </body>
-            </html>
-          </script>
-        </play-ground>
-
-        <h4 class="mc-font-title-large">app/routes/index/index.js</h4>
-        <p class="subheader">Create the home page. The <strong>routes</strong> folder is the default routing folder and <strong>index</strong> is the root. <a href="/routing">Routing</a></p>
-        <play-ground>
-          <script type="play/js" filename="app/routes/index/index.js">
-            import { Component, Cue, html } from '@thewebformula/lithe';
-
-            class PageComponent extends Component {
-              static title = 'Page';  // title element value
-
-              someVar = new Cue.state('Hello world');
-              shouldShow = new Cue.state(true);
-
-              toggle() {
-                this.shouldShow.set(!this.shouldShow.get());
-              }
-
-              template() {
-                return html\`
-                  <div>Page Content</div>
-                  <div>\${this.someVar}</div>
-
-                  <button onclick={() => this.onClick()}>Toggle visibility</button>
-                  \${html(() => this.shouldShow ? html\`<div>Showing</div>\` : '')}
-                \`;
-              }
+        class HomePage extends Component {
+          static title = 'Home';
+          static styles = css\`
+            button {
+              cursor: pointer;
             }
-            customElements.define('page-component-name', PageComponent);
-          </script>
-        </play-ground>
+          \`;
+
+          count = new Cue.State(0);
+
+          onClick() {
+            this.count.set(this.count.get() + 1);
+          }
+
+          template() {
+            return html\`
+              <h1>Hello world!</h1>
+              <button onclick=\${() => this.onClick()}>Clicked \${this.count} times</button>
+            \`;
+          }
+        }
+        customElements.define('home-page', HomePage);
+      </script>
+    </play-ground>
 
 
-        <h4 class="mc-font-title-large">app/app.js</h4>
-        <p class="subheader">Create main app file to load routes and other modules.</p>
-        <play-ground>
-          <script type="play/js" filename="app/app.js">
-            import './routes/index/index.js';
-          </script>
-        </play-ground>
+    <h3>Create app entry point</h3>
+    <p>The entry point is used to load your routes and anyother files needed</p>
+    <ol>
+      <li>Create <strong><i>app.js</i></strong> and place it in <strong><i>app/</i></strong></li>
+      <li>This file is loaded using a script tag in index.html</li>
+    </ol>
+    <play-ground>
+      <script type="play/js" filename="app/app.js">
+        import './routes/index/index.js';
+      </script>
+    </play-ground>
 
 
 
-        <h4 class="mc-font-title-large">build.js</h4>
-        <p class="subheader">This is the build script that handles the bundling and development server. <a href="/build">Build</a></p>
-        <play-ground>
-          <script type="play/js" filename="build.js">
-            import build from '@thewebformula/lithe/build';
+    <h3>Create build script</h3>
+    <p>The build script handles bundling the app and the development server. <a href="/build">Build</a></p>
+    <ol>
+      <li>Create <strong><i>build.js</i></strong> and place it in the root</li>
+    </ol>
+    <play-ground>
+      <script type="play/js" filename="build.js">
+        import build from '@thewebformula/lithe/build';
 
-            build({ basedir: 'app/' });
-          </script>
-        </play-ground>
+        build({ basedir: 'app/' });
+      </script>
+    </play-ground>
 
 
-        <h4 class="mc-font-title-large">Run it!</h4>
-        <play-ground>
-          <script type="play/bash" filename="Build command">
-            node build.js
-          </script>
-        </play-ground>
-    </section>
-    </div>
-  </div>
-</article>
+    <h3>Run it!</h3>
+    <play-ground>
+      <script type="play/bash" filename="Build command">
+        node build.js
+      </script>
+    </play-ground>
+  </section>
+
+  <section aria-labelledby="playground">
+    <h2 id="playground"><a href="#quickstart">Playground</a></h2>
+    <p>This example does not use the build process, you will see the <strong>${'<li-route>'}</strong> tag added to support this. Usually the build process would automatically add them.</p>
+
+
+    <play-ground preview bottom entry="routes/index/index.js" view-split="0.75" max-height="740px">
+      <script type="play/html" filename="index.html">
+        <!doctype html>
+        <html lang="en">
+          <head>
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Lithe</title>
+            <script type="module" src="app.js">&lt;/script>
+          </head>
+          <body>
+            <main id="page-content"></main>
+          </body>
+        </html>
+      </script>
+      <script type="play/js" filename="app.js">
+        import './routes/index/index.js';
+      </script>
+      <script type="play/js" filename="routes/index/index.js">
+        import { Component, html, css, Cue } from '@thewebformula/lithe';
+
+        class HomePage extends Component {
+          static title = 'Home';
+          static styles = css\`
+            button {
+              cursor: pointer;
+            }
+          \`;
+
+          count = new Cue.State(0);
+
+          onClick() {
+            this.count.set(this.count.get() + 1);
+          }
+
+          template() {
+            return html\`
+              <h1>Hello world!</h1>
+              <button onclick=\${() => this.onClick()}>Clicked \${this.count} times</button>
+            \`;
+          }
+        }
+        customElements.define('home-page', HomePage);
+      </script>
+    </play-ground>
+  </section>
+</div>

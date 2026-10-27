@@ -1,205 +1,195 @@
-<article>
-  <header>
-    <h1>Localization and internationalization</h1>
-  </header>
+<header>
+  <h1>Localization and internationalization</h1>
+</header>
 
-  <div class="article-main">
-    <!--<nav class="links-nav">
-      <h2>Links</h2>
-      <ul class="links">
-        <li><a href="#Localization">Localization</a></li>
-      </ul>
-    </nav>-->
 
-    <div class="article-content">
+<div class="main-content">
 
-      <section id="Localization" aria-label="Example">
-        <h2>Localization</h2>
-        <p>Localization allows to configure multiple locales with local message configurations</p>
-        <ul>
-          <li>Language</li>
-          <li>Pluralization</li>
-          <li>Date formatting</li>
-          <li>Number formatting</li>
-          <li>Relative time formatting</li>
-        </ul>
+  <section aria-labelledby="Localization">
+    <h2 id="Localization"><a href="#Localization">Localization</a></h2>
+    <p>Localization allows to configure multiple locales with local message configurations</p>
+    <ul>
+      <li>Language</li>
+      <li>Pluralization</li>
+      <li>Date formatting</li>
+      <li>Number formatting</li>
+      <li>Relative time formatting</li>
+    </ul>
 
-        <div style="margin: 56px 0;">
-          <mc-switch checked="${page.languagesChecked}" onchange="page.changeLanguage(this.checked)" label-right="en / es"></mc-switch>
+    <div style="margin: 56px 0;">
+      <mc-switch checked="${page.languagesChecked}" onchange="page.changeLanguage(this.checked)" label-right="en / es"></mc-switch>
 
-          <div style="line-height: 24px;">
-            <div>${i18n('About')}</div>
-            <div>${i18n('key_string')}</div>
-            <div>${page.count} ${i18n.format('itemPlural', page.count)}</div>
-            <div>${i18n('time_from_now', page.time)}</div>
-            <div>${i18n('date_key', page.date)}</div>
-            <div>${i18n('currency_key', page.currency)}</div>
-          </div>
+      <div style="line-height: 24px;">
+        <div>${i18n('About')}</div>
+        <div>${i18n('key_string')}</div>
+        <div>${page.count} ${i18n.format('itemPlural', page.count)}</div>
+        <div>${i18n('time_from_now', page.time)}</div>
+        <div>${i18n('date_key', page.date)}</div>
+        <div>${i18n('currency_key', page.currency)}</div>
+      </div>
 
-          <div style="margin-top: 24px">
-            <div class="mc-font-title-medium">Dynamic pluralization with signals</div>
-            <mc-textfield label="${i18n('Label days')}" type="number" value="${page.days}" style="margin-top: 12px; margin-bottom: 12px;"
-              oninput="page.days.set(this.value)"></mc-textfield>
-            <div>${i18n('relativeTime_key', page.days)}</div>
-          </div>
+      <div style="margin-top: 24px">
+        <div class="mc-font-title-medium">Dynamic pluralization with signals</div>
+        <mc-textfield label="${i18n('Label days')}" type="number" value="${page.days}" style="margin-top: 12px; margin-bottom: 12px;"
+          oninput="page.days.set(this.value)"></mc-textfield>
+        <div>${i18n('relativeTime_key', page.days)}</div>
+      </div>
+    </div>
+
+    <play-ground>
+      <script type="play/javascript" filename="app.js">
+        import { i18n } from '@thewebformula/lithe';
+
+        /* Set locale
+          *   Defaults to browser if not set
+          *   You can use language only locale 'en' and 'en-US'
+          */
+        i18n.setLocale('en-US');
+
+        // turn on cache. This will load and save data to localStorage
+        i18n.cache();
+
+        // Load local messages
+        i18n.addTranslation('en', en);
+        i18n.addTranslation('es', es);
+      </script>
+    </play-ground>
+
+    <br>
+
+    <play-ground>
+      <script type="play/html" filename="page.html">
+        <!-- Use i18n method to translate keys -->
+        <div>\${i18n('About')}</div>
+        <div>\${i18n('key_string')}</div>
+
+        <!-- Use i18n.format method to handle individual formatting -->
+        <div>\${page.count} \${i18n.format('itemPlural', page.count)}</div>
+
+        <!-- Use message variables and formatters: "time_from_now": "$1 $minutesCardinal($1) from now" -->
+        <div>\${i18n('time_from_now', page.time)}</div>
+        <div>\${i18n('date_key', page.date)}</div>
+        <div>\${i18n('currency_key', page.currency)}</div>
+
+        <div>
+          <div class="mc-font-title-medium">Dynamic pluralization with signals</div>
+          <mc-textfield label="\${i18n('Label days')}" type="number" value="\${page.days}"
+            oninput="page.days.set(this.value)"></mc-textfield>
+          <div>\${i18n('relativeTime_key', page.days)}</div>
         </div>
 
-        <play-ground>
-          <script type="play/javascript" filename="app.js">
-            import { i18n } from '@thewebformula/lithe';
+        <!-- Attribute binding -->
+        <mc-textfield i18n-attr="label" label="Label days" value="\${page.days}" oninput="page.days = this.value"></mc-textfield>
 
-            /* Set locale
-              *   Defaults to browser if not set
-              *   You can use language only locale 'en' and 'en-US'
-              */
-            i18n.setLocale('en-US');
+        <!-- Attribute binding multiple -->
+        <div i18n-attr="one,two" one="one" two="two"></div>
+      </script>
+    </play-ground>
 
-            // turn on cache. This will load and save data to localStorage
-            i18n.cache();
+    <br>
 
-            // Load local messages
-            i18n.addTranslation('en', en);
-            i18n.addTranslation('es', es);
-          </script>
-        </play-ground>
+    <play-ground>
+      <script type="play/json" filename="en.json">
+        // type configuration
+        { "formatters": {
+            "itemPlural": {
+              "type": "cardinal",
+              "zero": "items",
+              "one": "item",
+              "two": "items",
+              "few": "items",
+              "many": "items",
+              "other": "items" },
+            "placeOrdinal": {
+              "type": "ordinal",
+              "one": "st",
+              "two": "nd",
+              "few": "rd",
+              "other": "th" },
+            "minutesCardinal": {
+              "type": "cardinal",
+              "one": "minute",
+              "other": "minutes" },
+            "dateFormat": {
+              "type": "date",
+              "options": {
+                "dateStyle": "short",
+                "timeStyle": "short" } },
+            "currencyFormat": {
+              "type": "number",
+              "options": {
+                "style": "currency",
+                "currency": "USD" } },
+            "relativeTimeFormat": {
+              "type": "relativeTime",
+              "unit": "day",
+              "options": {
+                "style": "short" } } },
 
-        <br>
+        "messages": {
+          "About": "About",
+          "Label days": "Label days",
+          "key_string": "This is a key string",
+          "time_from_now": "$1 $minutesCardinal($1) from now",
+          "date_key": "$dateFormat($1)",
+          "item_count": "$1 $itemPlural($1)",
+          "place_ordinal": "$1 $placeOrdinal($1)",
+          "currency_key": "$currencyFormat($1)",
+          "relativeTime_key": "$relativeTimeFormat($1)" } }
+      </script>
+    </play-ground>
 
-        <play-ground>
-          <script type="play/html" filename="page.html">
-            <!-- Use i18n method to translate keys -->
-            <div>\${i18n('About')}</div>
-            <div>\${i18n('key_string')}</div>
+    <br>
 
-            <!-- Use i18n.format method to handle individual formatting -->
-            <div>\${page.count} \${i18n.format('itemPlural', page.count)}</div>
+    <play-ground>
+      <script type="play/json" filename="es.json">
+        // type configuration
+        { "formatters": {
+            "itemPlural": {
+              "type": "cardinal",
+              "zero": "elementos",
+              "one": "artículo",
+              "two": "elementos",
+              "few": "elementos",
+              "many": "elementos",
+              "other": "elementos" },
+            "placeOrdinal": {
+              "type": "ordinal",
+              "one": "er",
+              "two": "do",
+              "few": "er",
+              "other": "to" },
+            "minutesCardinal": {
+              "type": "cardinal",
+              "one": "minuto",
+              "other": "minutos" },
+            "dateFormat": {
+              "type": "date",
+              "options": {
+                "dateStyle": "short",
+                "timeStyle": "short" } },
+            "currencyFormat": {
+              "type": "number",
+              "options": {
+                "style": "currency",
+                "currency": "MXN" } },
+            "relativeTimeFormat": {
+              "type": "relativeTime",
+              "unit": "day",
+              "options": {
+                "style": "short" } } },
 
-            <!-- Use message variables and formatters: "time_from_now": "$1 $minutesCardinal($1) from now" -->
-            <div>\${i18n('time_from_now', page.time)}</div>
-            <div>\${i18n('date_key', page.date)}</div>
-            <div>\${i18n('currency_key', page.currency)}</div>
-
-            <div>
-              <div class="mc-font-title-medium">Dynamic pluralization with signals</div>
-              <mc-textfield label="\${i18n('Label days')}" type="number" value="\${page.days}"
-                oninput="page.days.set(this.value)"></mc-textfield>
-              <div>\${i18n('relativeTime_key', page.days)}</div>
-            </div>
-
-            <!-- Attribute binding -->
-            <mc-textfield i18n-attr="label" label="Label days" value="\${page.days}" oninput="page.days = this.value"></mc-textfield>
-
-            <!-- Attribute binding multiple -->
-            <div i18n-attr="one,two" one="one" two="two"></div>
-          </script>
-        </play-ground>
-
-        <br>
-
-        <play-ground>
-          <script type="play/json" filename="en.json">
-            // type configuration
-            { "formatters": {
-                "itemPlural": {
-                  "type": "cardinal",
-                  "zero": "items",
-                  "one": "item",
-                  "two": "items",
-                  "few": "items",
-                  "many": "items",
-                  "other": "items" },
-                "placeOrdinal": {
-                  "type": "ordinal",
-                  "one": "st",
-                  "two": "nd",
-                  "few": "rd",
-                  "other": "th" },
-                "minutesCardinal": {
-                  "type": "cardinal",
-                  "one": "minute",
-                  "other": "minutes" },
-                "dateFormat": {
-                  "type": "date",
-                  "options": {
-                    "dateStyle": "short",
-                    "timeStyle": "short" } },
-                "currencyFormat": {
-                  "type": "number",
-                  "options": {
-                    "style": "currency",
-                    "currency": "USD" } },
-                "relativeTimeFormat": {
-                  "type": "relativeTime",
-                  "unit": "day",
-                  "options": {
-                    "style": "short" } } },
-
-            "messages": {
-              "About": "About",
-              "Label days": "Label days",
-              "key_string": "This is a key string",
-              "time_from_now": "$1 $minutesCardinal($1) from now",
-              "date_key": "$dateFormat($1)",
-              "item_count": "$1 $itemPlural($1)",
-              "place_ordinal": "$1 $placeOrdinal($1)",
-              "currency_key": "$currencyFormat($1)",
-              "relativeTime_key": "$relativeTimeFormat($1)" } }
-          </script>
-        </play-ground>
-
-        <br>
-
-        <play-ground>
-          <script type="play/json" filename="es.json">
-            // type configuration
-            { "formatters": {
-                "itemPlural": {
-                  "type": "cardinal",
-                  "zero": "elementos",
-                  "one": "artículo",
-                  "two": "elementos",
-                  "few": "elementos",
-                  "many": "elementos",
-                  "other": "elementos" },
-                "placeOrdinal": {
-                  "type": "ordinal",
-                  "one": "er",
-                  "two": "do",
-                  "few": "er",
-                  "other": "to" },
-                "minutesCardinal": {
-                  "type": "cardinal",
-                  "one": "minuto",
-                  "other": "minutos" },
-                "dateFormat": {
-                  "type": "date",
-                  "options": {
-                    "dateStyle": "short",
-                    "timeStyle": "short" } },
-                "currencyFormat": {
-                  "type": "number",
-                  "options": {
-                    "style": "currency",
-                    "currency": "MXN" } },
-                "relativeTimeFormat": {
-                  "type": "relativeTime",
-                  "unit": "day",
-                  "options": {
-                    "style": "short" } } },
-
-            "messages": {
-              "About": "Acerca de",
-              "Label days": "Días de etiqueta",
-              "key_string": "Esta es una cadena clave",
-              "item_count": "$1 $itemPlural($1)",
-              "place_ordinal": "$1 $placeOrdinal($1)",
-              "time_from_now": "$1 $minutesCardinal($1) desde ahora",
-              "date_key": "$dateFormat($1)",
-              "currency_key": "$currencyFormat($1)",
-              "relativeTime_key": "$relativeTimeFormat($1)" } }
-          </script>
-        </play-ground>
-      </section>
-    </div>
-  </div>
-</article>
+        "messages": {
+          "About": "Acerca de",
+          "Label days": "Días de etiqueta",
+          "key_string": "Esta es una cadena clave",
+          "item_count": "$1 $itemPlural($1)",
+          "place_ordinal": "$1 $placeOrdinal($1)",
+          "time_from_now": "$1 $minutesCardinal($1) desde ahora",
+          "date_key": "$dateFormat($1)",
+          "currency_key": "$currencyFormat($1)",
+          "relativeTime_key": "$relativeTimeFormat($1)" } }
+      </script>
+    </play-ground>
+  </section>
+</div>

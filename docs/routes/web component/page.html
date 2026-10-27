@@ -1,146 +1,142 @@
-<article>
-  <header>
-    <h1>Web component</h1>
-    <div class="page-subheader mc-font-title-medium">Lithe provides a convenient way to build native web components</div>
-  </header>
+<header>
+  <h1>Web component</h1>
+  <div class="page-subheader mc-font-title-medium">Lithe provides a convenient way to build native web components</div>
+</header>
 
-  <div class="article-main">
-    <nav class="links-nav">
-      <h2>Links</h2>
-      <ul class="links">
-        <li><a href="#example">Example button</a></li>
-        <li><a href="#breakdown">Breakdown</a></li>
-      </ul>
-    </nav>
+<!--<aside>
+  <nav class="links-nav">
+    <h2>Links</h2>
+    <ul class="links">
+      <li><a href="#example">Example button</a></li>
+      <li><a href="#breakdown">Breakdown</a></li>
+    </ul>
+  </nav>
+</aside>-->
 
-    <div class="article-content">
-      <section id="example" aria-label="Page example">
-        <h2>Standard component</h2>
-        <p class="subheader">You can use the <strong>Component</strong> class to build webcomponent. This extends the default capabilities of web components.</p>
+<div class="main-content">
+  <section aria-labelledby="component">
+    <h2 id="component"><a href="#component">Component example</a></h2>
+    <p>You can use the <strong>Component</strong> class to build webcomponent. This extends the default capabilities of web components.</p>
 
 
-        <h4>Simple button</h4>
+    <h4>Simple button</h4>
 
-        <div class="editor" id="editor">
-          <play-ground preview entry="component.js" view-split="0.7" max-height="600px">
-            <script type="play/html" filename="index.html">
-              <!doctype html>
-              <head>
-                <meta charset="UTF-8">
-                <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <div class="editor" id="editor">
+      <play-ground preview bottom entry="component.js" view-split="0.85" max-height="800px">
+        <script type="play/html" filename="index.html">
+          <!doctype html>
+          <head>
+            <meta charset="UTF-8">
+            <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-                <title>Lithe</title>
+            <title>Lithe</title>
 
-                <script type="importmap">
-                  { "imports": {
-                    "@thewebformula/lithe": "https://unpkg.com/@thewebformula/lithe@0.26.2"
-                  } }
-                &lt;/script>
-                <script type="module" src="app.js" defer>&lt;/script>
-              </head>
-              <body>
-                <!-- root_path = "/" for preview -->
-                <li-route path="__root_path__" component="home-page"></li-route>
+            <script type="importmap">
+              { "imports": {
+                "@thewebformula/lithe": "https://unpkg.com/@thewebformula/lithe@0.26.2"
+              } }
+            &lt;/script>
+            <script type="module" src="app.js" defer>&lt;/script>
+          </head>
+          <body>
+            <!-- root_path = "/" for preview -->
+            <li-route path="__root_path__" component="home-page"></li-route>
 
-                <main id="page-content" role="main"></main>
-              </body>
-            </script>
-            <script type="play/js" filename="app.js">
-              import '@thewebformula/lithe';
-              import './component.js';
-              import './routes/index/index.js';
-            </script>
-            <script type="play/js" filename="routes/index/index.js">
-              import { Component, html } from '@thewebformula/lithe';
+            <main id="page-content" role="main"></main>
+          </body>
+        </script>
+        <script type="play/js" filename="app.js">
+          import '@thewebformula/lithe';
+          import './component.js';
+          import './routes/index/index.js';
+        </script>
+        <script type="play/js" filename="routes/index/index.js">
+          import { Component, html } from '@thewebformula/lithe';
 
-              class HomePage extends Component {
-                static title = 'Home';
+          class HomePage extends Component {
+            static title = 'Home';
 
-                afterRender() {
-                  document.querySelector('async-button').addEventListener('click', (e) => console.log('click', e));
-                  document.querySelector('async-button').addEventListener('state', (e) => console.log('state', e));
-                }
+            afterRender() {
+              document.querySelector('async-button').addEventListener('click', (e) => console.log('click', e));
+              document.querySelector('async-button').addEventListener('state', (e) => console.log('state', e));
+            }
 
-                loadData = async () => {
-                  console.log('loadData')
-                  return new Promise(resolve => {
-                    setTimeout(() => {
-                      // do some work, get some data
-                      console.log('loaded')
-                      resolve();
-                    }, 2000)
-                  })
-                }
+            loadData = async () => {
+              console.log('loadData')
+              return new Promise(resolve => {
+                setTimeout(() => {
+                  // do some work, get some data
+                  console.log('loaded')
+                  resolve();
+                }, 2000)
+              })
+            }
 
-                stateChange(event) {
-                  console.log(event.detail)
-                }
+            stateChange(event) {
+              console.log(event.detail)
+            }
 
-                template() {
-                  return html\`<async-button onclickasync=\${this.loadData} onstate=\${e => this.stateChange(e)}>Click me</async-button>\`;
-                }
+            template() {
+              return html\`<async-button onclickasync=\${this.loadData} onstate=\${e => this.stateChange(e)}>Click me</async-button>\`;
+            }
+          }
+          customElements.define('home-page', HomePage);
+        </script>
+        <script type="play/js" filename="component.js">
+          import { Component, html, css, Cue } from '@thewebformula/lithe';
+
+          class MyButton extends Component {
+            static useShadowRoot = true;
+            static shadowRootDelegateFocus = true;
+            static styles = css\`
+              :host(:not(.loading)) {
+                .loading-text { display: none; }
               }
-              customElements.define('home-page', HomePage);
-            </script>
-            <script type="play/js" filename="component.js">
-              import { Component, html, css, Cue } from '@thewebformula/lithe';
-
-              class MyButton extends Component {
-                static useShadowRoot = true;
-                static shadowRootDelegateFocus = true;
-                static styles = css\`
-                  :host(:not(.loading)) {
-                    .loading-text { display: none; }
-                  }
-                  :host(.loading) {
-                    opacity: 0.7;
-                    .text { display: none; }
-                  }
-                \`;
-
-                #button;
-                #loading = new Cue.State(false);
-
-                static observedAttributesExtended = {
-                  onclickasync: { type: 'event' },
-                  onstate: { type: 'event' }
-                };
-
-                afterRender() {
-                  this.#button = this.shadowRoot.querySelector('button');
-                }
-
-                async handleClick(event) {
-                  console.log(this.onstate)
-                  if (this.#loading.get() === true) return;
-
-                  this.#loading.set(true);
-                  this.classList.add('loading');
-                  this.dispatchEvent(new CustomEvent('state', { detail: 'pending' }));
-                  await this.onclickasync(event);
-                  this.#loading.set(false);
-                  this.classList.remove('loading');
-                  this.dispatchEvent(new CustomEvent('state', { detail: 'resolved' }));
-                }
-
-                template() {
-                  return html\`
-                    <button onclick=\${(event) => this.handleClick(event)}>
-                      <slot name="icon"></slot>
-                      <slot class="text"></slot>
-                      <span class="loading-text">Loading...</span>
-                    </button>
-                  \`;
-                }
+              :host(.loading) {
+                opacity: 0.7;
+                .text { display: none; }
               }
-              customElements.define('async-button', MyButton);
-            </script>
-          </play-ground>
-        </div>
-      </section>
+            \`;
 
+            #button;
+            #loading = new Cue.State(false);
 
+            static observedAttributesExtended = {
+              onclickasync: { type: 'event' },
+              onstate: { type: 'event' }
+            };
+
+            afterRender() {
+              this.#button = this.shadowRoot.querySelector('button');
+            }
+
+            async handleClick(event) {
+              console.log(this.onstate)
+              if (this.#loading.get() === true) return;
+
+              this.#loading.set(true);
+              this.classList.add('loading');
+              this.dispatchEvent(new CustomEvent('state', { detail: 'pending' }));
+              await this.onclickasync(event);
+              this.#loading.set(false);
+              this.classList.remove('loading');
+              this.dispatchEvent(new CustomEvent('state', { detail: 'resolved' }));
+            }
+
+            template() {
+              return html\`
+                <button onclick=\${(event) => this.handleClick(event)}>
+                  <slot name="icon"></slot>
+                  <slot class="text"></slot>
+                  <span class="loading-text">Loading...</span>
+                </button>
+              \`;
+            }
+          }
+          customElements.define('async-button', MyButton);
+        </script>
+      </play-ground>
     </div>
-  </div>
-</article>
+  </section>
+</div>

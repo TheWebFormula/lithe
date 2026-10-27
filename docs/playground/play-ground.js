@@ -50,8 +50,32 @@ class PlayGround extends Component {
       overflow: hidden;
       border-radius: 24px;
     }
-    @supports (corner-shape: squircle) {
+
+    :host([preview][bottom]) {
       .ide {
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      #editor {
+        height: calc(100% * var(--view-split));
+        overflow: hidden;
+        flex: unset;
+      }
+
+      #preview {
+        height: calc(100% * (1 - var(--view-split)));
+        overflow: hidden;
+        border-radius: 24px;
+        flex: unset;
+        padding: 12px;
+      }
+    }
+
+    @supports (corner-shape: squircle) {
+      .ide,
+     :host([preview][bottom]) #preview,
+     :host([preview][bottom]) #editor {
         border-radius: 34px;
         corner-shape: squircle;
       }
@@ -76,6 +100,12 @@ class PlayGround extends Component {
       outline: 0;
       border: none;
       flex: calc(0.5 + var(--adjustment));
+    }
+
+    :host(.single-file) {
+      .tab {
+        pointer-events: none;
+      }
     }
 
     :host(:not([preview])) {
@@ -165,10 +195,6 @@ class PlayGround extends Component {
       .show-line-numbers .pce-line:after {
         left: var(--padding-left);
       }
-
-      .tab {
-        pointer-events: none;
-      }
     }
 
     .file-tabs {
@@ -247,6 +273,7 @@ class PlayGround extends Component {
   #previewIframe;
   #worker;
   #showPreview = false;
+  #bottomPreview = false;
   #files = new Map();
   #currentFile;
   #workerInitiated = false;
@@ -263,6 +290,7 @@ class PlayGround extends Component {
 
   static observedAttributesExtended = {
     preview: { type: 'toggle' },
+    bottom: { type: 'toggle' },
     entry: { type: 'string' },
     viewSplit: { type: 'number' },
     maxHeight: { type: 'string' },
@@ -272,6 +300,7 @@ class PlayGround extends Component {
 
   attributeChangedCallbackExtended(name, oldValue, newValue) {
     if (name === 'preview') this.#showPreview = newValue;
+    if (name === 'bottom') this.#bottomPreview = newValue;
     if (name === 'entry') this.#currentFile = newValue;
     if (name === 'viewSplit') this.style.setProperty('--view-split', newValue);
     if (name === 'maxHeight') this.style.setProperty('--max-height', newValue);
@@ -356,7 +385,7 @@ class PlayGround extends Component {
     let data = this.#files.get(this.currentFile);
     data.content = this.#editor.textarea.value;
     this.#reload();
-  }, 1000);
+  }, 600);
 
   #slotChange = () => {
     for (const item of this.#slot.assignedElements({ flatten: true })) {
@@ -368,9 +397,6 @@ class PlayGround extends Component {
       if (fileType === 'html') content = content.replace(/&lt;\//g, '</');
       content = outdent(content);
 
-      // this solved the routing issue since "/" will not match root
-      if (content.includes('__root_path__')) content = content.replace('__root_path__', `/${this.#sandboxScope}${this.#sessionId}/`);
-
       const name = item.getAttribute('filename');
       this.#files.set(name, {
         name,
@@ -379,6 +405,8 @@ class PlayGround extends Component {
         language: getLanguage(fileType)
       });
     }
+
+    this.classList.toggle('single-file', this.#files.size < 2);
 
     this.#initWorker();
 
@@ -432,6 +460,36 @@ class PlayGround extends Component {
     this.#loadFile(target.getAttribute('file'));
   }
 
+  #getFileForBuild(name) {
+    let file = this.#files.get(name);
+
+    if (name === 'index.html') {
+      file = {
+        ...file,
+        content: this.#prepIndexHtmlForBuild(file.content)
+      };
+    }
+
+    return file;
+  }
+
+  #prepIndexHtmlForBuild(content) {
+    content = content.replace('</title>', `</title>
+
+  <script type="importmap">
+    { "imports": {
+      "@thewebformula/lithe": "https://unpkg.com/@thewebformula/lithe@latest"
+    } }
+  </script>
+`);
+
+  content = content.replace('<body>', `<body>
+
+  <li-route path="/${this.#sandboxScope}${this.#sessionId}/" component="home-page"></li-route>
+`);
+    return content;
+  }
+
   #onNewServiceWorkerPort = (port) => {
     const onMessage = (e) => {
       if (e.data.type !== messages.ack) return;
@@ -440,7 +498,9 @@ class PlayGround extends Component {
       if (e.data.version === serviceWorkerHash) {
         this.#workerAPI = wrap(port);
         this.#workerAPI.setFileAPI(
-          proxy({ getFile: name => this.#files.get(name) }),
+          proxy({
+            getFile: name => this.#getFileForBuild(name)
+          }),
           this.#sessionId
         );
       }
