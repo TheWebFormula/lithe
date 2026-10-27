@@ -1,5 +1,4 @@
 import build from './src/build/index.js';
-import { prismjsPlugin } from 'esbuild-plugin-prismjs';
 import { readFile, writeFile } from 'node:fs/promises';
 
 build({
@@ -14,10 +13,6 @@ build({
     { from: 'docs/manifest.json', to: 'dist/' }
   ],
   esbuildPlugins: [
-    prismjsPlugin({
-      inline: true,
-      languages: ['javascript', 'css', 'bash', 'html', 'yaml', 'json']
-    }),
     {
       name: 'playground-service-worker',
       setup(build) {
@@ -37,18 +32,4 @@ build({
     { in: 'docs/playground/service-worker/webserver.js', out: 'webserver-service-worker' },
     { in: 'docs/playground/service-worker/index.js', out: 'project-service-worker' }
   ]
-  // minify: true,
-  // compression: true
-  // devServer: {
-  //   enable: true,
-  //   livereload: false
-  // }
-  // csp: {
-  //   enable: true,
-  //   requireTrustedTypes: true,
-  //   requireTrustedTypes: [],
-  //   styleSrc: ['self', "https://fonts.googleapis.com"],
-  //   fontSrc: ['self', "https://fonts.gstatic.com"],
-  // },
-  // securityLevel: 1
 });
