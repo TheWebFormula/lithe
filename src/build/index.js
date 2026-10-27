@@ -205,7 +205,8 @@ export default async function build(config = {
           ]
         });
         return {
-          contents: `export default (page) => page.constructor._html\`${minifiedContent}\`;`,
+          contents: `const t = function() { return page.constructor._html\`${minifiedContent}\`; };
+          export default function(page) { return t.call(page); }`,
           loader: 'js',
         };
       });
