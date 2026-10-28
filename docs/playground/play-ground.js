@@ -408,29 +408,11 @@ class PlayGround extends Component {
 
     this.classList.toggle('single-file', this.#files.size < 2);
 
-    this.#initWorker();
-
     // TODO figure out why this is needed, when page is re-navigated to the tabs change does not trigger render update
     setTimeout(() => {
       this.#tabs.get().push(...this.#files.keys());
       this.#loadFile();
     }, 0)
-  }
-
-  async #initWorker() {
-    if (!this.#showPreview || this.#workerInitiated) return;
-    this.#workerInitiated = true;
-
-    const workerUrl = new URL('build-service-worker.js', import.meta.url);
-    if (workerUrl.origin === window.location.origin) {
-      this.#worker = new Worker(workerUrl, {type: 'module'});
-    } else {
-      const resp = await fetch(workerUrl.href);
-      const text = await resp.text();
-      const blobUrl = URL.createObjectURL(new Blob([text], {type: 'application/javascript'}));
-      this.#worker = new Worker(blobUrl);
-      URL.revokeObjectURL(blobUrl);
-    }
   }
 
   async #loadFile(name = this.currentFile) {
