@@ -16,6 +16,6 @@ build({
     host: 'https://lithe.dev'
   },
   secondaryEntryPoints: [
-    { in: 'docs/playground/service-worker/webserver.js', out: 'webserver-service-worker' }
+    { in: 'docs/playground/service-worker/webserver.js', out: 'webserver-service-worker', addEnvVar: true }
   ]
 });

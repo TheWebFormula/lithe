@@ -15,12 +15,12 @@ const cspMetaTagRegex = /<meta\s+http-equiv="Content-Security-Policy"\s+content=
 const htmlTemplateImportNameRegex = /static\s+htmlTemplate\s+?=\s+?([^;\n]+)\s*?(;|\r?\n|$)/;
 
 
-export default async function build({ basedir, outdir, entryPoint, entryPointCSS, indexHTML, devServer, devWarnings, securityLevel, minify, compression, compressionConfig, compressionLabel, isDev, csp, sitemap }, inputs, appOutputs) {
+export default async function build({ basedir, outdir, entryPoint, entryPointCSS, indexHTML, devServer, devWarnings, securityLevel, minify, compression, compressionConfig, compressionLabel, isDev, csp, sitemap }, inputs, appOutputs, secondaryOutputEnvVars) {
   let routeConfigs = await parseRoutes(basedir, inputs);
   let indexHTMLtemplate = await readFile(indexHTML, 'utf-8');
   let routeComponents = getRouteComponents(indexHTMLtemplate);
 
-  indexHTMLtemplate = replaceAppTags(basedir, entryPoint, entryPointCSS, outdir, appOutputs, indexHTMLtemplate, isDev, devServer, csp);
+  indexHTMLtemplate = replaceAppTags(basedir, entryPoint, entryPointCSS, outdir, appOutputs, indexHTMLtemplate, isDev, devServer, csp, secondaryOutputEnvVars);
 
   let routeComponentHTML = '';
   await Promise.all(routeConfigs.map(async route => {
@@ -164,11 +164,12 @@ function getRouteComponents(indexHTMLtemplate) {
   return routeComponents;
 }
 
-function replaceAppTags(basedir, entryPoint, entryPointCSS, outdir, appOutputs, indexHTMLtemplate, isDev, devServer, csp) {
+function replaceAppTags(basedir, entryPoint, entryPointCSS, outdir, appOutputs, indexHTMLtemplate, isDev, devServer, csp, secondaryOutputEnvVars) {
   const originalAppJS = path.relative(basedir, entryPoint);
   const originalAppCSS = entryPointCSS ? path.relative(basedir, entryPointCSS) : undefined;
   let outputAppJSName;
   let outputAppCSSName;
+
   for (const item of appOutputs) {
     if (item[0] === entryPoint) {
       outputAppJSName = path.relative(outdir, item[1]);
@@ -194,6 +195,11 @@ function replaceAppTags(basedir, entryPoint, entryPointCSS, outdir, appOutputs, 
         return str.replace('preload', 'stylesheet');
       });
     }
+  }
+  if (secondaryOutputEnvVars.length > 0) {
+    indexHTMLtemplate = indexHTMLtemplate.replace(/<head>/, `<head>\n  <script>window.outputFileMap = {
+    ${secondaryOutputEnvVars.map(v => `"${v.originalOut}": "${v.newOut.replace(outdir, '').replace(/^\//, '')}"`)}
+  };</script>`);
   }
 
   if (csp?.enable) {

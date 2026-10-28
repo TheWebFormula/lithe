@@ -10,7 +10,7 @@ let workerAPI;
 export async function init() {
   if (registration) return;
 
-  registration = await navigator.serviceWorker.register(new URL('../../webserver-service-worker.js', import.meta.url).href, { scope: '__playground_server/' });
+  registration = await navigator.serviceWorker.register(`./${outputFileMap['webserver-service-worker']}`, { scope: '__playground_server/' });
 
 //   registration.addEventListener('updatefound', () => {
 //     console.log('updatefound')

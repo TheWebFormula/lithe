@@ -161,8 +161,14 @@ export default async function build(config = {
         const appOutputs = Object.entries(results.metafile.outputs)
           .map(([filename, item]) => [item.entryPoint, filename])
           .filter(v => v[0] === config.entryPoint || v[0] === config.entryPointCSS);
+        const secondaryOutputEnvVars = Object.entries(results.metafile.outputs)
+          .filter(v => config.secondaryEntryPoints.some(s => s.in === v[1].entryPoint && s.addEnvVar))
+          .map(([filename, item]) => {
+            let match = config.secondaryEntryPoints.find(s => s.in === item.entryPoint && s.addEnvVar);
+            return { originalOut: match.out, newOut: filename };
+          });
 
-        await buildRoutes(config, results.metafile.inputs, appOutputs);
+        await buildRoutes(config, results.metafile.inputs, appOutputs, secondaryOutputEnvVars);
         if (config.writeMetaFile) writeFile('meta.json', JSON.stringify(results.metafile, null, 2), 'utf8');
         if (typeof config.onEnd === 'function') await config.onEnd(results);
       });
@@ -341,7 +347,9 @@ export default async function build(config = {
   }
 
   if (config.secondaryEntryPoints.length > 0) {
-    entryPoints.push(...config.secondaryEntryPoints);
+    for (let ep of config.secondaryEntryPoints) {
+      entryPoints.push({ in: ep.in, out: ep.out });
+    }
   }
 
   let ctx = await esbuild.context({
