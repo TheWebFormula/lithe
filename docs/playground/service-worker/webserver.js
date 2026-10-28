@@ -1,7 +1,6 @@
 import { expose } from 'comlink';
 import { messages, Deferred } from '../helper.js';
 
-const serviceWorkerHash = '09cd6a4e'; // TODO
 
 let fileApis = new Map();
 const workerAPI = {
@@ -12,6 +11,9 @@ const workerAPI = {
       fileApis.set(sessionID, deferred);
     }
     deferred.resolve(fileAPI);
+  },
+  disconnect(sessionId) {
+    fileApis.delete(sessionId);
   }
 };
 
@@ -31,14 +33,14 @@ function onFetch(event) {
   }
 }
 
+let appPort;
 function onMessage(event, data) {
-  if (event.data.type !== messages.connectToProject) return;
-  const ack = {
-    type: messages.ack,
-    version: serviceWorkerHash
+  if (event.data.type === messages.connectPort) {
+    event.ports[0].postMessage({
+      type: messages.ack
+    });
+    expose(workerAPI, event.ports[0]);
   }
-  event.data.port.postMessage(ack);
-  expose(workerAPI, event.data.port);
 }
 
 function parseUrl(url) {

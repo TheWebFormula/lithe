@@ -1,6 +1,4 @@
 import { Component, html, css, Cue } from '@thewebformula/lithe';
-import { wrap, proxy } from 'comlink';
-import { messages } from './helper.js';
 import { basicEditor } from 'prism-code-editor/setups';
 import { renderCodeBlock } from "prism-code-editor/ssr";
 import { addCopyButton, forEachCodeBlock } from "prism-code-editor/code-blocks"
@@ -12,21 +10,10 @@ import "prism-code-editor/prism/languages/json";
 import "prism-code-editor/prism/languages/bash";
 import pn from '../palenight.css' with { type: 'text' };
 import { registerTheme } from "prism-code-editor/themes";
-
+import * as worker from './worker.js';
 
 registerTheme('palenight', () => Promise.resolve({ default: [...pn.rules].map(r => r.cssText).join('\n') }))
 
-
-const serviceWorkerHash = '09cd6a4e'; // TODO
-const sessions = new Set();
-function generateUniqueSessionId() {
-  let sessionId;
-  do {
-    sessionId = crypto.getRandomValues(new Uint32Array(1))[0].toString(32);
-  } while (sessions.has(sessionId));
-  sessions.add(sessionId);
-  return sessionId;
-}
 
 class PlayGround extends Component {
   static useShadowRoot = true;
@@ -264,29 +251,20 @@ class PlayGround extends Component {
     }
   `, pn];
 
-  #sessionId = generateUniqueSessionId();
-  #workerProxyUrl;
+  #sessionId;
   #slot;
   #editor;
-  #workerAPI;
-  #projectIframe;
   #previewIframe;
-  #worker;
   #showPreview = false;
   #bottomPreview = false;
   #files = new Map();
   #currentFile;
-  #workerInitiated = false;
   #serverReady = false;
-  #sandboxScope = `__playground_server_${serviceWorkerHash}/`;
+  #sandboxScope = '__playground_server/';
   #tabs = new Cue.Array([]);
   #noTabBar = false;
   #noLineNumbers = false;
 
-  constructor() {
-    super();
-    this.#workerProxyUrl = new URL(`project-service-worker.html#session=${this.#sessionId}`, import.meta.url).href;
-  }
 
   static observedAttributesExtended = {
     preview: { type: 'toggle' },
@@ -315,15 +293,11 @@ class PlayGround extends Component {
 
   disconnectedCallback() {
     super.disconnectedCallback();
+    worker.disconnect(this.#sessionId);
     this.#slot.removeEventListener('slotchange', this.#slotChange);
     this.#onFileChange.destroy();
     this.#onFileChange = undefined;
-    if (this.#worker) {
-      // this.#worker.terminate();
-      this.#worker = undefined;
-    }
     this.#previewIframe = undefined;
-    this.#projectIframe = undefined;
     if (this.#editor) {
       this.#editor.textarea.removeEventListener('input', this.#onFileChange);
       this.#editor.remove();
@@ -334,7 +308,6 @@ class PlayGround extends Component {
   afterRender() {
     if (this.#showPreview) {
       this.#previewIframe = this.shadowRoot.querySelector('iframe#preview');
-      this.#projectIframe = this.shadowRoot.querySelector('iframe#project');
     }
 
     this.#slot = this.shadowRoot.querySelector('slot');
@@ -350,6 +323,8 @@ class PlayGround extends Component {
     } else {
       this.#renderCodeBlock();
     }
+
+    if (this.#showPreview) this.#initWorker();
   }
 
   #renderCodeBlock() {
@@ -372,7 +347,10 @@ class PlayGround extends Component {
     });
   }
 
-  #initPreview() {
+  async #initWorker() {
+    await worker.init();
+    this.#sessionId = await worker.connect(this.#getFileForBuild);
+    this.#serverReady = true;
     this.#previewIframe.src = new URL(`${this.#sandboxScope}${this.#sessionId}/`, import.meta.url).href;
   }
 
@@ -442,7 +420,7 @@ class PlayGround extends Component {
     this.#loadFile(target.getAttribute('file'));
   }
 
-  #getFileForBuild(name) {
+  #getFileForBuild = (name) => {
     let file = this.#files.get(name);
 
     if (name === 'index.html') {
@@ -472,78 +450,9 @@ class PlayGround extends Component {
     return content;
   }
 
-  #onNewServiceWorkerPort = (port) => {
-    const onMessage = (e) => {
-      if (e.data.type !== messages.ack) return;
-
-      port.removeEventListener('message', onMessage);
-      if (e.data.version === serviceWorkerHash) {
-        this.#workerAPI = wrap(port);
-        this.#workerAPI.setFileAPI(
-          proxy({
-            getFile: name => this.#getFileForBuild(name)
-          }),
-          this.#sessionId
-        );
-      }
-      // else {
-      //   console.info(
-      //     `Playground service worker is outdated. ` +
-      //       `Want ${serviceWorkerHash} but got ${e.data.version}. ` +
-      //       `Waiting for update.`
-      //   );
-      //   this.#postMessageToServiceWorkerProxyIframe({ type: messages.workerUpdate });
-      // }
-    };
-    port.addEventListener('message', onMessage);
-    port.start();
-  }
-
-  #postMessageToServiceWorkerProxyIframe = (message, transfer) => {
-    const iframeWindow = this.#projectIframe.contentWindow;
-    if (!iframeWindow) {
-      throw new Error(
-        'Unexpected internal error: ' +
-          '<playground-project> service worker proxy iframe had no contentWindow'
-      );
-    }
-    iframeWindow.postMessage(message, '*', transfer);
-  }
-
-
-  #onWorkerIframeLoad() {
-    if (!this.#showPreview) return;
-
-    const { port1, port2 } = new MessageChannel();
-    port1.addEventListener('message', event => {
-      if (event.data.type === messages.connectToWorker) {
-        this.#onNewServiceWorkerPort(event.data.port);
-        this.#serverReady = true;
-        this.#initPreview();
-      }
-    });
-    port1.start();
-
-    this.#postMessageToServiceWorkerProxyIframe({
-      type: messages.configureProxy,
-      scope: this.#sandboxScope,
-      port: port2
-    }, [port2]);
-  }
-
-
   template() {
     return html`
       <slot></slot>
-
-      ${!this.#showPreview ? '' : html`
-        <iframe
-          id="project"
-          src=${this.#workerProxyUrl}
-          onload=${() => this.#onWorkerIframeLoad()}
-          style="display: none;"
-        ></iframe>
-      `}
 
       <div class="ide">
         <div id="editor">

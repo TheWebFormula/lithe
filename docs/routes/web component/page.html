@@ -63,11 +63,9 @@
             }
 
             loadData = async () => {
-              console.log('loadData')
               return new Promise(resolve => {
                 setTimeout(() => {
                   // do some work, get some data
-                  console.log('loaded')
                   resolve();
                 }, 2000)
               })

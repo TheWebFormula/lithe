@@ -1,10 +1,7 @@
 export const messages = {
-  configureProxy: 1,
-  connectToProject: 2,
-  connectToWorker: 3,
-  ack: 4,
-  missingFile: 5,
-  workerUpdate: 6
+  connectPort: 1,
+  ack: 2,
+  missingFile: 3
 };
 
 export class Deferred {
