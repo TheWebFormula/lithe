@@ -55,7 +55,7 @@ export default async function build({ basedir, outdir, entryPoint, entryPointCSS
   }));
 
   if (routeComponentHTML) {
-    indexHTMLtemplate = indexHTMLtemplate.replace(/<body>/, `<body>\n${routeComponentHTML}`);
+    indexHTMLtemplate = indexHTMLtemplate.replace(/(<body[^>]*>)/, `$1\n${routeComponentHTML}`);
   }
 
   if (devWarnings) indexHTMLtemplate = indexHTMLtemplate.replace(/<head>/, '<head>\n  <meta name="lidevwarnings" content="true">');

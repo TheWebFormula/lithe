@@ -20,16 +20,15 @@
     }
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-      visibility: hidden;
     }
   </style>
-  <script>document.addEventListener('DOMContentLoaded', () => document.body.style.visibility = '';)</script>
+  <script>document.addEventListener('DOMContentLoaded', () => document.body.style.visibility = '')</script>
 
   <link rel="preload" href="/app.css" as="style">
   <script type="module" src="/app.js" defer></script>
 </head>
 
-<body>
+<body style="visibility: hidden">
   <mc-navigation-drawer style="--mc-side-sheet-width: 250px;">
     <div slot="header" class="headline">Lithe</div>
 
