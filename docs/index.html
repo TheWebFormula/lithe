@@ -7,24 +7,11 @@
   <meta name="description" content="Lithe. A lithe framework for the web by TheWebFormula">
   <meta name="keywords" content="Lithe, thewebformauls, web, framework, HTML, CSS, JavaScript">
   <meta name="author" content="Ben Rubin">
-  <meta name="color-scheme" content="light dark">
-  <meta name="mc-theme-color-scheme-preference-disable">
-  <meta name="theme-color" content="#fdf8fd">
-
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
   <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=menu,arrow_forward&display=block" />
 
   <title>Lithe</title>
-
-  <!-- Lithe will automatically handle hooking up preloaded style links -->
-  <link rel="preload" href="/app.css" as="style">
-  <script type="module" src="/app.js" defer></script>
-
-  <link rel="manifest" href="/manifest.json">
 
   <style>
     /* smooth scroll for element anchor links */
@@ -36,6 +23,10 @@
       visibility: hidden;
     }
   </style>
+  <script>document.addEventListener('DOMContentLoaded', () => document.body.style.visibility = '';)</script>
+
+  <link rel="preload" href="/app.css" as="style">
+  <script type="module" src="/app.js" defer></script>
 </head>
 
 <body>
