@@ -12,16 +12,10 @@ export async function init() {
 
   registration = await navigator.serviceWorker.register(`./${outputFileMap['webserver-service-worker']}`, { scope: '__playground_server/' });
 
-//   registration.addEventListener('updatefound', () => {
-//     console.log('updatefound')
-//     // openChannel();
-//   });
-//
   navigator.serviceWorker.addEventListener('message', (event) => {
     if (event.source !== connected)  return;
     if (event.data.type === messages.missingFile) {
       console.error('Missing file');
-      // openChannel(true);
     }
   });
 }

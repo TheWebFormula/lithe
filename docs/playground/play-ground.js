@@ -353,9 +353,11 @@ class PlayGround extends Component {
 
   async #initWorker() {
     await worker.init();
-    this.#sessionId = await worker.connect(this.#getFileForBuild);
-    this.#serverReady = true;
-    this.#previewIframe.src = new URL(`${this.#sandboxScope}${this.#sessionId}/`, import.meta.url).href;
+    requestAnimationFrame(async () => {
+      this.#sessionId = await worker.connect(this.#getFileForBuild);
+      this.#serverReady = true;
+      this.#previewIframe.src = new URL(`${this.#sandboxScope}${this.#sessionId}/`, import.meta.url).href;
+    });
   }
 
   #reload = () => {

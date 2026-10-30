@@ -1,6 +1,6 @@
 {
   "name": "@thewebformula/lithe",
-  "version": "0.27.10",
+  "version": "0.28.0",
   "description": "A lithe framework for the web",
   "type": "module",
   "main": "index.js",
@@ -31,7 +31,7 @@
   "dependencies": {
     "esbuild": "^0.28.2",
     "esbuild-plugin-copy": "^2.1.1",
-    "html-minifier-next": "^8.4.0",
+    "html-minifier-next": "^9.1.1",
     "sharp": "^0.35.5"
   },
   "devDependencies": {
