@@ -295,8 +295,12 @@ class PlayGround extends Component {
     super.disconnectedCallback();
     worker.disconnect(this.#sessionId);
     this.#slot.removeEventListener('slotchange', this.#slotChange);
-    this.#onFileChange.destroy();
-    this.#onFileChange = undefined;
+    if (this.#onFileChange) {
+      this.#onFileChange.destroy();
+      this.#onFileChange = undefined;
+    }
+
+
     this.#previewIframe = undefined;
     if (this.#editor) {
       this.#editor.textarea.removeEventListener('input', this.#onFileChange);
@@ -366,6 +370,7 @@ class PlayGround extends Component {
   }, 600);
 
   #slotChange = () => {
+    this.#files.clear();
     for (const item of this.#slot.assignedElements({ flatten: true })) {
       const typeAttr = item.getAttribute('type');
       if (!typeAttr?.startsWith('play/')) continue;
@@ -385,12 +390,10 @@ class PlayGround extends Component {
     }
 
     this.classList.toggle('single-file', this.#files.size < 2);
-
-    // TODO figure out why this is needed, when page is re-navigated to the tabs change does not trigger render update
-    setTimeout(() => {
-      this.#tabs.get().push(...this.#files.keys());
+    requestAnimationFrame(() => {
+      this.#tabs.set(this.#files.keys());
       this.#loadFile();
-    }, 0)
+    });
   }
 
   async #loadFile(name = this.currentFile) {

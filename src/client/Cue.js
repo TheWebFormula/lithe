@@ -87,6 +87,10 @@ class CueNode {
     return this.#isPending;
   }
 
+  isDirty() {
+    return this.#dirty;
+  }
+
   get() {
     this.#addConsumer();
 

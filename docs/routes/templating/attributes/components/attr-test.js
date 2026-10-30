@@ -105,25 +105,24 @@ class AttrTest extends Component {
           </div>
         </div>
         <play-ground>
-          <!-- TODO make playground look for changes -->
-          <script type="play/html" filename="page.html">
           ${html(() => {
             const str = this._str.get();
             const disabled = this._disabled.get();
             const enable = this._enable.get();
             const counter = this._counter.get();
             const percent = this._percent.get();
-            return`<!-- HTML rendered -->
-<attr-test
-  str="${str}"
-  ${disabled ? 'disabled' : ''}
-  enable="${enable}"
-  counter="${counter}"
-  percent="${percent}"
-  data
-></attr-test>`;
+            return html`<script type="play/html" filename="page.html">
+  <!-- HTML rendered -->
+  <attr-test
+    str="${str}"
+    ${disabled ? 'disabled' : ''}
+    enable="${enable}"
+    counter="${counter}"
+    percent="${percent}"
+    data
+  ></attr-test>
+</script>`;
       })}
-          </script>
         </play-ground>
       </div>
     `;

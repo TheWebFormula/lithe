@@ -13,22 +13,19 @@
 
   <title>Lithe</title>
 
+  <link rel="preload" href="/app.css" as="style">
+  <script type="module" src="/app.js" defer></script>
+
   <style>
     /* smooth scroll for element anchor links */
     html:has(:target) {
       scroll-behavior: smooth;
     }
     body {
-      background-color: #151316;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    }
-    body:not(.has-navigation-bar) mc-navigation-drawer {
       visibility: hidden;
     }
   </style>
-
-  <link rel="preload" href="/app.css" as="style">
-  <script type="module" src="/app.js" defer></script>
 </head>
 
 <body>

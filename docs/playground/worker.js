@@ -39,7 +39,7 @@ export async function connect(callback) {
 }
 
 export function disconnect(sessionId) {
-  workerAPI.disconnect(sessionId);
+  if (workerAPI) workerAPI.disconnect(sessionId);
 }
 
 async function openChannel(force = false) {

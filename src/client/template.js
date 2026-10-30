@@ -48,7 +48,7 @@ class Template {
     //      We only want to uise an elements if they will go back to the same parent
     if (this.cleaned) {
       this.cleaned = false;
-      // this.availableInstnaces = this.instances.values().toArray().filter(i => i.disconnected).reverse();
+      this.availableInstnaces = this.instances.values().toArray().filter(i => i.disconnected).reverse();
     }
 
     let instance;
@@ -185,6 +185,7 @@ class ValueNode {
   attrName;
   attrType;
   attrIndex;
+  attrReflect;
   isCue = false;
   hasTemplate = false;
   templateData = [];
@@ -209,7 +210,10 @@ class ValueNode {
     // pull attr config from component
     if (this.isAttr) {
       const config = this.attrType = node?.constructor?.attrConfig?.[this.attrName];
-      if (config) this.attrType = config.type;
+      if (config) {
+        this.attrType = config.type;
+        this.attrReflect = config.reflect;
+      }
       else if (booleanAttributes.includes(this.attrName)) this.attrType = 'toggle';
       else if (htmlEventAttributes.includes(this.attrName)) this.attrType = 'event';
       else if (typeof value === 'object' && value !== null) this.attrType = 'object';
@@ -234,8 +238,9 @@ class ValueNode {
   cueChange = (cue) => {
     if (!this.initialized) return;
 
-    // if node is an html compute then a cue update means re rendering
-    // this.disconnectTemplateInstances(); // TODO figure out template availableInstnaces
+    // if we are reendering html then we want to disconnect the previous instances so we do not duplicate
+    //     This also allows us to reuse instances instead of always cloning new ones
+    if (Cue.isHtml(cue) && cue.isDirty()) this.disconnectTemplateInstances();
     this.update(true);
   }
 
@@ -251,7 +256,7 @@ class ValueNode {
       }).join('');
     }
 
-    if (this.isAttr) setAttrValue(this.node, this.attrName, this.attrType, value, isUpdate);
+    if (this.isAttr) setAttrValue(this.node, this.attrName, this.attrType, this.attrReflect, value, isUpdate);
     else if (Array.isArray(value) ? value[0] instanceof TemplateInstance : value instanceof TemplateInstance) {
       setNodeFragmentValue(value, this.node);
       this.templateInstances = Array.isArray(value) ? value : [value];
@@ -442,12 +447,13 @@ function setNodeFragmentValue(value, node) {
 }
 
 // TODO implament reflect and aria
-function setAttrValue(ownerNode, attrName, attrType, value, update = false) {
+function setAttrValue(ownerNode, attrName, attrType, attrReflect, value, update = false) {
   let attrNode = ownerNode.getAttributeNode(attrName);
 
   if (attrType === 'toggle') {
     if (update) { // we do not want to change the rendered state
-      ownerNode[attrName] = value;
+      if (attrReflect === true) ownerNode.toggleAttribute(attrName, !!value);
+      else ownerNode[attrName] = value;
     } else {
       if (value === true && !!attrNode) ownerNode.setAttribute(attrName, '');
       else if (attrNode) ownerNode.removeAttributeNode(attrNode);
@@ -471,10 +477,12 @@ function setAttrValue(ownerNode, attrName, attrType, value, update = false) {
     }
   } else if (attrType === 'boolean') {
     value = Boolean(value).toString();
-    if (attrNode.value !== value) attrNode.value = value;
+    if (attrReflect === true) ownerNode.setAttribute(attrName, value);
+    else if (attrNode.value !== value) attrNode.value = value;
   } else {
     value = String(value === undefined ? '' : value);
-    if (attrNode.value !== value) attrNode.value = value;
+    if (attrReflect === true) ownerNode.setAttribute(attrName, value);
+    else if (attrNode.value !== value) attrNode.value = value;
   }
 }
 

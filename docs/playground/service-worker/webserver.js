@@ -1,7 +1,6 @@
 import { expose } from 'comlink';
 import { messages, Deferred } from '../helper.js';
 
-
 let fileApis = new Map();
 const workerAPI = {
   setFileAPI(fileAPI, sessionID) {

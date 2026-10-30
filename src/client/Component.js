@@ -77,10 +77,9 @@ export default class Component extends HTMLElement {
   static get attrConfig() {
     if (!this._attrConfig) {
       let extendedAttrs = Object.entries(this.observedAttributesExtended);
-      let attrs = extendedAttrs.length > 0 ? extendedAttrs : this.observedAttributes.map(v => ([v, { type: 'string', reflect: true }]));
+      let attrs = extendedAttrs.length > 0 ? extendedAttrs : this.observedAttributes.map(v => ([v, { type: 'string' }]));
       this._attrConfig = Object.fromEntries(attrs.map(a => {
         let type = a[1].type;
-        let reflect = a[1].reflect === false ? false : true;
         if (!this.attributeTypes.includes(type)) {
           console.warn(`Incorrect attribute type ${type || 'none'} on ${this.tagName || this.name}[${a[0]}]. (${this.attributeTypes.join(', ')})`);
           type = 'string';
@@ -88,7 +87,7 @@ export default class Component extends HTMLElement {
         return [a[0], {
           name: a[0],
           type,
-          reflect
+          reflect: a[1].reflect
         }];
       }));
     }
