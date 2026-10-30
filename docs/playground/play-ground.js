@@ -516,11 +516,12 @@ function getLanguage(type) {
 }
 
 function outdent(str) {
+  str = str.trim()
   const matches = str.match(/^[ \t]*(?=\S)/gm);
   if (!matches) return 0;
-  let shortest = Math.min(...matches.map(match => match.length));
 
-  return str.split('\n').map(line => line.slice(shortest)).join('\n').trim();
+  let shortest = Math.min(...matches.map(match => match.length).filter(v => v > 0));
+  return str.split('\n').map(line => line.startsWith(' ') ? line.slice(shortest) : line).join('\n').trim();
 }
 
 function debounce(fn, wait) {
